@@ -126,12 +126,15 @@ class GeminiImageClient:
             ),
         )
 
-        response = self._client.models.generate_content(
-            model=model,
-            contents=[prompt, image],
-            config=config,
-        )
+        @DEFAULT_RETRY
+        def _call_api():
+            return self._client.models.generate_content(
+                model=model,
+                contents=[prompt, image],
+                config=config,
+            )
 
+        response = _call_api()
         return ImageGenerationResult.from_response(response)
 
     def compose_images(

@@ -69,3 +69,34 @@ class TestGenerateImageRetry:
 
                 assert result.text == "Success"
                 assert mock_client_instance.models.generate_content.call_count == 2
+
+
+class TestEditImageRetry:
+    def test_retries_on_service_unavailable(self, tmp_path):
+        # Create test image
+        test_image = tmp_path / "test.png"
+        from PIL import Image
+        img = Image.new("RGB", (100, 100), color="red")
+        img.save(test_image)
+
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Edited"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                mock_client_instance.models.generate_content.side_effect = [
+                    ServiceUnavailable("Model overloaded"),
+                    mock_response,
+                ]
+
+                client = GeminiImageClient()
+                result = client.edit_image("edit prompt", test_image)
+
+                assert result.text == "Edited"
+                assert mock_client_instance.models.generate_content.call_count == 2
