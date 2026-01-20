@@ -47,4 +47,5 @@ def create_retry_decorator(config: RetryConfig):
         maximum=config.max_delay,
         multiplier=config.multiplier,
         timeout=config.timeout,
+        on_error=on_retry_error,
     )

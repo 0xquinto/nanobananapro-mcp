@@ -87,3 +87,13 @@ class TestOnRetryError:
             on_retry_error(error)
         assert "Retrying after ServiceUnavailable" in caplog.text
         assert "Model overloaded" in caplog.text
+
+
+class TestRetryDecoratorWithCallback:
+    def test_callback_is_passed_to_retry(self):
+        config = RetryConfig()
+        with patch("nanobananapro_mcp.retry.retry.Retry") as mock_retry:
+            mock_retry.return_value = lambda f: f
+            create_retry_decorator(config)
+            call_kwargs = mock_retry.call_args.kwargs
+            assert "on_error" in call_kwargs
