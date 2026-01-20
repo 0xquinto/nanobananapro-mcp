@@ -8,5 +8,5 @@ dist/
 build/
 docs/
 CLAUDE.md
-.mcp.json
+.claude/mcp.json
 uv.lock

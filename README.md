@@ -1,6 +1,6 @@
 # Nano Banana Pro MCP Server
 
-MCP server for Google Gemini image generation models (Nano Banana / Nano Banana Pro) for use with Claude Code.
+Local MCP server for Google Gemini image generation models (Nano Banana / Nano Banana Pro) for use with Claude Code. Designed for local deployment only.
 
 ## Installation
 
