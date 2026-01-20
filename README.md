@@ -6,7 +6,7 @@ Local MCP server for Google Gemini image generation models (Nano Banana / Nano B
 
 ```bash
 # Clone and install
-git clone <repo>
+git clone https://github.com/0xquinto/nanobananapro-mcp.git
 cd nanobananapro-mcp
 uv sync
 ```
