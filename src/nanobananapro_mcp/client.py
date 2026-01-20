@@ -1,0 +1,200 @@
+"""Wrapper for Google Gemini GenAI client."""
+
+from __future__ import annotations
+
+import os
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from google import genai
+from google.genai import types
+
+from .utils import (
+    encode_image_to_base64,
+    validate_aspect_ratio,
+    validate_resolution,
+    validate_model,
+)
+
+
+@dataclass
+class ImageGenerationResult:
+    """Result from image generation."""
+
+    text: str | None = None
+    image_data: bytes | None = None
+    mime_type: str | None = None
+    grounding_metadata: dict | None = None
+
+    @classmethod
+    def from_response(cls, response: Any) -> "ImageGenerationResult":
+        """Extract result from Gemini response."""
+        text = None
+        image_data = None
+        mime_type = None
+
+        for part in response.parts:
+            if part.text is not None:
+                text = part.text
+            elif part.inline_data is not None:
+                image_data = part.inline_data.data
+                mime_type = part.inline_data.mime_type
+
+        grounding = None
+        if hasattr(response, "grounding_metadata"):
+            grounding = response.grounding_metadata
+
+        return cls(
+            text=text,
+            image_data=image_data,
+            mime_type=mime_type,
+            grounding_metadata=grounding,
+        )
+
+
+class GeminiImageClient:
+    """Client wrapper for Gemini image generation."""
+
+    def __init__(self, api_key: str | None = None):
+        """Initialize client with API key from param or environment."""
+        key = api_key or os.environ.get("GEMINI_API_KEY")
+        if not key:
+            raise ValueError(
+                "GEMINI_API_KEY environment variable is required. "
+                "Set it or pass api_key parameter."
+            )
+        self._client = genai.Client(api_key=key)
+
+    def generate_image(
+        self,
+        prompt: str,
+        model: str = "gemini-2.5-flash-image",
+        aspect_ratio: str | None = None,
+        resolution: str | None = None,
+        response_modalities: list[str] | None = None,
+    ) -> ImageGenerationResult:
+        """Generate an image from a text prompt."""
+        model = validate_model(model)
+        aspect_ratio = validate_aspect_ratio(aspect_ratio)
+        resolution = validate_resolution(resolution, model)
+        modalities = response_modalities or ["TEXT", "IMAGE"]
+
+        config = types.GenerateContentConfig(
+            response_modalities=modalities,
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+                image_size=resolution if model == "gemini-3-pro-image-preview" else None,
+            ),
+        )
+
+        response = self._client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=config,
+        )
+
+        return ImageGenerationResult.from_response(response)
+
+    def edit_image(
+        self,
+        prompt: str,
+        image_path: str | Path,
+        model: str = "gemini-2.5-flash-image",
+        aspect_ratio: str | None = None,
+        resolution: str | None = None,
+    ) -> ImageGenerationResult:
+        """Edit an existing image with a text prompt."""
+        from PIL import Image
+
+        model = validate_model(model)
+        aspect_ratio = validate_aspect_ratio(aspect_ratio)
+        resolution = validate_resolution(resolution, model)
+
+        image = Image.open(image_path)
+
+        config = types.GenerateContentConfig(
+            response_modalities=["TEXT", "IMAGE"],
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+                image_size=resolution if model == "gemini-3-pro-image-preview" else None,
+            ),
+        )
+
+        response = self._client.models.generate_content(
+            model=model,
+            contents=[prompt, image],
+            config=config,
+        )
+
+        return ImageGenerationResult.from_response(response)
+
+    def compose_images(
+        self,
+        prompt: str,
+        image_paths: list[str | Path],
+        model: str = "gemini-3-pro-image-preview",
+        aspect_ratio: str | None = None,
+        resolution: str | None = None,
+    ) -> ImageGenerationResult:
+        """Compose a new image from multiple reference images."""
+        from PIL import Image
+
+        model = validate_model(model)
+        aspect_ratio = validate_aspect_ratio(aspect_ratio)
+        resolution = validate_resolution(resolution, model)
+
+        # Validate image count
+        max_images = 14 if model == "gemini-3-pro-image-preview" else 3
+        if len(image_paths) > max_images:
+            raise ValueError(
+                f"Model {model} supports max {max_images} images, got {len(image_paths)}"
+            )
+
+        images = [Image.open(p) for p in image_paths]
+        contents = [prompt] + images
+
+        config = types.GenerateContentConfig(
+            response_modalities=["TEXT", "IMAGE"],
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+                image_size=resolution if model == "gemini-3-pro-image-preview" else None,
+            ),
+        )
+
+        response = self._client.models.generate_content(
+            model=model,
+            contents=contents,
+            config=config,
+        )
+
+        return ImageGenerationResult.from_response(response)
+
+    def search_grounded_image(
+        self,
+        prompt: str,
+        aspect_ratio: str | None = None,
+        resolution: str | None = None,
+    ) -> ImageGenerationResult:
+        """Generate image with Google Search grounding (Pro only)."""
+        model = "gemini-3-pro-image-preview"
+        aspect_ratio = validate_aspect_ratio(aspect_ratio)
+        resolution = validate_resolution(resolution, model)
+
+        config = types.GenerateContentConfig(
+            response_modalities=["TEXT", "IMAGE"],
+            image_config=types.ImageConfig(
+                aspect_ratio=aspect_ratio,
+                image_size=resolution,
+            ),
+            tools=[{"google_search": {}}],
+        )
+
+        response = self._client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=config,
+        )
+
+        return ImageGenerationResult.from_response(response)
