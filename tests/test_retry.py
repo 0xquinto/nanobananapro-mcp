@@ -1,7 +1,8 @@
 # tests/test_retry.py
 import pytest
 from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted, InvalidArgument
-from nanobananapro_mcp.retry import RetryConfig, is_retryable_error
+from unittest.mock import Mock, patch
+from nanobananapro_mcp.retry import RetryConfig, is_retryable_error, create_retry_decorator
 
 
 class TestRetryConfig:
@@ -41,3 +42,38 @@ class TestIsRetryableError:
     def test_generic_exception_not_retryable(self):
         error = ValueError("Something else")
         assert is_retryable_error(error) is False
+
+
+class TestCreateRetryDecorator:
+    def test_creates_retry_with_default_config(self):
+        config = RetryConfig()
+        retry_decorator = create_retry_decorator(config)
+        # Decorator should be callable
+        assert callable(retry_decorator)
+
+    def test_disabled_config_returns_passthrough(self):
+        config = RetryConfig(enabled=False)
+        retry_decorator = create_retry_decorator(config)
+
+        @retry_decorator
+        def my_func():
+            return "result"
+
+        assert my_func() == "result"
+
+    def test_retry_uses_config_values(self):
+        config = RetryConfig(
+            initial_delay=1.0,
+            max_delay=10.0,
+            multiplier=1.5,
+            timeout=30.0,
+        )
+        with patch("nanobananapro_mcp.retry.retry.Retry") as mock_retry:
+            mock_retry.return_value = lambda f: f
+            create_retry_decorator(config)
+            mock_retry.assert_called_once()
+            call_kwargs = mock_retry.call_args.kwargs
+            assert call_kwargs["initial"] == 1.0
+            assert call_kwargs["maximum"] == 10.0
+            assert call_kwargs["multiplier"] == 1.5
+            assert call_kwargs["timeout"] == 30.0

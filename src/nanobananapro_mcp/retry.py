@@ -16,6 +16,7 @@ class RetryConfig:
     timeout: float = 180.0
 
 
+from google.api_core import retry
 from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted
 
 RETRYABLE_EXCEPTIONS = (ServiceUnavailable, ResourceExhausted)
@@ -24,3 +25,18 @@ RETRYABLE_EXCEPTIONS = (ServiceUnavailable, ResourceExhausted)
 def is_retryable_error(error: Exception) -> bool:
     """Check if an error should trigger a retry."""
     return isinstance(error, RETRYABLE_EXCEPTIONS)
+
+
+def create_retry_decorator(config: RetryConfig):
+    """Create a retry decorator from configuration."""
+    if not config.enabled:
+        # Return passthrough decorator
+        return lambda f: f
+
+    return retry.Retry(
+        predicate=retry.if_exception_type(*RETRYABLE_EXCEPTIONS),
+        initial=config.initial_delay,
+        maximum=config.max_delay,
+        multiplier=config.multiplier,
+        timeout=config.timeout,
+    )
