@@ -11,6 +11,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 
+from .retry import DEFAULT_RETRY
 from .utils import (
     encode_image_to_base64,
     validate_aspect_ratio,
@@ -89,12 +90,15 @@ class GeminiImageClient:
             ),
         )
 
-        response = self._client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=config,
-        )
+        @DEFAULT_RETRY
+        def _call_api():
+            return self._client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=config,
+            )
 
+        response = _call_api()
         return ImageGenerationResult.from_response(response)
 
     def edit_image(
