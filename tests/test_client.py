@@ -100,3 +100,37 @@ class TestEditImageRetry:
 
                 assert result.text == "Edited"
                 assert mock_client_instance.models.generate_content.call_count == 2
+
+
+class TestComposeImagesRetry:
+    def test_retries_on_service_unavailable(self, tmp_path):
+        # Create test images
+        test_images = []
+        for i in range(2):
+            img_path = tmp_path / f"test{i}.png"
+            from PIL import Image
+            img = Image.new("RGB", (100, 100), color="blue")
+            img.save(img_path)
+            test_images.append(img_path)
+
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Composed"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                mock_client_instance.models.generate_content.side_effect = [
+                    ServiceUnavailable("Model overloaded"),
+                    mock_response,
+                ]
+
+                client = GeminiImageClient()
+                result = client.compose_images("compose prompt", test_images)
+
+                assert result.text == "Composed"
+                assert mock_client_instance.models.generate_content.call_count == 2

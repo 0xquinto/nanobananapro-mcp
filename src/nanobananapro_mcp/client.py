@@ -170,12 +170,15 @@ class GeminiImageClient:
             ),
         )
 
-        response = self._client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=config,
-        )
+        @DEFAULT_RETRY
+        def _call_api():
+            return self._client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config,
+            )
 
+        response = _call_api()
         return ImageGenerationResult.from_response(response)
 
     def search_grounded_image(
