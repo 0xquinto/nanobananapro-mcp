@@ -13,19 +13,13 @@ uv sync
 
 ## Configuration
 
-Set your Gemini API key:
-
-```bash
-export GEMINI_API_KEY=your-api-key
-```
-
-Get an API key from: https://aistudio.google.com/apikey
+Get a Gemini API key from: https://aistudio.google.com/apikey
 
 ## Usage with Claude Code
 
 ```bash
-# Add the server
-claude mcp add nanobananapro -e GEMINI_API_KEY=$GEMINI_API_KEY -- uv run python -m nanobananapro_mcp
+# Add the server (replace YOUR_API_KEY with your actual key)
+claude mcp add nanobananapro -e GEMINI_API_KEY=YOUR_API_KEY -- uv run python -m nanobananapro_mcp
 
 # List servers
 claude mcp list
