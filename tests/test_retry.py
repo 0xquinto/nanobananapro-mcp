@@ -3,7 +3,7 @@ import pytest
 from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted, InvalidArgument
 from unittest.mock import Mock, patch
 import logging
-from nanobananapro_mcp.retry import RetryConfig, is_retryable_error, create_retry_decorator, on_retry_error
+from nanobananapro_mcp.retry import RetryConfig, is_retryable_error, create_retry_decorator, on_retry_error, DEFAULT_RETRY
 
 
 class TestRetryConfig:
@@ -97,3 +97,8 @@ class TestRetryDecoratorWithCallback:
             create_retry_decorator(config)
             call_kwargs = mock_retry.call_args.kwargs
             assert "on_error" in call_kwargs
+
+
+class TestDefaultRetry:
+    def test_default_retry_is_callable(self):
+        assert callable(DEFAULT_RETRY)

@@ -49,3 +49,6 @@ def create_retry_decorator(config: RetryConfig):
         timeout=config.timeout,
         on_error=on_retry_error,
     )
+
+
+DEFAULT_RETRY = create_retry_decorator(RetryConfig())
