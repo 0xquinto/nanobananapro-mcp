@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -25,6 +28,11 @@ RETRYABLE_EXCEPTIONS = (ServiceUnavailable, ResourceExhausted)
 def is_retryable_error(error: Exception) -> bool:
     """Check if an error should trigger a retry."""
     return isinstance(error, RETRYABLE_EXCEPTIONS)
+
+
+def on_retry_error(error: Exception) -> None:
+    """Callback invoked on each retry attempt."""
+    logger.warning(f"Retrying after {type(error).__name__}: {error}")
 
 
 def create_retry_decorator(config: RetryConfig):

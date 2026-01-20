@@ -2,7 +2,8 @@
 import pytest
 from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted, InvalidArgument
 from unittest.mock import Mock, patch
-from nanobananapro_mcp.retry import RetryConfig, is_retryable_error, create_retry_decorator
+import logging
+from nanobananapro_mcp.retry import RetryConfig, is_retryable_error, create_retry_decorator, on_retry_error
 
 
 class TestRetryConfig:
@@ -77,3 +78,12 @@ class TestCreateRetryDecorator:
             assert call_kwargs["maximum"] == 10.0
             assert call_kwargs["multiplier"] == 1.5
             assert call_kwargs["timeout"] == 30.0
+
+
+class TestOnRetryError:
+    def test_logs_warning_on_error(self, caplog):
+        error = ServiceUnavailable("Model overloaded")
+        with caplog.at_level(logging.WARNING):
+            on_retry_error(error)
+        assert "Retrying after ServiceUnavailable" in caplog.text
+        assert "Model overloaded" in caplog.text
