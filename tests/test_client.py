@@ -134,3 +134,28 @@ class TestComposeImagesRetry:
 
                 assert result.text == "Composed"
                 assert mock_client_instance.models.generate_content.call_count == 2
+
+
+class TestSearchGroundedImageRetry:
+    def test_retries_on_service_unavailable(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Grounded"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                mock_client_instance.models.generate_content.side_effect = [
+                    ServiceUnavailable("Model overloaded"),
+                    mock_response,
+                ]
+
+                client = GeminiImageClient()
+                result = client.search_grounded_image("search prompt")
+
+                assert result.text == "Grounded"
+                assert mock_client_instance.models.generate_content.call_count == 2
