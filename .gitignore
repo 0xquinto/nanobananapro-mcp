@@ -10,3 +10,4 @@ docs/
 CLAUDE.md
 .claude/mcp.json
 uv.lock
+assets/
