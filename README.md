@@ -4,7 +4,7 @@
   <img src="assets/indiana_claude_banana_v2.png" alt="Nano Banana Pro - Claude discovers the Golden Banana" width="600">
 </p>
 
-Local MCP server for Google Gemini image generation models (Nano Banana / Nano Banana Pro) for use with Claude Code. Designed for local deployment only.
+Local MCP server for Gemini 3 Pro image generation (Nano Banana Pro) for use with Claude Code. Designed for local deployment only.
 
 ## Installation
 
@@ -41,9 +41,9 @@ Generate images from text prompts.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `prompt` | string | Yes | - | Text description of the image to generate |
-| `model` | string | No | `gemini-2.5-flash-image` | Model to use (see Models section) |
+| `model` | string | No | `gemini-3-pro-image-preview` | Model to use (see Models section) |
 | `aspect_ratio` | string | No | `1:1` | Output aspect ratio |
-| `resolution` | string | No | `1K` | Output resolution (Pro only for 2K/4K) |
+| `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the generated image |
 
 ### edit_image
@@ -54,9 +54,9 @@ Edit existing images with text instructions.
 |-----------|------|----------|---------|-------------|
 | `prompt` | string | Yes | - | Instructions for editing the image |
 | `image_path` | string | Yes | - | Path to the input image file |
-| `model` | string | No | `gemini-2.5-flash-image` | Model to use |
+| `model` | string | No | `gemini-3-pro-image-preview` | Model to use |
 | `aspect_ratio` | string | No | None | Output aspect ratio (defaults to input) |
-| `resolution` | string | No | `1K` | Output resolution |
+| `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the edited image |
 
 ### compose_images
@@ -66,15 +66,15 @@ Combine multiple reference images into a new composition.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `prompt` | string | Yes | - | Instructions for composing the images |
-| `image_paths` | list[string] | Yes | - | Paths to input images (max 3 for Flash, 14 for Pro) |
-| `model` | string | No | `gemini-3-pro-image-preview` | Model to use (Pro recommended) |
+| `image_paths` | list[string] | Yes | - | Paths to input images (max 14) |
+| `model` | string | No | `gemini-3-pro-image-preview` | Model to use |
 | `aspect_ratio` | string | No | `1:1` | Output aspect ratio |
-| `resolution` | string | No | `2K` | Output resolution |
+| `resolution` | string | No | `2K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the composed image |
 
 ### search_grounded_image
 
-Generate images using real-time Google Search data. **Pro model only.**
+Generate images using real-time Google Search data.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -119,28 +119,25 @@ List all active chat sessions. No parameters.
 
 ## Models
 
-| Alias | Full Model Name | Description |
-|-------|-----------------|-------------|
-| `flash` | `gemini-2.5-flash-image` | Fast generation |
+| Alias | Model ID | Description |
+|-------|----------|-------------|
 | `pro` | `gemini-3-pro-image-preview` | High quality with advanced features |
-| `nano-banana` | `gemini-2.5-flash-image` | Alias for flash |
 | `nano-banana-pro` | `gemini-3-pro-image-preview` | Alias for pro |
 
-### Model Capabilities
+## Features
 
-| Feature | Flash | Pro |
-|---------|-------|-----|
-| **Resolution** | 1K only | 1K, 2K, 4K |
-| **Max Input Images** | 3 | 14 |
-| **Google Search Grounding** | ❌ | ✅ |
-| **Speed** | Faster | Slower |
-| **Quality** | Good | Best |
+- Text-to-image generation
+- Image editing with text prompts
+- Multi-image composition (up to 14 images)
+- Google Search grounding for real-time data
+- Multi-turn chat sessions for iterative refinement
+- Resolutions: 1K, 2K, 4K
 
 ### Valid Values
 
 **Aspect Ratios**: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 
-**Resolutions**: `1K`, `2K`, `4K` (Flash model silently downgrades to 1K)
+**Resolutions**: `1K`, `2K`, `4K`
 
 ## Development
 
