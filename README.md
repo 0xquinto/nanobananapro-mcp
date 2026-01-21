@@ -117,12 +117,9 @@ End and clean up an image chat session.
 
 List all active chat sessions. No parameters.
 
-## Models
+## Model
 
-| Alias | Model ID | Description |
-|-------|----------|-------------|
-| `pro` | `gemini-3-pro-image-preview` | High quality with advanced features |
-| `nano-banana-pro` | `gemini-3-pro-image-preview` | Alias for pro |
+Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `pro` or `nano-banana-pro`.
 
 ## Features
 
