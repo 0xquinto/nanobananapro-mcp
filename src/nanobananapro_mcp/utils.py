@@ -54,9 +54,6 @@ def validate_resolution(resolution: str | None, model: str) -> str:
             f"Invalid resolution: {resolution}. "
             f"Must be one of: {', '.join(VALID_RESOLUTIONS)}"
         )
-    # Flash model only supports 1K
-    if model == "gemini-2.5-flash-image" and resolution != "1K":
-        return "1K"
     return resolution
 
 
