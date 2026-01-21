@@ -159,31 +159,8 @@ GEMINI_API_KEY=your-key uv run python -m nanobananapro_mcp
 
 For better Claude Code integration, create a `CLAUDE.md` file in your project root with instructions about the MCP server. This helps Claude understand the available tools and how to use them.
 
-**Tip:** You can use Claude Code to auto-generate this file by asking:
-```
-Read the README.md and create a CLAUDE.md with instructions on using the nanobananapro MCP server
-```
-
-Example `CLAUDE.md`:
-
-```markdown
-## Nano Banana Pro MCP
-
-This project uses the Nano Banana Pro MCP server for image generation.
-
-**Available Tools:**
-- `generate_image` - Generate images from text prompts
-- `edit_image` - Edit existing images with text instructions
-- `compose_images` - Combine multiple reference images
-- `search_grounded_image` - Generate images with Google Search data (Pro only)
-- `start_image_chat` / `continue_image_chat` / `end_image_chat` - Multi-turn image editing sessions
-
-**Models:**
-- `flash` or `nano-banana` - Fast generation (1K resolution)
-- `pro` or `nano-banana-pro` - High quality (up to 4K, search grounding)
-
-**Usage Notes:**
-- Always provide `output_path` to save generated images
-- Use `compose_images` when working with multiple reference images
-- Pro model supports higher resolutions (2K, 4K) and more input images (up to 14)
-```
+> [!TIP]
+> You can use Claude Code to auto-generate this file by asking:
+> ```
+> Read the README.md and create a CLAUDE.md with instructions on using the nanobananapro MCP server
+> ```
