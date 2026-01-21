@@ -71,7 +71,7 @@ class GeminiImageClient:
     def generate_image(
         self,
         prompt: str,
-        model: str = "gemini-2.5-flash-image",
+        model: str = "gemini-3-pro-image-preview",
         aspect_ratio: str | None = None,
         resolution: str | None = None,
         response_modalities: list[str] | None = None,
@@ -105,7 +105,7 @@ class GeminiImageClient:
         self,
         prompt: str,
         image_path: str | Path,
-        model: str = "gemini-2.5-flash-image",
+        model: str = "gemini-3-pro-image-preview",
         aspect_ratio: str | None = None,
         resolution: str | None = None,
     ) -> ImageGenerationResult:
@@ -152,11 +152,10 @@ class GeminiImageClient:
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
 
-        # Validate image count
-        max_images = 14 if model == "gemini-3-pro-image-preview" else 3
-        if len(image_paths) > max_images:
+        # Validate image count (Pro supports up to 14)
+        if len(image_paths) > 14:
             raise ValueError(
-                f"Model {model} supports max {max_images} images, got {len(image_paths)}"
+                f"Maximum 14 images supported, got {len(image_paths)}"
             )
 
         images = [Image.open(p) for p in image_paths]
