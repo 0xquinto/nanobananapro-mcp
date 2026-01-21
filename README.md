@@ -187,7 +187,3 @@ This project uses the Nano Banana Pro MCP server for image generation.
 - Use `compose_images` when working with multiple reference images
 - Pro model supports higher resolutions (2K, 4K) and more input images (up to 14)
 ```
-
-## License
-
-MIT
