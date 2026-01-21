@@ -157,10 +157,15 @@ GEMINI_API_KEY=your-key uv run python -m nanobananapro_mcp
 
 ## CLAUDE.md Configuration
 
-For better Claude Code integration, create a `CLAUDE.md` file in your project root with instructions about the MCP server. This helps Claude understand the available tools and how to use them.
+For better Claude Code integration, add instructions about the MCP server to your project's `CLAUDE.md` file. This helps Claude understand the available tools and how to use them.
 
 > [!TIP]
-> You can use Claude Code to auto-generate this file by asking:
+> **If you already have a CLAUDE.md:** Ask Claude Code to append the relevant instructions:
+> ```
+> Read the nanobananapro-mcp README and add instructions for using the image generation tools to my CLAUDE.md
+> ```
+>
+> **If you don't have a CLAUDE.md yet:** Ask Claude Code to create one:
 > ```
 > Read the README.md and create a CLAUDE.md with instructions on using the nanobananapro MCP server
 > ```
