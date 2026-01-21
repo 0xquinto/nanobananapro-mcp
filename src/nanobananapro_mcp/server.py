@@ -28,7 +28,11 @@ def get_client() -> GeminiImageClient:
 
 
 def _result_to_dict(result: ImageGenerationResult, output_path: str | None = None) -> dict:
-    """Convert ImageGenerationResult to dict for tool response."""
+    """Convert ImageGenerationResult to dict for tool response.
+
+    When output_path is provided, the image is saved to disk and base64 is NOT
+    included in the response (to avoid exceeding token limits).
+    """
     response = {
         "text": result.text,
         "image_base64": None,
@@ -37,12 +41,14 @@ def _result_to_dict(result: ImageGenerationResult, output_path: str | None = Non
     }
 
     if result.image_data:
-        response["image_base64"] = encode_image_to_base64(result.image_data)
-
         if output_path:
+            # Save to file, skip base64 to keep response small
             path = Path(output_path)
             path.write_bytes(result.image_data)
             response["saved_path"] = str(path.absolute())
+        else:
+            # No output path, include base64 in response
+            response["image_base64"] = encode_image_to_base64(result.image_data)
 
     if result.grounding_metadata:
         response["grounding_metadata"] = result.grounding_metadata
