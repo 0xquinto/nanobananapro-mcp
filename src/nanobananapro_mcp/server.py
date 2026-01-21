@@ -53,7 +53,7 @@ def _result_to_dict(result: ImageGenerationResult, output_path: str | None = Non
 @mcp.tool()
 async def generate_image(
     prompt: str,
-    model: str = "gemini-2.5-flash-image",
+    model: str = "gemini-3-pro-image-preview",
     aspect_ratio: str = "1:1",
     resolution: str = "1K",
     output_path: str | None = None,
@@ -63,9 +63,9 @@ async def generate_image(
 
     Args:
         prompt: Text description of the image to generate
-        model: Model to use - "flash", "pro", or full model name
+        model: Model to use - "pro", "nano-banana-pro", or full model name
         aspect_ratio: Output aspect ratio (1:1, 16:9, 9:16, etc.)
-        resolution: Output resolution (1K, 2K, 4K - Pro only for 2K/4K)
+        resolution: Output resolution (1K, 2K, 4K)
         output_path: Optional path to save the generated image
 
     Returns:
@@ -85,7 +85,7 @@ async def generate_image(
 async def edit_image(
     prompt: str,
     image_path: str,
-    model: str = "gemini-2.5-flash-image",
+    model: str = "gemini-3-pro-image-preview",
     aspect_ratio: str | None = None,
     resolution: str = "1K",
     output_path: str | None = None,
@@ -96,7 +96,7 @@ async def edit_image(
     Args:
         prompt: Instructions for editing the image
         image_path: Path to the input image file
-        model: Model to use - "flash", "pro", or full model name
+        model: Model to use - "pro", "nano-banana-pro", or full model name
         aspect_ratio: Output aspect ratio (optional, defaults to input)
         resolution: Output resolution (1K, 2K, 4K)
         output_path: Optional path to save the edited image
@@ -129,8 +129,8 @@ async def compose_images(
 
     Args:
         prompt: Instructions for composing the images
-        image_paths: List of paths to input images (max 14 for Pro, 3 for Flash)
-        model: Model to use (Pro recommended for multi-image)
+        image_paths: List of paths to input images (max 14)
+        model: Model to use - "pro", "nano-banana-pro", or full model name
         aspect_ratio: Output aspect ratio
         resolution: Output resolution
         output_path: Optional path to save the composed image
