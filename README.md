@@ -1,7 +1,7 @@
 # Nano Banana Pro MCP Server
 
 <p align="center">
-  <img src="assets/indiana_claude_banana_v2.png" alt="Nano Banana Pro - Claude discovers the Golden Banana" width="600">
+  <img src="https://repository-images.githubusercontent.com/1138054882/10229dae-1e05-466f-bb63-4b7455992a5b" alt="Nano Banana Pro - Claude discovers the Golden Banana" width="600">
 </p>
 
 Local MCP server for Gemini 3 Pro image generation (Nano Banana Pro) for use with Claude Code. Designed for local deployment only.

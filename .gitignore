@@ -10,5 +10,5 @@ docs/
 CLAUDE.md
 .claude/mcp.json
 uv.lock
-assets/*
-!assets/indiana_claude_banana_v2.png
+assets/
+scripts/
