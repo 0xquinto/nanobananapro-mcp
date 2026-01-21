@@ -10,14 +10,11 @@ VALID_ASPECT_RATIOS = [
 VALID_RESOLUTIONS = ["1K", "2K", "4K"]
 
 MODEL_ALIASES = {
-    "flash": "gemini-2.5-flash-image",
     "pro": "gemini-3-pro-image-preview",
-    "nano-banana": "gemini-2.5-flash-image",
     "nano-banana-pro": "gemini-3-pro-image-preview",
 }
 
 VALID_MODELS = [
-    "gemini-2.5-flash-image",
     "gemini-3-pro-image-preview",
 ]
 

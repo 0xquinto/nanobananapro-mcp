@@ -8,6 +8,8 @@ from nanobananapro_mcp.utils import (
     validate_aspect_ratio,
     validate_resolution,
     validate_model,
+    MODEL_ALIASES,
+    VALID_MODELS,
 )
 
 
@@ -55,9 +57,6 @@ class TestValidateResolution:
     def test_valid_resolutions(self, res):
         assert validate_resolution(res, model="gemini-3-pro-image-preview") == res
 
-    def test_flash_model_only_supports_1k(self):
-        assert validate_resolution("2K", model="gemini-2.5-flash-image") == "1K"
-
     def test_invalid_resolution_raises(self):
         with pytest.raises(ValueError, match="Invalid resolution"):
             validate_resolution("8K", model="gemini-3-pro-image-preview")
@@ -65,17 +64,34 @@ class TestValidateResolution:
     def test_none_returns_default(self):
         assert validate_resolution(None, model="gemini-3-pro-image-preview") == "1K"
 
+    def test_validate_resolution_allows_all_for_pro(self):
+        model = "gemini-3-pro-image-preview"
+        assert validate_resolution("1K", model) == "1K"
+        assert validate_resolution("2K", model) == "2K"
+        assert validate_resolution("4K", model) == "4K"
+        assert validate_resolution(None, model) == "1K"  # default
+
 
 class TestValidateModel:
-    def test_valid_models(self):
-        assert validate_model("gemini-2.5-flash-image") == "gemini-2.5-flash-image"
-        assert validate_model("gemini-3-pro-image-preview") == "gemini-3-pro-image-preview"
+    def test_valid_models_only_contains_pro(self):
+        assert VALID_MODELS == ["gemini-3-pro-image-preview"]
 
-    def test_aliases(self):
-        assert validate_model("flash") == "gemini-2.5-flash-image"
+    def test_model_aliases_only_pro(self):
+        assert "flash" not in MODEL_ALIASES
+        assert "nano-banana" not in MODEL_ALIASES
+        assert MODEL_ALIASES["pro"] == "gemini-3-pro-image-preview"
+        assert MODEL_ALIASES["nano-banana-pro"] == "gemini-3-pro-image-preview"
+
+    def test_validate_model_rejects_flash(self):
+        with pytest.raises(ValueError, match="Invalid model"):
+            validate_model("flash")
+        with pytest.raises(ValueError, match="Invalid model"):
+            validate_model("gemini-2.5-flash-image")
+
+    def test_validate_model_accepts_pro(self):
         assert validate_model("pro") == "gemini-3-pro-image-preview"
-        assert validate_model("nano-banana") == "gemini-2.5-flash-image"
         assert validate_model("nano-banana-pro") == "gemini-3-pro-image-preview"
+        assert validate_model("gemini-3-pro-image-preview") == "gemini-3-pro-image-preview"
 
     def test_invalid_model_raises(self):
         with pytest.raises(ValueError, match="Invalid model"):
