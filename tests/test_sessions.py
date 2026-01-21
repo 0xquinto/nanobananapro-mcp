@@ -37,7 +37,7 @@ class TestChatSessionManager:
         manager = ChatSessionManager()
         with patch("nanobananapro_mcp.sessions.GeminiImageClient"):
             id1 = manager.create_session(model="gemini-3-pro-image-preview")
-            id2 = manager.create_session(model="gemini-2.5-flash-image")
+            id2 = manager.create_session(model="pro")
             sessions = manager.list_sessions()
             assert id1 in sessions
             assert id2 in sessions
