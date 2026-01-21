@@ -1,4 +1,4 @@
-![Nano Banana Pro - Claude discovers the Golden Banana](assets/indiana_claude_banana_hero.png)
+![Nano Banana Pro - Claude discovers the Golden Banana](assets/indiana_claude_banana_v2.png)
 
 # Nano Banana Pro MCP Server
 
