@@ -19,7 +19,7 @@ class TestGenerateImageTool:
 
             result = await generate_image(
                 prompt="A sunset over mountains",
-                model="flash",
+                model="pro",
                 aspect_ratio="16:9",
             )
 

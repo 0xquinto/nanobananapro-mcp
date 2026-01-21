@@ -18,7 +18,7 @@ class TestIntegration:
 
         result = await generate_image(
             prompt="A simple red circle on white background",
-            model="flash",
+            model="pro",
             aspect_ratio="1:1",
             output_path=str(tmp_path / "test.png"),
         )
@@ -38,7 +38,7 @@ class TestIntegration:
         # Start session
         start_result = await start_image_chat(
             initial_prompt="Create a simple blue square",
-            model="flash",
+            model="pro",
         )
         assert "session_id" in start_result
 
