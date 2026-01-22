@@ -190,6 +190,7 @@ async def search_grounded_image(
 async def start_image_chat(
     initial_prompt: str,
     model: str = "gemini-3-pro-image-preview",
+    output_path: str | None = None,
 ) -> dict:
     """
     Start a new multi-turn image editing session.
@@ -197,6 +198,7 @@ async def start_image_chat(
     Args:
         initial_prompt: First prompt to generate the initial image
         model: Model to use for the session
+        output_path: Optional path to save the generated image
 
     Returns:
         Dict with session_id and initial generation result
@@ -205,12 +207,9 @@ async def start_image_chat(
     session = session_manager.get_session(session_id)
     result = session.send_message(initial_prompt)
 
-    return {
-        "session_id": session_id,
-        "text": result.text,
-        "image_base64": encode_image_to_base64(result.image_data) if result.image_data else None,
-        "mime_type": result.mime_type,
-    }
+    result_dict = _result_to_dict(result, output_path)
+    result_dict["session_id"] = session_id
+    return result_dict
 
 
 @mcp.tool()
@@ -219,6 +218,7 @@ async def continue_image_chat(
     prompt: str,
     aspect_ratio: str | None = None,
     resolution: str | None = None,
+    output_path: str | None = None,
 ) -> dict:
     """
     Continue an existing image chat session.
@@ -228,6 +228,7 @@ async def continue_image_chat(
         prompt: Next instruction for image modification
         aspect_ratio: Optional new aspect ratio
         resolution: Optional new resolution
+        output_path: Optional path to save the generated image
 
     Returns:
         Dict with updated image and text response
@@ -239,13 +240,10 @@ async def continue_image_chat(
         resolution=resolution,
     )
 
-    return {
-        "session_id": session_id,
-        "text": result.text,
-        "image_base64": encode_image_to_base64(result.image_data) if result.image_data else None,
-        "mime_type": result.mime_type,
-        "turn_count": len(session.history) // 2,
-    }
+    result_dict = _result_to_dict(result, output_path)
+    result_dict["session_id"] = session_id
+    result_dict["turn_count"] = len(session.history) // 2
+    return result_dict
 
 
 @mcp.tool()
