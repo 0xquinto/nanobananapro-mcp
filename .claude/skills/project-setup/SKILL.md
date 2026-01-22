@@ -4,7 +4,7 @@ description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
   and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product]"
+argument-hint: "[project-name] [--type=brand|campaign|character|product] | validate [path]"
 ---
 
 # Project Setup
@@ -374,3 +374,53 @@ This skill creates files that other skills detect and use:
 | Directory exists | "Project `[name]` already exists. Use a different name or delete the existing folder." |
 | Invalid type | "Unknown type `[type]`. Valid types: brand, campaign, character, product" |
 | No write permission | "Cannot create project here. Check folder permissions." |
+
+## Subcommands
+
+### /project-setup validate
+
+Check project structure integrity and report issues.
+
+**Usage:**
+```bash
+/project-setup validate
+/project-setup validate ./my-project
+```
+
+**Checks performed:**
+
+| Check | Pass | Fail |
+|-------|------|------|
+| style-guide.md exists | ✓ Found | ⚠ Missing — run `/project-setup` to create |
+| style-library.md exists | ✓ Found | ⚠ Missing — will use root library |
+| outputs/ directory | ✓ Found | ⚠ Missing — will be created on first generation |
+| references/ directory | ✓ Found | ℹ Missing — optional, create if using `--refs` |
+| asset-log.md exists | ✓ Found | ⚠ Missing — create for tracking |
+| style-guide.md has content | ✓ Populated | ⚠ Template only — customize for your project |
+| style-library.md has presets | ✓ Has presets | ℹ Empty — use `/capture-trends` to populate |
+
+**Output format:**
+
+```
+## Project Validation: [project-name]
+
+✓ style-guide.md — Found, customized
+✓ style-library.md — Found, 3 presets
+✓ outputs/exploration/ — Found
+✓ outputs/finals/ — Found
+⚠ references/ — Missing (optional)
+✓ asset-log.md — Found
+
+**Status: Ready** (1 optional item missing)
+
+Suggestions:
+- Create `references/` if you plan to use reference images
+```
+
+**Validation states:**
+
+| State | Meaning |
+|-------|---------|
+| ✓ Ready | All required files present and populated |
+| ⚠ Needs attention | Missing required files or uncustomized templates |
+| ✗ Not a project | No project markers found |
