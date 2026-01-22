@@ -428,8 +428,16 @@ If in a project with proper structure:
 
 **Log to asset-log.md:**
 ```markdown
-| 2026-01-21 | wizard-hero | Elderly wizard casting spell at twilight... | generate_image | approved | outputs/finals/wizard-hero-v3.png |
+| 2026-01-21 | wizard-hero | Elderly wizard casting spell at twilight... | generate_image | approved | internal | outputs/finals/wizard-hero-v3.png |
 ```
+
+**Approval column values:**
+- `—` — No approval yet (exploration)
+- `internal` — Team approved
+- `client` — Client/external approved
+- `[name]` — Specific approver name
+
+When user says "approved" or "client approved", update both Status and Approval columns.
 
 ## Project Awareness Details
 
