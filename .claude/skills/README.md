@@ -237,6 +237,27 @@ project-name/
 └── asset-log.md             # Generation tracking
 ```
 
+## Flag Syntax Standard
+
+All skills follow consistent flag patterns:
+
+| Pattern | Type | Example | Meaning |
+|---------|------|---------|---------|
+| `--flag` | Boolean | `--chat`, `--quick` | Enables a feature |
+| `--flag=<value>` | Value | `--style=cinematic` | Sets a parameter |
+
+**Common flags across skills:**
+
+| Flag | Available In | Description |
+|------|--------------|-------------|
+| `--style=<preset>` | image-prompt, enhance-prompt | Apply style from style-library.md |
+| `--project=<path>` | image-prompt, enhance-prompt | Use specific project context |
+| `--quick` | enhance-prompt | Skip interactive questions |
+| `--generate` | enhance-prompt | Generate image after enhancing |
+| `--chat` | image-prompt | Enable iterative refinement session |
+
+---
+
 ## Project Context
 
 Skills are project-aware. When inside a project directory (one containing `style-guide.md`, `style-library.md`, `outputs/`, or `references/`):
