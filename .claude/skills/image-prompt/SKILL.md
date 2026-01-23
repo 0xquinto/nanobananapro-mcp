@@ -291,6 +291,48 @@ Write as natural flowing prose, 2-4 sentences. Group related elements. Never use
 
 ## Process Steps
 
+### Step 0: Intent Extraction
+
+**Always ask first**, before any other processing:
+
+> "What should the viewer feel when they see this image?"
+
+This question surfaces emotional intent before diving into technical details. Store the response for use in:
+- Enhancement (bias choices toward stated intent)
+- Taste check (flag contradictions)
+- Post-generation critique (evaluate against intent)
+
+**Common responses and enhancement bias:**
+
+| Intent | Enhancement Direction |
+|--------|----------------------|
+| "peaceful" | Soft light, muted colors, open space, horizontal lines |
+| "tense" | High contrast, tight framing, diagonal lines, shadows |
+| "nostalgic" | Warm tones, film grain, soft focus, golden hour |
+| "energetic" | Saturated colors, dynamic angles, motion blur |
+| "mysterious" | Low key lighting, partial reveals, fog/atmosphere |
+| "intimate" | Close framing, shallow DOF, warm palette |
+| "epic" | Wide angle, dramatic scale, strong verticals |
+
+**If user skips or says "I don't know":**
+- Proceed with gap analysis
+- Infer intent from concept if possible
+- Note that intent was not explicitly stated (affects critique step)
+
+**Example:**
+
+```
+User: /image-prompt a lighthouse
+
+Bot: What should the viewer feel when they see this image?
+
+User: lonely but hopeful
+
+[Proceeds to gap analysis, biasing toward: isolated subject,
+cool tones with warm accent (lighthouse light), wide composition
+with negative space, dusk/dawn timing]
+```
+
 ### Step 1: Parse Input
 
 Extract from the user's request:
