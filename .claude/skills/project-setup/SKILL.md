@@ -428,6 +428,97 @@ This skill creates files that other skills detect and use:
 | `outputs/` | `/image-prompt` (saves here) |
 | `asset-log.md` | `/image-prompt` (logs generations) |
 
+## Example Session
+
+Complete interactive example showing project creation:
+
+```
+User: /project-setup
+
+Claude: What's the project name? (This creates the folder)
+
+User: coastal-retreat-brand
+
+Claude: What type of project is this?
+1. Brand identity (logos, colors, visual system)
+2. Marketing campaign (ads, social, promotional)
+3. Character design (characters, expressions, poses)
+4. Product photography (product shots, lifestyle images)
+
+User: 1
+
+Claude: Describe the visual style you're going for in a few words
+
+User: serene, natural, upscale coastal living
+
+Claude: Any specific colors or color mood?
+
+User: ocean blues, sandy beiges, weathered white, touches of coral
+
+Claude: What visual medium fits best?
+1. Photography (realistic)
+2. Illustration (artistic)
+3. 3D Render (digital)
+4. Mixed/Flexible
+
+User: 1
+
+Claude: Anything to specifically avoid? (competitors, styles, elements)
+
+User: no tropical/tacky beach vibes, avoid neon colors, don't look like generic resort marketing
+
+Claude:
+## Project Created: coastal-retreat-brand
+
+### Structure
+✓ style-guide.md - Ready for customization
+✓ style-library.md - 5 starter presets added
+✓ references/moodboards/
+✓ references/characters/
+✓ references/inspiration/
+✓ outputs/exploration/
+✓ outputs/finals/
+✓ asset-log.md - Ready for tracking
+
+### Next Steps
+1. Add reference images to `references/inspiration/`
+2. Review and customize `style-guide.md`
+3. Use `/capture-trends` on references to populate style library
+4. Start generating with `/image-prompt`
+
+### Quick Start
+Try: `/image-prompt a hero image for coastal retreat --style=project-main`
+```
+
+### Quick Mode Example
+
+```
+User: /project-setup summer-campaign --type=campaign --quick
+
+Claude:
+## Project Created: summer-campaign
+
+### Structure
+✓ style-guide.md - Created with defaults (customize recommended)
+✓ style-library.md - 5 starter presets added
+✓ references/moodboards/
+✓ references/inspiration/
+✓ outputs/exploration/
+✓ outputs/finals/
+✓ asset-log.md - Ready for tracking
+
+### Defaults Applied
+- Style: clean and modern
+- Colors: neutral palette with one accent color
+- Medium: Photography
+- Constraints: none specified
+
+### Next Steps
+1. Customize `style-guide.md` with your specific requirements
+2. Add reference images to `references/`
+3. Start generating with `/image-prompt`
+```
+
 ## Error Handling
 
 | Situation | Response |
