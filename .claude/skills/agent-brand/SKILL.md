@@ -1576,13 +1576,21 @@ All decisions saved to .claude/local/agent-state.json
 
 ## Examples
 
-### Complete Phase 1a + 1b Flow
+### Complete Flow with Skill Chaining
 
 ```
 User: /agent brand "boutique yoga studio focused on mindfulness"
 
 Agent: I'll help create a brand identity for your boutique yoga studio
-       focused on mindfulness. Let me research some style directions.
+       focused on mindfulness. First, let me set up the project structure.
+
+       [Invokes Skill(skill="project-setup", args="boutique-yoga-studio --type=brand --quick")]
+
+       Project structure created for "Boutique Yoga Studio".
+       - Style guide: style-guide.md
+       - Outputs: outputs/exploration/
+
+       Now let me research some style directions.
 
        [Spawns research worker]
 
@@ -1610,11 +1618,9 @@ Agent: Perfect! Serene Minimalist direction selected.
 
        ✓ Phase 1a complete: Style direction chosen
 
-       Moving to Phase 1b: Color Palette generation
+       [Saves state and proceeds to Phase 1b]
 
-       [Saves state]
-
-Agent: Now let's develop color palettes that match the Serene Minimalist style.
+       Now let's develop color palettes that match the Serene Minimalist style.
 
        [Spawns palette worker]
 
@@ -1655,9 +1661,59 @@ Agent: Excellent! Warm Minimal selected.
 
        ✓ Phase 1b complete: Color palette chosen
 
-       [Phase 1c: Logo Concepts - coming soon]
+       [Invokes Skill(skill="style-library", args="add warm-minimal-palette \"...\"")]
+
+       Palette "Warm Minimal" saved to style library as "warm-minimal-palette".
+       You can use --style=warm-minimal-palette in future image generation.
+
+       Moving to Phase 1c: Logo Concepts generation
+
+       [Spawns logo concept worker]
+
+Agent: I have 3 logo concepts. Now enhancing prompts for optimal generation.
+
+       [For each concept:
+        - Invokes Skill(skill="enhance-prompt", args="--quick")
+        - Invokes Skill(skill="taste-check", args="--taste=medium")
+        - Spawns logo generation worker with enhanced prompt]
+
+Agent: Here are 3 logo concepts for your yoga studio:
+
+       1. **Lotus Circle**
+          A minimalist lotus flower within a perfect circle, using the
+          warm cream (#F0EBE3) background with sand brown (#B5A393)
+          linework. Simple, centered, meditative.
+          [Image: outputs/exploration/logo-1-lotus-circle.png]
+
+       2. **Breath Mark**
+          Abstract curved lines suggesting breath flow, rendered in
+          greige (#CFC7BC) on cream (#F8F6F3). Modern, subtle,
+          captures the essence of mindful breathing.
+          [Image: outputs/exploration/logo-2-breath-mark.png]
+
+       3. **Calm Script**
+          Studio name in a refined, airy sans-serif with a single
+          delicate accent mark. Text in dark gray (#45423E) on warm
+          white (#F0EBE3). Elegant, readable, timeless.
+          [Image: outputs/exploration/logo-3-calm-script.png]
+
+       Which logo concept works best for your brand? (1, 2, 3, or describe modifications)
+
+User: 2
+
+Agent: Beautiful choice! Breath Mark logo selected.
+
+       ✓ Phase 1c complete: Logo concept chosen
 
        [Saves updated state]
+
+       Brand identity Phase 1 complete! Your decisions:
+       • Style: Serene Minimalist
+       • Palette: Warm Minimal (saved as "warm-minimal-palette")
+       • Logo: Breath Mark
+
+       Ready for Phase 2: Product Designs? Just say "what's next" or describe
+       what products you'd like to create.
 ```
 
 ### Complete Phase 1a Flow (Simple)
