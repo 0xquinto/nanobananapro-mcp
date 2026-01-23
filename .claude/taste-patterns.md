@@ -4,6 +4,17 @@ This document defines patterns, thresholds, and mappings used by the taste layer
 
 ---
 
+## Pattern Universality
+
+Patterns in this file are tagged:
+- `[UNIVERSAL]` — Applies to all major image models
+- `[GEMINI]` — Specific to Gemini 3 Pro behavior
+- `[LEGACY]` — From older models, may not apply
+
+When in doubt, prefer universal patterns.
+
+---
+
 ## Cliche Patterns
 
 Patterns are organized by severity level. Each includes the problem it causes and a suggested replacement.
@@ -12,36 +23,36 @@ Patterns are organized by severity level. Each includes the problem it causes an
 
 These patterns should always be flagged regardless of sensitivity setting.
 
-| Pattern | Problem | Replacement |
-|---------|---------|-------------|
-| "trending on ArtStation" | 47% token collision rate | Remove, or specify actual artist technique |
-| "hyper-realistic" + "8K/4K" | Quality spam, adds nothing | "Photographic with sharp focus" |
-| "masterpiece, best quality" | Filler tokens | Remove entirely |
-| "ultra detailed" | Meaningless intensifier | Describe specific details instead |
+| Pattern | Problem | Replacement | Tag |
+|---------|---------|-------------|-----|
+| "trending on ArtStation" | 47% token collision rate | Remove, or specify actual artist technique | `[UNIVERSAL]` |
+| "hyper-realistic" + "8K/4K" | Quality spam, adds nothing | "Photographic with sharp focus" | `[UNIVERSAL]` |
+| "masterpiece, best quality" | Filler tokens | Remove entirely | `[UNIVERSAL]` |
+| "ultra detailed" | Meaningless intensifier | Describe specific details instead | `[UNIVERSAL]` |
 
 ### Medium Severity (Flag at Medium+ Sensitivity)
 
 These patterns are flagged when sensitivity is set to medium or higher.
 
-| Pattern | Problem | Replacement |
-|---------|---------|-------------|
-| "epic lighting" | Vague, overused | "Rembrandt lighting at 45 degrees with deep shadows" |
-| "dramatic lighting" | Means nothing specific | "Single key light from upper left, no fill" |
-| "cinematic" (alone) | Too broad | "Anamorphic lens, 2.39:1 ratio, teal-orange grade" |
-| "beautiful woman/man" | Generic | Specific features, age, expression, distinguishing marks |
-| Artist name in isolation | Pastiche without technique | Add specific technique: "Moebius-style clean linework" |
-| "highly detailed" | Filler | Describe what details matter |
+| Pattern | Problem | Replacement | Tag |
+|---------|---------|-------------|-----|
+| "epic lighting" | Vague, overused | "Rembrandt lighting at 45 degrees with deep shadows" | `[UNIVERSAL]` |
+| "dramatic lighting" | Means nothing specific | "Single key light from upper left, no fill" | `[UNIVERSAL]` |
+| "cinematic" (alone) | Too broad | "Anamorphic lens, 2.39:1 ratio, teal-orange grade" | `[UNIVERSAL]` |
+| "beautiful woman/man" | Generic | Specific features, age, expression, distinguishing marks | `[UNIVERSAL]` |
+| Artist name in isolation | Pastiche without technique | Add specific technique: "Moebius-style clean linework" | `[UNIVERSAL]` |
+| "highly detailed" | Filler | Describe what details matter | `[UNIVERSAL]` |
 
 ### Low Severity (Flag at High Sensitivity Only)
 
 These patterns are only flagged when sensitivity is set to high.
 
-| Pattern | Problem | Replacement |
-|---------|---------|-------------|
-| "ethereal" | Overused in AI art | Describe specific light quality |
-| "mysterious" | Telling not showing | Describe what creates the mystery |
-| "glowing" | AI art cliche | Specify light source and behavior |
-| "stunning" | Empty superlative | Remove or specify what makes it striking |
+| Pattern | Problem | Replacement | Tag |
+|---------|---------|-------------|-----|
+| "ethereal" | Overused in AI art | Describe specific light quality | `[UNIVERSAL]` |
+| "mysterious" | Telling not showing | Describe what creates the mystery | `[UNIVERSAL]` |
+| "glowing" | AI art cliche | Specify light source and behavior | `[UNIVERSAL]` |
+| "stunning" | Empty superlative | Remove or specify what makes it striking | `[UNIVERSAL]` |
 
 ---
 

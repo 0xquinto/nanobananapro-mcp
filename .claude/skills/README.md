@@ -367,6 +367,12 @@ Skills are project-aware. When inside a project directory (one containing `style
 - `--project=<path>` — Use specific project
 - `--root` — Use root style-library.md
 
+## Pattern Documentation
+
+For understanding which prompt patterns are Gemini-specific vs. universal:
+- **[gemini-patterns.md](../gemini-patterns.md)** — Model-specific behaviors
+- **[taste-patterns.md](../taste-patterns.md)** — Cliché detection patterns (tagged by universality)
+
 ## MCP Tools Used
 
 These skills orchestrate the nanobananapro MCP tools:
