@@ -2158,6 +2158,54 @@ Phase 1a, 1b, 1c, and Phase 2 are now complete. Future phases can follow the sam
 - Workers should not spawn sub-workers (flat hierarchy)
 - Workers return findings to orchestrator, not to user directly
 
+## Skill Chaining
+
+Agent-brand chains to these local skills during execution:
+
+| Phase | Skill | Purpose | Required? |
+|-------|-------|---------|-----------|
+| Start | `project-setup --type=brand --quick` | Scaffold project directories and files | Yes (new projects) |
+| After 1b | `style-library add` | Save palette as reusable preset | Yes |
+| Phase 1c | `enhance-prompt --quick` | Optimize logo prompts using 6-element formula | Yes |
+| Phase 1c | `taste-check --taste=medium` | Validate prompts for clichés and specificity | Yes |
+| Phase 2 | `enhance-prompt` | Optimize product design prompts | Yes |
+
+### Why Chain Instead of Implement Inline?
+
+1. **DRY** - Enhancement logic lives in one place (`enhance-prompt`)
+2. **Consistency** - All image prompts use the same 6-element formula
+3. **Quality** - Taste checks catch clichés across all workflows
+4. **Maintainability** - Skill updates automatically improve agent-brand
+5. **Reusability** - Saved palettes work with any image skill
+
+### How Chaining Works
+
+The orchestrator invokes skills using the Skill tool:
+
+```
+Skill(skill="enhance-prompt", args="--quick")
+```
+
+The skill's output becomes input for subsequent steps. For example:
+
+1. Orchestrator extracts logo concept details from worker output
+2. Orchestrator invokes `enhance-prompt` with concept details
+3. Enhance-prompt returns optimized prompt
+4. Orchestrator invokes `taste-check` with optimized prompt
+5. Taste-check returns validated/fixed prompt
+6. Orchestrator spawns generation worker with final prompt
+
+### Error Handling for Skill Chains
+
+| Skill Failure | Recovery Action |
+|---------------|-----------------|
+| project-setup fails | Create directories manually with mkdir, inform user |
+| enhance-prompt fails | Fall back to inline enhancement (log warning) |
+| taste-check fails | Proceed with unvalidated prompt (log warning) |
+| style-library add fails | Continue without saving (inform user) |
+
+Never block the workflow for non-critical skill failures. Log warnings and continue.
+
 ## Future Enhancements
 
 Beyond Phase 1c:
