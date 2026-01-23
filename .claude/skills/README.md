@@ -14,6 +14,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 | [style-library](#style-library) | `/style-library` | Manage style presets |
 | [capture-trends](#capture-trends) | `/capture-trends` | Extract styles from references |
 | [project-setup](#project-setup) | `/project-setup` | Scaffold visual projects |
+| [agent-brand](#agent-brand) | `/agent brand` | **Agent:** Guided brand identity creation |
 
 ## Workflow Overview
 
@@ -22,14 +23,17 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
                     │   quickstart    │ ← Start here if new
                     └────────┬────────┘
                              │
-                             ▼
-                    ┌─────────────────┐
-                    │  project-setup  │ ← Or here for multi-image projects
-                    └────────┬────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-         ▼                   ▼                   ▼
+            ┌────────────────┴────────────────┐
+            │                                 │
+            ▼                                 ▼
+   ┌─────────────────┐               ┌─────────────────┐
+   │  project-setup  │               │  agent-brand    │ ← Multi-step brand identity
+   │  (manual)       │               │  (guided agent) │   (style→palette→logo)
+   └────────┬────────┘               └─────────────────┘
+            │
+         ┌──┴───────────────┬───────────────────┐
+         │                  │                   │
+         ▼                  ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
 │ capture-trends  │ │  style-library  │ │ enhance-prompt  │
 │ (from refs)     │ │ (manage presets)│ │ (improve ideas) │
@@ -55,7 +59,8 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 
 **Entry points:**
 - **New to image generation?** → Start with `/quickstart`
-- **Multi-image project (brand, campaign)?** → Start with `/project-setup`
+- **Want a complete brand identity?** → Use `/agent brand` (guided workflow)
+- **Multi-image project (campaign, product)?** → Start with `/project-setup`
 - **Just want one image?** → Jump straight to `/image-prompt`
 
 **Preparation layer (optional):**
@@ -73,6 +78,9 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 ### Decision Logic
 
 ```
+"I want a complete brand identity"
+  → /agent brand "description" — Guided 3-phase workflow (style, palette, logo)
+
 "I want an image"
   → Is this part of a larger project?
     → Yes → /project-setup first
@@ -327,6 +335,76 @@ project-name/
 │   └── finals/              # Approved assets
 └── asset-log.md             # Generation tracking
 ```
+
+---
+
+### agent-brand
+
+**Guided brand identity agent.** Orchestrates a complete brand identity workflow through 3 phases with checkpoints at each decision point.
+
+```bash
+# Start a new brand identity project
+/agent brand "artisan coffee shop"
+/agent brand "boutique yoga studio focused on mindfulness"
+
+# Resume a previous session
+/agent brand --resume
+
+# Navigation during session
+/agent show      # Redisplay current options
+/agent back      # Return to previous phase
+```
+
+**Workflow Phases:**
+
+| Phase | What Happens | Output |
+|-------|--------------|--------|
+| **1a: Style Direction** | Research 3 visual style directions | Selected style (e.g., "Modern Minimal") |
+| **1b: Color Palette** | Generate 3 palette variations | Selected palette with hex codes |
+| **1c: Logo Concepts** | Create 3 logo concepts + images | Selected logo image |
+
+**How It Works:**
+- Agent proposes options at each phase
+- You select or request refinements
+- Agent saves checkpoints for resumption
+- Uses Task tool workers for research and generation
+
+**Navigation Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `/agent show` | Redisplay current options without regenerating |
+| `/agent back` | Return to previous checkpoint |
+| `/agent brand --resume` | Continue from saved state |
+
+**State Persistence:**
+- State saved to `.claude/local/agent-state.json`
+- Resume anytime with `--resume` flag
+- First-run shows onboarding, subsequent runs skip it
+
+**Example Session:**
+```
+User: /agent brand "artisan coffee shop"
+
+Agent: [Researches style directions]
+       Here are 3 style directions:
+       1. Rustic Craftsman - warm browns, vintage feel
+       2. Modern Minimal - clean lines, earth tones
+       3. Botanical Organic - green accents, natural textures
+
+       Which direction? (1, 2, 3, or describe something different)
+
+User: 2
+
+Agent: Modern Minimal selected. Generating palette options...
+       [Continues to Phase 1b]
+```
+
+**Architecture:**
+- Orchestrator skill (never generates images directly)
+- Task tool workers for research and generation
+- Flat hierarchy (workers don't spawn sub-workers)
+- Natural language communication between workers and orchestrator
 
 ## Flag Syntax Standard
 
