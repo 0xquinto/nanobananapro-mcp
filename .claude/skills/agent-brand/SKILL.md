@@ -8,6 +8,26 @@ argument-hint: "brand description" [--resume]
 
 Orchestrates complex brand identity projects through guided collaboration. This agent researches style directions, proposes visual options, and coordinates image generation workers - but never generates images directly. All generation is delegated to specialized Task tool workers.
 
+## How to Use
+
+**Starting a new project:**
+```
+/agent brand "description of your brand"
+```
+
+**Navigation during the session:**
+Once the skill is active, you interact naturally with the agent. The agent maintains state across messages in the same conversation. Navigation commands (like `/agent show`, `/agent back`, `/agent status`) are planned but not yet implemented - for now, simply respond to the agent's prompts.
+
+**Example:**
+```
+User: /agent brand "artisan coffee shop"
+Agent: [Presents style directions]
+User: I like option 2
+Agent: [Proceeds with your selection]
+```
+
+The skill maintains context throughout the conversation, so you can refine choices and ask questions naturally.
+
 ## Workflow Overview
 
 ```
@@ -265,7 +285,7 @@ Workers return natural language. Orchestrator must parse:
 
 Not fully implemented yet. When implemented:
 
-**State File:** `.agent-brand-state.json`
+**State File:** `.claude/local/agent-state.json`
 
 ```json
 {
@@ -360,11 +380,11 @@ Agent: Based on mindfulness-focused yoga studio aesthetics, here are 3
 
 User: I like 1 but can it be a bit warmer?
 
-Agent: /agent tweak "make Serene Minimalist warmer"
+Agent: Absolutely. Let me refine the Serene Minimalist direction with warmer tones.
 
-       [This command is planned but not implemented - for now, respond directly]
+       [Spawns modified research task]
 
-Agent: Absolutely. Let me adjust the Serene Minimalist direction:
+Agent: Here's the adjusted direction:
 
        **Serene Minimalist (Warm)**
        Warm whites, soft beige, pale peach accents, generous space,
