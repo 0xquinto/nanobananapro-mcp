@@ -352,6 +352,7 @@ All skills follow consistent flag patterns:
 | `--accessibility` | taste-check | Include accessibility-focused checks |
 | `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
 | `--format=<fmt>` | image-prompt, taste-check, prompt-anatomy | Output format (human, json) |
+| `--seed=<n>` | image-prompt | Seed for reproducible generation (0-2147483647) |
 | `--lock` | project-setup | Lock current style-guide.md version |
 | `--unlock` | project-setup | Unlock style-guide.md for editing |
 

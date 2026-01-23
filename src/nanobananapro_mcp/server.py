@@ -9,7 +9,7 @@ from mcp.server.fastmcp import FastMCP
 
 from .client import GeminiImageClient, ImageGenerationResult
 from .sessions import ChatSessionManager
-from .utils import encode_image_to_base64
+from .utils import encode_image_to_base64, validate_seed
 
 # Initialize FastMCP server
 mcp = FastMCP("nanobananapro")
@@ -63,6 +63,7 @@ async def generate_image(
     aspect_ratio: str = "1:1",
     resolution: str = "1K",
     output_path: str | None = None,
+    seed: int | None = None,
 ) -> dict:
     """
     Generate an image from a text prompt.
@@ -73,16 +74,19 @@ async def generate_image(
         aspect_ratio: Output aspect ratio (1:1, 16:9, 9:16, etc.)
         resolution: Output resolution (1K, 2K, 4K)
         output_path: Optional path to save the generated image
+        seed: Optional seed for reproducible generation (0 to 2147483647)
 
     Returns:
         Dict with text response, base64 image data, and saved path if applicable
     """
+    validated_seed = validate_seed(seed)
     client = get_client()
     result = client.generate_image(
         prompt=prompt,
         model=model,
         aspect_ratio=aspect_ratio,
         resolution=resolution,
+        seed=validated_seed,
     )
     return _result_to_dict(result, output_path)
 
@@ -95,6 +99,7 @@ async def edit_image(
     aspect_ratio: str | None = None,
     resolution: str = "1K",
     output_path: str | None = None,
+    seed: int | None = None,
 ) -> dict:
     """
     Edit an existing image using a text prompt.
@@ -106,10 +111,12 @@ async def edit_image(
         aspect_ratio: Output aspect ratio (optional, defaults to input)
         resolution: Output resolution (1K, 2K, 4K)
         output_path: Optional path to save the edited image
+        seed: Optional seed for reproducible generation (0 to 2147483647)
 
     Returns:
         Dict with text response, base64 image data, and saved path if applicable
     """
+    validated_seed = validate_seed(seed)
     client = get_client()
     result = client.edit_image(
         prompt=prompt,
@@ -117,6 +124,7 @@ async def edit_image(
         model=model,
         aspect_ratio=aspect_ratio,
         resolution=resolution,
+        seed=validated_seed,
     )
     return _result_to_dict(result, output_path)
 
@@ -129,6 +137,7 @@ async def compose_images(
     aspect_ratio: str = "1:1",
     resolution: str = "2K",
     output_path: str | None = None,
+    seed: int | None = None,
 ) -> dict:
     """
     Compose a new image from multiple reference images.
@@ -140,10 +149,12 @@ async def compose_images(
         aspect_ratio: Output aspect ratio
         resolution: Output resolution
         output_path: Optional path to save the composed image
+        seed: Optional seed for reproducible generation (0 to 2147483647)
 
     Returns:
         Dict with text response, base64 image data, and saved path if applicable
     """
+    validated_seed = validate_seed(seed)
     client = get_client()
     result = client.compose_images(
         prompt=prompt,
@@ -151,6 +162,7 @@ async def compose_images(
         model=model,
         aspect_ratio=aspect_ratio,
         resolution=resolution,
+        seed=validated_seed,
     )
     return _result_to_dict(result, output_path)
 
@@ -191,6 +203,7 @@ async def start_image_chat(
     initial_prompt: str,
     model: str = "gemini-3-pro-image-preview",
     output_path: str | None = None,
+    seed: int | None = None,
 ) -> dict:
     """
     Start a new multi-turn image editing session.
@@ -199,10 +212,14 @@ async def start_image_chat(
         initial_prompt: First prompt to generate the initial image
         model: Model to use for the session
         output_path: Optional path to save the generated image
+        seed: Optional seed for reproducible generation (0 to 2147483647).
+              Note: Seed support in chat sessions depends on the underlying API.
 
     Returns:
         Dict with session_id and initial generation result
     """
+    # Validate seed (reserved for future API support in chat sessions)
+    validated_seed = validate_seed(seed)
     session_id = session_manager.create_session(model=model)
     session = session_manager.get_session(session_id)
     result = session.send_message(initial_prompt)

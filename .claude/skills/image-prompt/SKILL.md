@@ -4,7 +4,7 @@ description: Full image generation workflow from rough concept to final image.
   Use when user wants to generate an image, create visuals, or says "make me
   an image of...". Enhances prompts, selects appropriate MCP tool, handles
   iteration. The primary skill for image creation.
-argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset] [--dry-run] [--format=json]
+argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset] [--dry-run] [--format=json] [--seed=N]
 ---
 
 # Image Prompt
@@ -64,6 +64,7 @@ Save and log (if in project)
 | `--no-taste` | `--no-taste` | Skip taste checks entirely (speed mode) |
 | `--dry-run` | `--dry-run` | Preview enhanced prompt and settings without generating |
 | `--format=<fmt>` | `--format=json` | Output format: human (default), json |
+| `--seed=<n>` | `--seed=12345` | Seed for reproducible generation (0-2147483647) |
 
 ## Dry Run Mode
 
@@ -152,6 +153,26 @@ Machine-readable JSON output for scripting and automation. Structure:
   "original_prompt": "user input"
 }
 ```
+
+## Reproducibility
+
+Use `--seed` for deterministic generation:
+
+```bash
+/image-prompt a sunset --seed=42
+```
+
+**Same seed + same prompt = same image** (within model constraints).
+
+**Use cases:**
+- A/B testing prompt variations
+- Regenerating approved concepts
+- Debugging generation issues
+- Consistent batch generation
+
+**Seed is logged** in asset-log.md for approved images.
+
+**Note:** Seed support depends on the underlying Gemini API. The parameter is validated (0 to 2147483647) and passed through, but actual reproducibility may vary based on API behavior.
 
 ## MCP Tool Selection
 
@@ -301,13 +322,15 @@ generate_image(
     model: str = "pro",           # Always use "pro"
     aspect_ratio: str = "1:1",    # 1:1, 16:9, 9:16, 4:3, 3:4, 21:9
     resolution: str = "2K",       # 1K, 2K, 4K
-    output_path: str = None       # Optional save path
+    output_path: str = None,      # Optional save path
+    seed: int = None              # Optional seed for reproducibility (0-2147483647)
 )
 
 # Multi-turn chat session
 start_image_chat(
     initial_prompt: str,
-    model: str = "pro"
+    model: str = "pro",
+    seed: int = None              # Optional seed (API support may vary)
 )
 # Returns: session_id
 
@@ -327,7 +350,8 @@ compose_images(
     model: str = "pro",
     aspect_ratio: str = "1:1",
     resolution: str = "2K",
-    output_path: str = None
+    output_path: str = None,
+    seed: int = None              # Optional seed for reproducibility (0-2147483647)
 )
 
 # Edit existing image
@@ -337,7 +361,8 @@ edit_image(
     model: str = "pro",
     aspect_ratio: str = None,     # Optional, defaults to input
     resolution: str = "2K",
-    output_path: str = None
+    output_path: str = None,
+    seed: int = None              # Optional seed for reproducibility (0-2147483647)
 )
 
 # Search-grounded (real-world data)

@@ -9,6 +9,8 @@ VALID_ASPECT_RATIOS = [
 
 VALID_RESOLUTIONS = ["1K", "2K", "4K"]
 
+MAX_SEED_VALUE = 2147483647  # 2^31 - 1
+
 MODEL_ALIASES = {
     "pro": "gemini-3-pro-image-preview",
     "nano-banana-pro": "gemini-3-pro-image-preview",
@@ -70,3 +72,26 @@ def validate_model(model: str) -> str:
         f"Must be one of: {', '.join(VALID_MODELS)} "
         f"or aliases: {', '.join(MODEL_ALIASES.keys())}"
     )
+
+
+def validate_seed(seed: int | None) -> int | None:
+    """Validate seed parameter for reproducibility.
+
+    Args:
+        seed: Seed value or None for random generation
+
+    Returns:
+        Validated seed or None
+
+    Raises:
+        ValueError: If seed is invalid
+    """
+    if seed is None:
+        return None
+    if not isinstance(seed, int):
+        raise ValueError(f"Seed must be an integer, got {type(seed).__name__}")
+    if seed < 0:
+        raise ValueError("Seed must be non-negative")
+    if seed > MAX_SEED_VALUE:
+        raise ValueError(f"Seed must not exceed {MAX_SEED_VALUE}")
+    return seed

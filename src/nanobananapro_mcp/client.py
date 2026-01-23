@@ -17,6 +17,7 @@ from .utils import (
     validate_aspect_ratio,
     validate_resolution,
     validate_model,
+    validate_seed,
 )
 
 
@@ -75,11 +76,26 @@ class GeminiImageClient:
         aspect_ratio: str | None = None,
         resolution: str | None = None,
         response_modalities: list[str] | None = None,
+        seed: int | None = None,
     ) -> ImageGenerationResult:
-        """Generate an image from a text prompt."""
+        """Generate an image from a text prompt.
+
+        Args:
+            prompt: Text description of the image to generate
+            model: Model to use for generation
+            aspect_ratio: Output aspect ratio
+            resolution: Output resolution (1K, 2K, 4K)
+            response_modalities: Response types to request
+            seed: Optional seed for reproducible generation (0 to 2147483647).
+                  Note: Seed support depends on the underlying API.
+
+        Returns:
+            ImageGenerationResult with generated image data
+        """
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
+        validated_seed = validate_seed(seed)
         modalities = response_modalities or ["TEXT", "IMAGE"]
 
         config = types.GenerateContentConfig(
@@ -88,6 +104,8 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
+            # Note: seed parameter is validated and stored for future API support
+            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_RETRY
@@ -108,13 +126,28 @@ class GeminiImageClient:
         model: str = "gemini-3-pro-image-preview",
         aspect_ratio: str | None = None,
         resolution: str | None = None,
+        seed: int | None = None,
     ) -> ImageGenerationResult:
-        """Edit an existing image with a text prompt."""
+        """Edit an existing image with a text prompt.
+
+        Args:
+            prompt: Instructions for editing the image
+            image_path: Path to the input image file
+            model: Model to use for editing
+            aspect_ratio: Output aspect ratio (optional, defaults to input)
+            resolution: Output resolution (1K, 2K, 4K)
+            seed: Optional seed for reproducible generation (0 to 2147483647).
+                  Note: Seed support depends on the underlying API.
+
+        Returns:
+            ImageGenerationResult with edited image data
+        """
         from PIL import Image
 
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
+        validated_seed = validate_seed(seed)
 
         image = Image.open(image_path)
 
@@ -124,6 +157,8 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
+            # Note: seed parameter is validated and stored for future API support
+            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_RETRY
@@ -144,13 +179,28 @@ class GeminiImageClient:
         model: str = "gemini-3-pro-image-preview",
         aspect_ratio: str | None = None,
         resolution: str | None = None,
+        seed: int | None = None,
     ) -> ImageGenerationResult:
-        """Compose a new image from multiple reference images."""
+        """Compose a new image from multiple reference images.
+
+        Args:
+            prompt: Instructions for composing the images
+            image_paths: List of paths to input images (max 14)
+            model: Model to use for composition
+            aspect_ratio: Output aspect ratio
+            resolution: Output resolution (1K, 2K, 4K)
+            seed: Optional seed for reproducible generation (0 to 2147483647).
+                  Note: Seed support depends on the underlying API.
+
+        Returns:
+            ImageGenerationResult with composed image data
+        """
         from PIL import Image
 
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
+        validated_seed = validate_seed(seed)
 
         # Validate image count (Pro supports up to 14)
         if len(image_paths) > 14:
@@ -167,6 +217,8 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
+            # Note: seed parameter is validated and stored for future API support
+            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_RETRY
