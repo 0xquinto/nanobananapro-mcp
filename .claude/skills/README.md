@@ -400,6 +400,48 @@ These skills orchestrate the nanobananapro MCP tools:
 | `continue_image_chat` | Continue refinement session |
 | `end_image_chat` | Close refinement session |
 
+## Hooks
+
+This project uses Claude Code hooks for deterministic enforcement of project conventions.
+
+### Active Hooks
+
+| Event | Hook | Purpose |
+|-------|------|---------|
+| `PreToolUse` | `check-style-guide-lock.sh` | Block edits to locked style-guide.md |
+| `PreToolUse` | `protect-finals.sh` | Prevent modification of outputs/finals/ |
+| `PostToolUse` | `log-generated-image.sh` | Auto-log generated images to asset-log.md |
+
+### Hook Behavior
+
+**Style Guide Protection:**
+- When `style-guide.md` has `locked: true` in frontmatter, edits are blocked
+- Use `/project-setup --unlock` to enable editing
+- Use `/project-setup --lock` to re-lock after changes
+
+**Finals Protection:**
+- Files in `outputs/finals/` cannot be modified
+- Copy to `outputs/exploration/` to iterate on approved assets
+
+**Asset Logging:**
+- Every image generation automatically appends to `asset-log.md`
+- Captures: date, filename, prompt summary, tool used, seed, output path
+- Creates `asset-log.md` if missing in project root
+
+### Configuration
+
+Hooks are defined in `.claude/settings.json` (checked in) and can be overridden in `.claude/settings.local.json` (git-ignored).
+
+To disable a hook temporarily, add to `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": []
+  }
+}
+```
+
 ## Examples
 
 ### Quick Image Generation
