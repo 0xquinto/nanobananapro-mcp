@@ -1,5 +1,6 @@
 ---
 name: project-setup
+version: 1.1.0
 description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
@@ -420,13 +421,22 @@ Try: `/image-prompt a hero image for this project --style=project-main`
 
 This skill creates files that other skills detect and use:
 
-| File Created | Used By |
-|--------------|---------|
-| `style-library.md` | `/enhance-prompt --style=`, `/image-prompt --style=`, `/style-library` |
-| `style-guide.md` | `/image-prompt` (reads for constraints) |
-| `references/` | `/image-prompt --refs=`, `/capture-trends` |
-| `outputs/` | `/image-prompt` (saves here) |
-| `asset-log.md` | `/image-prompt` (logs generations) |
+| File Created | Used By | How |
+|--------------|---------|-----|
+| `style-library.md` | `/enhance-prompt --style=`, `/image-prompt --style=`, `/style-library` | Loads presets by name |
+| `style-guide.md` | `/image-prompt` | Reads for constraints and brand context |
+| `references/` | `/image-prompt --refs=`, `/capture-trends` | Source for reference images and style extraction |
+| `outputs/` | `/image-prompt` | Default save location for generated images |
+| `asset-log.md` | `/image-prompt` | Appends generation metadata after each image |
+
+### Related Skills
+
+| Skill | Relationship |
+|-------|--------------|
+| `/quickstart` | Routes new users here for multi-image projects |
+| `/capture-trends` | Populates style-library.md from reference images |
+| `/style-library` | Manages presets created by this skill |
+| `/image-prompt` | Primary consumer of project structure |
 
 ## Example Session
 
