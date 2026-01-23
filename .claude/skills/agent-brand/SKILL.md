@@ -51,10 +51,14 @@ This skill runs in Claude Code. When invoked with `/agent brand "description"`, 
 When executing this skill:
 
 **MUST DO:**
+- ✓ Invoke `project-setup` skill at start (new projects only, skip for `--resume`)
+- ✓ Invoke `enhance-prompt` skill before logo generation (Phase 1c)
+- ✓ Invoke `taste-check` skill after prompt enhancement (Phase 1c)
+- ✓ Save selected palette to `style-library` after Phase 1b
 - ✓ Spawn Task tool workers for research (never do research directly)
 - ✓ Use exact Task tool syntax: `Task(description="...", subagent_type="general-purpose", model="sonnet", prompt="...")`
 - ✓ Save state to `.claude/local/agent-state.json` after user selects direction (Phase 1a) and palette (Phase 1b)
-- ✓ Parse worker output to extract all 3 options with complete information (Phase 1a: directions, Phase 1b: palettes)
+- ✓ Parse worker output to extract all 3 options with complete information
 - ✓ Present options in the format specified in Process Steps
 - ✓ Handle all user selection types (1/2/3/custom/refinement)
 - ✓ After Phase 1a completes, automatically proceed to Phase 1b
@@ -62,9 +66,13 @@ When executing this skill:
 
 **MUST NOT:**
 - ✗ Generate images directly (workers do that)
+- ✗ Craft logo prompts without enhance-prompt skill
+- ✗ Skip taste-check before logo generation
+- ✗ Skip project-setup for new projects
 - ✗ Skip spawning the research worker
 - ✗ Present options without spawning worker first
 - ✗ Forget to save state after selection
+- ✗ Forget to save palette to style-library
 
 ## Workflow Overview
 
