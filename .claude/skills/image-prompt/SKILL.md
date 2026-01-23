@@ -780,6 +780,78 @@ User: /image-prompt today's weather in Tokyo visualized --grounded
 Generate this image?
 ```
 
+### With Taste Layer
+
+```
+User: /image-prompt a wizard
+
+Bot: What should the viewer feel when they see this image?
+
+User: mysterious and powerful
+
+[Gap analysis: Subject △, Composition ✗, Action ✗, Location ✗, Style ✗]
+
+[Enhancement biased toward mysterious/powerful: low-key lighting,
+strong verticals, deep shadows, hints of hidden knowledge]
+
+## Taste Check
+
+Found 0 clichés, prompt is 87 words (good).
+
+No issues detected. Proceeding to approval.
+
+## Enhanced Prompt
+
+"An ancient wizard stands at the threshold of a dark stone chamber,
+staff raised with arcane symbols glowing faintly along its length.
+Deep hood shadows most of his face, but his eyes gleam with inner light.
+Stone pillars frame him in stark verticals. Low-key lighting with a single
+source from below, casting dramatic upward shadows. Fantasy illustration
+style with muted colors except for the magical glow."
+
+**Settings:**
+- Aspect ratio: 3:4 (portrait)
+- Resolution: 2K
+
+Generate this image? (yes / adjust / change style)
+
+User: yes
+
+[Generates image]
+
+Image generated!
+
+**Quick adjustments:** warmer, cooler, brighter, darker, closer, wider
+**Or describe changes:** "make the background blurrier"
+**Or:** "critique" to reflect on this | "done" to finish
+
+User: critique
+
+## Critique
+
+**1. Description** — The image shows an elderly robed figure in a dark
+stone chamber, holding a glowing staff, with dramatic upward lighting.
+
+**2. Analysis** — Strong vertical composition from the pillars and staff.
+Color palette is muted grays and blues with warm accent from the magical
+glow. Visual hierarchy draws eye to the glowing staff, then to the
+partially hidden face.
+
+**3. Interpretation** — Conveys age, hidden knowledge, and restrained
+power. The obscured face suggests secrets, while the controlled magical
+glow implies mastery rather than chaos.
+
+**4. Evaluation** — Your stated intent was: "mysterious and powerful"
+
+Does this image achieve that? (yes / partially / no)
+
+User: yes
+
+Great! Continue iterating or say "done" to finish.
+
+User: done
+```
+
 ## Aspect Ratio Guidelines
 
 Infer appropriate ratio from content:
