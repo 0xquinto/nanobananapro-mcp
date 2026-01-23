@@ -92,6 +92,10 @@ Ask these questions to gather project requirements:
 > - 3D Render (digital)
 > - Mixed/Flexible
 
+**Question 6: Visual Constraints**
+> "Anything to specifically avoid? (competitors, styles, elements)"
+> (Examples: "no corporate blue", "avoid stock photo look", "don't look like Apple")
+
 ### Step 3: Generate Structure
 
 Create all directories and files based on answers.
@@ -146,6 +150,22 @@ Show what was created and suggest next steps.
 - Texture preference: [to be defined]
 - Level of detail: [to be defined]
 
+## Constraints & Avoidances
+
+### Do Not Use
+- [Constraint from interview, e.g., "corporate blue tones"]
+- [Additional constraint]
+
+### Avoid Looking Like
+- [Competitor or style to differentiate from]
+
+### Technical Restrictions
+- No text in generated images (unless explicitly needed)
+- Avoid [specific elements that don't fit brand]
+
+### Quality Guardrails
+- Reject images with: [artifacts, wrong colors, off-brand elements]
+
 ## Prompt Patterns
 
 ### Base Prompt Template
@@ -155,15 +175,17 @@ Show what was created and suggest next steps.
 [Medium: photography/illustration/3D]. [Composition notes].
 ```
 
-### Do's
+### Prompt Do's
 - Use specific, descriptive language
 - Reference the color palette by name
 - Maintain consistent lighting across assets
+- Include constraint reminders: "avoid [constraint]"
 
-### Don'ts
-- Avoid generic quality words (4k, masterpiece)
+### Prompt Don'ts
+- Avoid generic quality words (4k, masterpiece, best quality)
 - Don't mix incompatible styles
 - Avoid keyword spam
+- Never include elements from "Do Not Use" list above
 
 ## Asset Requirements
 
