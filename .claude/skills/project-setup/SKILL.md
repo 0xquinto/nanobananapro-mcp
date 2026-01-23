@@ -4,7 +4,7 @@ description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
   and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] | validate [path]"
+argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] | validate [path] | update [path]"
 ---
 
 # Project Setup
@@ -417,6 +417,7 @@ This skill creates files that other skills detect and use:
 | Directory exists | "Project `[name]` already exists. Use a different name or delete the existing folder." |
 | Invalid type | "Unknown type `[type]`. Valid types: brand, campaign, character, product" |
 | No write permission | "Cannot create project here. Check folder permissions." |
+| Nothing to update | "Project `[name]` is already complete. No changes needed." |
 
 ## Subcommands
 
@@ -467,3 +468,61 @@ Suggestions:
 | ✓ Ready | All required files present and populated |
 | ⚠ Needs attention | Missing required files or uncustomized templates |
 | ✗ Not a project | No project markers found |
+
+### /project-setup update
+
+Refresh project structure while preserving customizations.
+
+**Usage:**
+```bash
+/project-setup update
+/project-setup update ./my-project
+```
+
+**Behavior:**
+
+| Item | Action |
+|------|--------|
+| Missing directories | Create them |
+| Missing files | Create with template |
+| Existing style-guide.md | **Preserve** (never overwrite) |
+| Existing style-library.md | **Merge** new presets, keep existing |
+| Existing asset-log.md | **Preserve** (never overwrite) |
+
+**Update checks:**
+
+1. Detect project type from existing style-guide.md
+2. Compare current structure against expected structure
+3. Add missing pieces only
+4. Report what was added
+
+**Output format:**
+
+```
+## Project Updated: [project-name]
+
+### Added
+✓ references/moodboards/ — Created (was missing)
+✓ outputs/finals/ — Created (was missing)
+
+### Preserved
+- style-guide.md — Kept existing (customized)
+- style-library.md — Kept existing (has 5 presets)
+- asset-log.md — Kept existing (has 12 entries)
+
+### No Changes Needed
+- outputs/exploration/ — Already exists
+- references/inspiration/ — Already exists
+```
+
+**Merge behavior for style-library.md:**
+
+When updating, check if starter presets exist. If missing, append:
+
+```markdown
+## Added by update
+
+- **project-main**: "[detect from style-guide or use default]"
+- **project-colors**: "[detect from style-guide or use default]"
+- **project-mood**: "[detect from style-guide or use default]"
+```
