@@ -10,6 +10,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 | [image-prompt](#image-prompt) | `/image-prompt` | Generate images from concepts |
 | [enhance-prompt](#enhance-prompt) | `/enhance-prompt` | Improve naive prompts |
 | [prompt-anatomy](#prompt-anatomy) | `/prompt-anatomy` | Analyze prompt quality |
+| [taste-check](#taste-check) | `/taste-check` | Detect clichés and generic patterns |
 | [style-library](#style-library) | `/style-library` | Manage style presets |
 | [capture-trends](#capture-trends) | `/capture-trends` | Extract styles from references |
 | [project-setup](#project-setup) | `/project-setup` | Scaffold visual projects |
@@ -39,12 +40,15 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
                              ▼
                     ┌─────────────────┐
                     │  image-prompt   │ ← Primary generation skill
-                    └────────┬────────┘
+                    └────────┬────────┘   (includes taste layer)
                              │
                              ▼
-                    ┌─────────────────┐
-                    │ prompt-anatomy  │ ← Debug if results are poor
-                    └─────────────────┘
+         ┌───────────────────┴───────────────────┐
+         │                                       │
+         ▼                                       ▼
+┌─────────────────┐                     ┌─────────────────┐
+│ prompt-anatomy  │ ← Debug structure   │   taste-check   │ ← Debug aesthetics
+└─────────────────┘                     └─────────────────┘
 ```
 
 ## Skills
@@ -72,6 +76,11 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 - `--resolution=<res>` — Output quality (1K, 2K, 4K)
 - `--grounded` — Use search-grounded generation for real-world data
 - `--project=<path>` — Use specific project context
+- `--taste=<level>` — Cliché detection sensitivity (low/medium/high)
+- `--learn` — Show reasoning for taste suggestions
+- `--no-taste` — Skip taste checks (speed mode)
+
+**Taste Layer:** The skill now asks "What should the viewer feel?" before enhancement, runs cliché detection after, and offers critique after generation.
 
 ---
 
@@ -145,6 +154,41 @@ Analyze prompts against the 6-element framework. Educational tool for understand
 | Location | Where it takes place |
 | Style | Visual treatment |
 | Constraints | Text, aspect ratio, specifics |
+
+---
+
+### taste-check
+
+Analyze prompts for aesthetic quality. Detects clichés, checks specificity, and evaluates intent clarity.
+
+```bash
+# Basic analysis
+/taste-check "An epic fantasy landscape with dramatic lighting"
+
+# With explanations
+/taste-check "a beautiful woman, ethereal, glowing" --learn
+
+# Strict detection
+/taste-check "trending on ArtStation, 8K, masterpiece" --taste=high
+
+# Just fix it
+/taste-check "a moody portrait with cinematic vibes" --fix
+```
+
+**What It Checks:**
+
+| Check | What It Detects |
+|-------|-----------------|
+| Intent clarity | Does the prompt convey what the viewer should feel? |
+| Clichés | Generic AI-art patterns (ArtStation spam, quality spam, vague lighting) |
+| Specificity | Over-specified (mode collapse risk) or under-specified (vague) |
+
+**Options:**
+- `--learn` — Show explanations for why each issue matters
+- `--taste=<level>` — Detection sensitivity (low/medium/high, default: medium)
+- `--fix` — Output only the improved prompt, skip analysis
+
+**Patterns are defined in:** `.claude/taste-patterns.md`
 
 ---
 
@@ -262,6 +306,9 @@ All skills follow consistent flag patterns:
 | `--quick` | enhance-prompt | Skip interactive questions |
 | `--generate` | enhance-prompt | Generate image after enhancing |
 | `--chat` | image-prompt | Enable iterative refinement session |
+| `--taste=<level>` | image-prompt, taste-check | Cliché detection sensitivity |
+| `--learn` | image-prompt, taste-check | Show explanations for suggestions |
+| `--fix` | taste-check | Output only improved prompt |
 
 ---
 
