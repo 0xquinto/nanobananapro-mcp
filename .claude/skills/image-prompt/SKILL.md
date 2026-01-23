@@ -18,7 +18,11 @@ Rough concept
     ↓
 Parse intent & detect flags
     ↓
+★ INTENT QUESTION ★              ← "What should the viewer feel?"
+    ↓
 Check project context (style-guide.md, style-library.md, references/)
+    ↓
+★ REFERENCE CALIBRATION ★        ← Extract taste from references/ if present
     ↓
 Gap analysis (6-element check)
     ↓
@@ -26,11 +30,17 @@ Clarify if needed (missing critical elements)
     ↓
 Enhance prompt (embed 6-element formula)
     ↓
+★ TASTE CHECK ★                  ← Clichés, specificity (unless --no-taste)
+    ↓
+If issues found → Summary block (fix/skip/details)
+    ↓
 Show enhanced prompt for approval
     ↓
 Select MCP tool based on scenario
     ↓
 Generate image
+    ↓
+★ CRITIQUE OFFER ★               ← "critique" to reflect on result
     ↓
 Offer iteration options
     ↓
