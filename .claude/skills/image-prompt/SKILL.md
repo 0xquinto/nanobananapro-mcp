@@ -510,7 +510,7 @@ Image generated!
 - "more dramatic" / "softer" — contrast/mood
 
 **Or describe changes:** "make the background blurrier"
-**Or:** "done" to finish
+**Or:** "critique" to reflect on this | "done" to finish
 ```
 
 **Tool selection for iteration:**
@@ -524,6 +524,44 @@ Image generated!
 
 **After first edit (not in chat), add:**
 > "Want to keep refining? I can start a chat session for smoother back-and-forth."
+
+### Critique Mode
+
+When user says "critique", run VTS-inspired 4-step reflection framework:
+
+```
+## Critique
+
+**1. Description** — What's in the image?
+[Brief factual description of what was generated]
+
+**2. Analysis** — How do elements relate?
+[Composition, color relationships, visual hierarchy]
+
+**3. Interpretation** — What does it communicate?
+[Mood, feeling, narrative the image conveys]
+
+**4. Evaluation** — Does it match your intent?
+Your stated intent was: "[their answer from Step 0]"
+
+Does this image achieve that? (yes / partially / no)
+```
+
+**Follow-up Based on Response:**
+
+| Response | Action |
+|----------|--------|
+| **yes** | "Great! Continue iterating or say 'done' to finish." |
+| **partially** | "What's missing? I'll suggest targeted adjustments." |
+| **no** | "What feels wrong? Let's identify the gap between intent and result." |
+
+**With --learn Flag:**
+
+Add brief explanations connecting observations to the 6-element formula and taste principles.
+
+**If Intent Was Not Stated:**
+
+Skip the evaluation step, or note: "You didn't specify an intent earlier — what were you hoping to achieve?"
 
 ### Step 9: Save and Log
 
