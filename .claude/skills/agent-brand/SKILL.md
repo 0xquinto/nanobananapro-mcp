@@ -1,7 +1,7 @@
 ---
 name: agent-brand
 description: Guided brand identity agent that orchestrates multi-step visual branding projects through research, exploration, and generation. Uses Task tool workers to research style directions, craft prompts, and generate images. Employs guided collaboration where the agent proposes options and users make decisions.
-argument-hint: "brand description" [--resume]
+argument-hint: "brand description" | --resume
 ---
 
 # Agent: Brand Identity
@@ -13,6 +13,11 @@ Orchestrates complex brand identity projects through guided collaboration. This 
 **Starting a new project:**
 ```
 /agent brand "description of your brand"
+```
+
+**Resuming a previous session:**
+```
+/agent brand --resume
 ```
 
 **Navigation during the session:**
@@ -45,7 +50,7 @@ When executing this skill:
 
 **MUST DO:**
 - ✓ Spawn Task tool workers for research (never do research directly)
-- ✓ Use exact Task tool syntax: `Task(subagent_type="general-purpose", model="sonnet", prompt="...")`
+- ✓ Use exact Task tool syntax: `Task(description="...", subagent_type="general-purpose", model="sonnet", prompt="...")`
 - ✓ Save state to `.claude/local/agent-state.json` after user selects direction
 - ✓ Parse worker output to extract all 3 directions with complete information
 - ✓ Present options in the format specified in Step 4
@@ -104,12 +109,12 @@ These commands control the agent's workflow. Some are documented but not fully i
 | Command | Status | Description |
 |---------|--------|-------------|
 | `/agent brand "X"` | ✓ Active | Start new brand identity project |
+| `/agent brand --resume` | ✓ Active | Resume from saved state file |
 | `/agent show` | 📋 Planned | Redisplay current options at this phase |
 | `/agent back` | 📋 Planned | Return to previous checkpoint |
 | `/agent tweak "X"` | 📋 Planned | Refine current options with feedback |
 | `/agent status` | 📋 Planned | Show current phase and all decisions made |
 | `/agent help` | 📋 Planned | List available commands and current context |
-| `/agent resume` | 📋 Planned | Continue from saved state file |
 
 **Legend:**
 - ✓ Active - Fully implemented
@@ -179,6 +184,7 @@ Use the Task tool to spawn a research worker with the Research Worker Prompt Tem
 **Tool invocation:**
 ```
 Task(
+  description="Research brand style directions",
   subagent_type="general-purpose",
   model="sonnet",
   prompt="""You are a style research specialist. Research 3 distinct visual style directions for this brand:
@@ -422,6 +428,7 @@ When you need to spawn a Task tool worker (see Step 2 in Process Steps):
 
 ```
 Task(
+  description="Short 3-5 word description",
   subagent_type="general-purpose",
   model="sonnet",
   prompt="[Your worker prompt here with embedded context]"
@@ -429,6 +436,7 @@ Task(
 ```
 
 **Key points:**
+- Always include `description` parameter (3-5 words describing the task)
 - Always use `subagent_type="general-purpose"` for research workers
 - Always use `model="sonnet"` for consistency
 - Embed all necessary context directly in the prompt string
