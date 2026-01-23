@@ -795,7 +795,27 @@ Provide to the skill:
 
 The skill returns an enhanced prompt optimized for logo generation.
 
-**15b. Spawn Logo Generation Worker**
+**15b. Run Taste Check**
+
+Before generating, validate the enhanced prompt:
+
+```
+Skill(skill="taste-check", args="--taste=medium")
+```
+
+Provide the enhanced prompt from Step 15a.
+
+**If taste-check finds issues:**
+1. Show the summary to the orchestrator (not directly to user during batch generation)
+2. Apply suggested fixes automatically (use `--fix` behavior)
+3. Proceed with the corrected prompt
+
+**If taste-check passes:**
+Proceed directly to Step 15c (generation).
+
+**Note:** During batch logo generation (3 concepts), taste checks run silently. Only if ALL concepts fail taste check should the user be notified with a summary.
+
+**15c. Spawn Logo Generation Worker**
 
 **Tool invocation:**
 ```
