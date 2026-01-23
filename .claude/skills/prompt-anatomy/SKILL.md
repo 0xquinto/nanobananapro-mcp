@@ -4,7 +4,7 @@ description: Analyze image prompts against the 6-element framework. Use when
   user asks "why isn't this working?", "what's wrong with my prompt?", or
   wants to understand prompt structure. Educational tool that shows gaps
   and suggests improvements.
-argument-hint: "prompt to analyze"
+argument-hint: '"your prompt" [--fix] [--verbose] [--format=json]'
 ---
 
 # Prompt Anatomy
@@ -130,6 +130,25 @@ Add educational notes after each element:
 | Subject | △ | "a cat" | Add: breed, coloring, age, distinguishing features |
 
 > **Why Subject matters:** The AI needs specifics to generate consistent, interesting results. "A cat" could be any of thousands of interpretations. "A sleepy marmalade tabby with white paws" dramatically narrows the output space.
+```
+
+## JSON Output (`--format=json`)
+
+```json
+{
+  "prompt": "analyzed prompt",
+  "elements": {
+    "subject": {"status": "present|vague|missing", "content": "extracted text"},
+    "composition": {"status": "...", "content": "..."},
+    "action": {"status": "...", "content": "..."},
+    "location": {"status": "...", "content": "..."},
+    "style": {"status": "...", "content": "..."},
+    "constraints": {"status": "...", "content": "..."}
+  },
+  "score": 4,
+  "max_score": 6,
+  "suggestions": ["Add composition details", "Specify style"]
+}
 ```
 
 ## Examples

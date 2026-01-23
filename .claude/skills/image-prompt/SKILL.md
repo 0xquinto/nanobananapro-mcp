@@ -4,7 +4,7 @@ description: Full image generation workflow from rough concept to final image.
   Use when user wants to generate an image, create visuals, or says "make me
   an image of...". Enhances prompts, selects appropriate MCP tool, handles
   iteration. The primary skill for image creation.
-argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset] [--dry-run]
+argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset] [--dry-run] [--format=json]
 ---
 
 # Image Prompt
@@ -63,6 +63,7 @@ Save and log (if in project)
 | `--learn` | `--learn` | Show reasoning for taste suggestions |
 | `--no-taste` | `--no-taste` | Skip taste checks entirely (speed mode) |
 | `--dry-run` | `--dry-run` | Preview enhanced prompt and settings without generating |
+| `--format=<fmt>` | `--format=json` | Output format: human (default), json |
 
 ## Dry Run Mode
 
@@ -97,6 +98,59 @@ User: /image-prompt a wizard --dry-run
 - output_path: ./output/wizard-001.png
 
 No image generated (dry run mode).
+```
+
+## Output Formats
+
+### Human (default)
+
+Markdown-formatted output with headers, tables, and prose. Designed for interactive use.
+
+### JSON (`--format=json`)
+
+Machine-readable JSON output for scripting and automation. Structure:
+
+```json
+{
+  "status": "success|error",
+  "original_prompt": "user input",
+  "enhanced_prompt": "enhanced version",
+  "intent": "stated emotional intent or null",
+  "gap_analysis": {
+    "subject": "present|vague|missing",
+    "composition": "present|vague|missing",
+    "action": "present|vague|missing",
+    "location": "present|vague|missing",
+    "style": "present|vague|missing",
+    "constraints": "present|vague|missing"
+  },
+  "taste_check": {
+    "cliches_found": ["pattern1", "pattern2"],
+    "specificity_score": 87,
+    "issues": []
+  },
+  "tool": "generate_image",
+  "parameters": {
+    "prompt": "...",
+    "aspect_ratio": "3:4",
+    "resolution": "2K",
+    "output_path": "./output/..."
+  },
+  "result": {
+    "saved_path": "/absolute/path/to/image.png",
+    "text": "model response"
+  }
+}
+```
+
+**Error format:**
+```json
+{
+  "status": "error",
+  "error_type": "validation|api|file",
+  "message": "Human-readable error",
+  "original_prompt": "user input"
+}
 ```
 
 ## MCP Tool Selection

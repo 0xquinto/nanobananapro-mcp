@@ -350,6 +350,7 @@ All skills follow consistent flag patterns:
 | `--learn` | image-prompt, taste-check | Show explanations for suggestions |
 | `--fix` | taste-check | Output only improved prompt |
 | `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
+| `--format=<fmt>` | image-prompt, taste-check, prompt-anatomy | Output format (human, json) |
 
 ---
 

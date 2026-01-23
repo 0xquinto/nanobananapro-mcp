@@ -3,7 +3,7 @@ name: taste-check
 description: Analyze prompts for aesthetic quality. Detects clichés, checks specificity,
   evaluates intent clarity. Use when reviewing a prompt before generation or learning
   what makes prompts generic.
-argument-hint: '"your prompt here" [--learn] [--taste=low|medium|high] [--fix]'
+argument-hint: '"your prompt here" [--learn] [--taste=low|medium|high] [--fix] [--format=json]'
 ---
 
 # /taste-check
@@ -87,6 +87,32 @@ OVERALL: [Rating]
 
 ```
 [Improved prompt only - no analysis, no explanation]
+```
+
+## JSON Output (`--format=json`)
+
+```json
+{
+  "status": "pass|warn|fail",
+  "prompt": "analyzed prompt",
+  "intent_clarity": {
+    "detected": true|false,
+    "inferred_intent": "string or null"
+  },
+  "cliches": [
+    {
+      "pattern": "epic lighting",
+      "severity": "high|medium|low",
+      "suggestion": "Low sun backlighting with long shadows"
+    }
+  ],
+  "specificity": {
+    "word_count": 87,
+    "status": "good|warning|over-specified",
+    "threshold": 120
+  },
+  "improved_prompt": "fixed version if --fix"
+}
 ```
 
 ## Sensitivity Levels
