@@ -4,7 +4,7 @@ description: Full image generation workflow from rough concept to final image.
   Use when user wants to generate an image, create visuals, or says "make me
   an image of...". Enhances prompts, selects appropriate MCP tool, handles
   iteration. The primary skill for image creation.
-argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset]
+argument-hint: "your image idea" [--chat] [--refs=path] [--style=preset] [--dry-run]
 ---
 
 # Image Prompt
@@ -62,6 +62,42 @@ Save and log (if in project)
 | `--taste=<level>` | `--taste=high` | Cliche detection sensitivity (low/medium/high, default: medium) |
 | `--learn` | `--learn` | Show reasoning for taste suggestions |
 | `--no-taste` | `--no-taste` | Skip taste checks entirely (speed mode) |
+| `--dry-run` | `--dry-run` | Preview enhanced prompt and settings without generating |
+
+## Dry Run Mode
+
+When `--dry-run` is specified, the skill performs all analysis and enhancement steps but stops before calling any MCP tool.
+
+**Output includes:**
+- Enhanced prompt (final version after taste check)
+- Gap analysis results
+- Taste check summary
+- Tool that would be called
+- All parameters that would be passed
+
+**Use cases:**
+- Review prompt enhancement before spending API credits
+- Debug prompt issues without generating images
+- Script validation in CI/CD pipelines
+- Training/learning prompt engineering
+
+**Example:**
+```
+User: /image-prompt a wizard --dry-run
+
+[Performs all steps through Step 6]
+
+## Dry Run Summary
+
+**Would call:** `generate_image`
+**Enhanced prompt:** "An elderly wizard with..."
+**Parameters:**
+- aspect_ratio: 3:4
+- resolution: 2K
+- output_path: ./output/wizard-001.png
+
+No image generated (dry run mode).
+```
 
 ## MCP Tool Selection
 

@@ -5,7 +5,7 @@ description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
   and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] | validate [path] | update [path]"
+argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] [--dry-run]"
 ---
 
 # Project Setup
@@ -63,6 +63,20 @@ When `--quick` is passed, skip the interview and use these defaults:
 ```
 
 When `--type` is also provided, only that parameter is set—others use defaults above.
+
+### Dry Run Mode (--dry-run flag)
+
+When `--dry-run` is passed, preview the directory structure without creating files:
+
+- `--dry-run` — Preview directory structure without creating files
+
+**Usage:**
+```bash
+/project-setup my-project --dry-run
+/project-setup my-brand --type=brand --dry-run
+```
+
+Shows what would be created without writing to disk.
 
 ### Step 2: Interactive Interview (if details missing)
 

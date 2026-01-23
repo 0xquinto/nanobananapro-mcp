@@ -349,6 +349,7 @@ All skills follow consistent flag patterns:
 | `--taste=<level>` | image-prompt, taste-check | Cliché detection sensitivity |
 | `--learn` | image-prompt, taste-check | Show explanations for suggestions |
 | `--fix` | taste-check | Output only improved prompt |
+| `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
 
 ---
 

@@ -4,7 +4,7 @@ description: Extract visual trends from URLs, articles, PDFs, or images and
   save as style presets. Use when user shares inspiration links, trend reports,
   reference images, or wants to capture a style from an external source.
   Populates style-library.md with extracted presets. Use --guide to also create/update style-guide.md.
-argument-hint: "[url, file path, or image path] [--name=preset-name] [--guide] [--root] [--project=path]"
+argument-hint: "<source> [--name=preset] [--guide] [--preview] [--dry-run]"
 ---
 
 # Capture Trends
@@ -124,6 +124,7 @@ Combine extracted elements into a prompt-ready style definition:
 | `--guide` | `--guide` | Also create/update style-guide.md with extracted constraints |
 | `--root` | `--root` | Force save to root style-library.md (ignore project context) |
 | `--project=<path>` | `--project=demo-campaign` | Save to specific project's style-library.md |
+| `--dry-run` | `--dry-run` | Analyze source and show extracted styles without saving (alias for --preview) |
 
 ## Style Guide Generation (--guide flag)
 

@@ -4,7 +4,7 @@ description: Transform naive image prompts into effective ones. Accepts text con
   reference images, style presets, or combinations. Guides users interactively through
   input gathering, intent clarification, and prompt enhancement using the 6-element
   formula.
-argument-hint: "[concept or image path] [--quick] [--generate] [--style=preset] [--project=path]"
+argument-hint: "your concept" [--quick] [--style=preset] [--generate] [--dry-run]
 ---
 
 # Enhance Prompt
@@ -209,6 +209,7 @@ Arguments skip directly to relevant steps:
 | `--style=<preset>` | Apply preset from style-library.md (checks project first, then root) |
 | `--quick` | Skip all questions, enhance directly |
 | `--project=<path>` | Use specific project's style-library.md and style-guide.md |
+| `--dry-run` | Show enhancement result without generating (implies no `--generate`) |
 
 ## Anti-Patterns to Avoid
 
