@@ -111,3 +111,34 @@ Maps emotional/atmospheric intents to concrete visual techniques.
 - When a user specifies an intent, translate it to these concrete techniques
 - Multiple intents can be combined if they don't conflict
 - Prefer specific techniques over abstract mood words in final prompts
+
+---
+
+## Accessibility Patterns
+
+### Contrast Concerns
+
+| Pattern | Severity | Note |
+|---------|----------|------|
+| "low contrast" | Medium | Flag for review |
+| "subtle tones" | Low | May reduce readability |
+| "monochromatic" | Low | Check for sufficient variation |
+
+### Readability Concerns
+
+| Pattern | Severity | Note |
+|---------|----------|------|
+| "tiny text" | High | Likely illegible |
+| "intricate small details" | Medium | May not render clearly |
+| "complex typography" | Medium | Accessibility risk |
+
+---
+
+## Content Consideration Patterns
+
+| Pattern | Flag | Note |
+|---------|------|------|
+| "portrait", "face", "person" | [FACE] | Human face generation |
+| "crowd", "group of people" | [CROWD] | Multiple faces |
+| "child", "kid", "baby" | [SENSITIVE] | Extra care |
+| "logo", brand names | [BRAND] | Trademark |

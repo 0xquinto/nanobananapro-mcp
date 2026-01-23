@@ -10,7 +10,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 | [image-prompt](#image-prompt) | `/image-prompt` | Generate images from concepts |
 | [enhance-prompt](#enhance-prompt) | `/enhance-prompt` | Improve naive prompts |
 | [prompt-anatomy](#prompt-anatomy) | `/prompt-anatomy` | Analyze prompt quality |
-| [taste-check](#taste-check) | `/taste-check` | Detect clichés and generic patterns |
+| [taste-check](#taste-check) | `/taste-check` | Detect clichés, accessibility issues, and content flags |
 | [style-library](#style-library) | `/style-library` | Manage style presets |
 | [capture-trends](#capture-trends) | `/capture-trends` | Extract styles from references |
 | [project-setup](#project-setup) | `/project-setup` | Scaffold visual projects |
@@ -47,7 +47,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
          │                                       │
          ▼                                       ▼
 ┌─────────────────┐                     ┌─────────────────┐
-│ prompt-anatomy  │ ← Debug structure   │   taste-check   │ ← Debug aesthetics
+│ prompt-anatomy  │ ← Debug structure   │   taste-check   │ ← Debug aesthetics/a11y
 └─────────────────┘                     └─────────────────┘
 ```
 
@@ -68,7 +68,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 
 **Debugging (when things don't work):**
 - `/prompt-anatomy` — Structural issues (missing elements, poor composition)
-- `/taste-check` — Aesthetic issues (clichés, vague intent, quality spam)
+- `/taste-check` — Aesthetic issues (clichés, vague intent), accessibility, and content flags
 
 ### Decision Logic
 
@@ -199,20 +199,17 @@ Analyze prompts against the 6-element framework. Educational tool for understand
 
 ### taste-check
 
-Analyze prompts for aesthetic quality. Detects clichés, checks specificity, and evaluates intent clarity.
+Analyze prompts for aesthetic quality, accessibility, and content considerations. Detects clichés, checks specificity, evaluates intent clarity, and flags potential issues.
 
 ```bash
 # Basic analysis
-/taste-check "An epic fantasy landscape with dramatic lighting"
+/taste-check "An epic fantasy landscape"
 
-# With explanations
-/taste-check "a beautiful woman, ethereal, glowing" --learn
+# Include accessibility checks
+/taste-check "A busy infographic with small text" --accessibility
 
-# Strict detection
-/taste-check "trending on ArtStation, 8K, masterpiece" --taste=high
-
-# Just fix it
-/taste-check "a moody portrait with cinematic vibes" --fix
+# All checks with explanations
+/taste-check "A portrait of a child" --learn --accessibility
 ```
 
 **What It Checks:**
@@ -222,11 +219,14 @@ Analyze prompts for aesthetic quality. Detects clichés, checks specificity, and
 | Intent clarity | Does the prompt convey what the viewer should feel? |
 | Clichés | Generic AI-art patterns (ArtStation spam, quality spam, vague lighting) |
 | Specificity | Over-specified (mode collapse risk) or under-specified (vague) |
+| Accessibility hints | Prompts that may produce low-contrast or hard-to-read images |
+| Content flags | Potentially problematic patterns (faces, crowds, sensitive topics) |
 
 **Options:**
 - `--learn` — Show explanations for why each issue matters
 - `--taste=<level>` — Detection sensitivity (low/medium/high, default: medium)
 - `--fix` — Output only the improved prompt, skip analysis
+- `--accessibility` — Include accessibility-focused checks (contrast, readability)
 
 **Patterns are defined in:** `.claude/taste-patterns.md`
 
@@ -349,6 +349,7 @@ All skills follow consistent flag patterns:
 | `--taste=<level>` | image-prompt, taste-check | Cliché detection sensitivity |
 | `--learn` | image-prompt, taste-check | Show explanations for suggestions |
 | `--fix` | taste-check | Output only improved prompt |
+| `--accessibility` | taste-check | Include accessibility-focused checks |
 | `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
 | `--format=<fmt>` | image-prompt, taste-check, prompt-anatomy | Output format (human, json) |
 | `--lock` | project-setup | Lock current style-guide.md version |

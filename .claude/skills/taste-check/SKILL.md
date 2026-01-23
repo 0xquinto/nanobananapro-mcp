@@ -1,9 +1,8 @@
 ---
 name: taste-check
-description: Analyze prompts for aesthetic quality. Detects clichés, checks specificity,
-  evaluates intent clarity. Use when reviewing a prompt before generation or learning
-  what makes prompts generic.
-argument-hint: '"your prompt here" [--learn] [--taste=low|medium|high] [--fix] [--format=json]'
+description: Analyze prompts for aesthetic quality, accessibility, and content considerations.
+  Detects clichés, checks specificity, evaluates intent clarity, and flags potential issues.
+argument-hint: '"your prompt here" [--learn] [--taste=low|medium|high] [--fix] [--accessibility] [--format=json]'
 ---
 
 # /taste-check
@@ -17,6 +16,8 @@ Analyze image prompts for aesthetic quality before generation.
 | **Intent clarity** | Does the prompt convey what the viewer should feel? |
 | **Clichés** | Generic AI-art patterns that produce homogeneous results |
 | **Specificity** | Is the prompt over-specified (mode collapse risk) or under-specified (vague)? |
+| **Accessibility hints** | Prompts that may produce low-contrast or hard-to-read images |
+| **Content flags** | Potentially problematic patterns (faces, crowds, sensitive topics) |
 
 ## Flags
 
@@ -25,6 +26,7 @@ Analyze image prompts for aesthetic quality before generation.
 | `--learn` | Add explanations for why each issue matters |
 | `--taste=low\|medium\|high` | Adjust detection sensitivity (default: medium) |
 | `--fix` | Output only the improved prompt, skip analysis |
+| `--accessibility` | Include accessibility-focused checks (contrast, readability) |
 
 ## Output Format
 
@@ -111,6 +113,14 @@ OVERALL: [Rating]
     "status": "good|warning|over-specified",
     "threshold": 120
   },
+  "accessibility_hints": [
+    {
+      "pattern": "low contrast",
+      "severity": "medium",
+      "suggestion": "Add ensuring readable contrast"
+    }
+  ],
+  "content_flags": ["FACE", "SENSITIVE"],
   "improved_prompt": "fixed version if --fix"
 }
 ```
@@ -121,6 +131,44 @@ OVERALL: [Rating]
 - **medium** (default): Balanced detection. Flags common clichés and clear specificity issues.
 - **high**: Strict mode. Flags subtle clichés, borderline specificity, and any ambiguous intent. Best for learning or high-stakes generations.
 
+## Extended Checks
+
+### Accessibility Hints
+
+Flags prompts that may produce accessibility issues:
+
+| Pattern | Concern | Suggestion |
+|---------|---------|------------|
+| "low contrast" | Hard to see | Add "ensuring readable contrast" |
+| "tiny text" | Illegible | Specify minimum text size |
+| "complex busy background" | Cognitive load | Simplify or specify focal area |
+| "red/green indicators" | Color blindness | Add shape differentiation |
+
+### Content Considerations
+
+Flags for user awareness (not automatically blocked):
+
+| Pattern | Flag | Rationale |
+|---------|------|-----------|
+| Face generation | `[FACE]` | May require consent considerations |
+| Crowd scenes | `[CROWD]` | Multiple faces, consent complexity |
+| Children | `[SENSITIVE]` | Extra review recommended |
+| Identifiable brands | `[BRAND]` | Trademark considerations |
+
+**Flags are informational.** The skill does not block generation; it informs the user.
+
+**Example output:**
+```
+TASTE CHECK
+===========
+
+CONTENT FLAGS: [FACE]
+This prompt will generate a human face.
+Consider whether a real photo or stylized illustration better fits your use case.
+
+[rest of analysis...]
+```
+
 ## Specificity Assessment
 
 | Level | Word Count | Assessment |
@@ -130,7 +178,7 @@ OVERALL: [Rating]
 | Warning | 120-180 words | Approaching over-specified |
 | Over-specified | > 180 words | Risk of mode collapse |
 
-Word count alone is not determinitive. A 50-word prompt with only adjectives may be under-specified for *meaning* while a 25-word prompt with strong narrative elements may be sufficient.
+Word count alone is not determinative. A 50-word prompt with only adjectives may be under-specified for *meaning* while a 25-word prompt with strong narrative elements may be sufficient.
 
 ## Intent Clarity Indicators
 
