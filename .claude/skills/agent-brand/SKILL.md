@@ -28,6 +28,36 @@ Agent: [Proceeds with your selection]
 
 The skill maintains context throughout the conversation, so you can refine choices and ask questions naturally.
 
+## How This Skill Works
+
+This skill runs in Claude Code. When invoked with `/agent brand "description"`, Claude reads this file and follows the "Process Steps" instructions exactly. The skill:
+
+1. **Orchestrates, doesn't generate** - Never generates images directly. All generation is delegated to Task tool workers.
+2. **Uses Task tool** - Spawns research workers with specific prompts to gather information.
+3. **Maintains state** - Saves decisions to `.claude/local/agent-state.json` for checkpoints and resume functionality.
+4. **Guided collaboration** - Proposes options to the user and executes their choices.
+
+**Important:** The Process Steps section below is the actual implementation. Follow it exactly when the skill is invoked.
+
+## Critical Requirements
+
+When executing this skill:
+
+**MUST DO:**
+- ✓ Spawn Task tool workers for research (never do research directly)
+- ✓ Use exact Task tool syntax: `Task(subagent_type="general-purpose", model="sonnet", prompt="...")`
+- ✓ Save state to `.claude/local/agent-state.json` after user selects direction
+- ✓ Parse worker output to extract all 3 directions with complete information
+- ✓ Present options in the format specified in Step 4
+- ✓ Handle all user selection types (1/2/3/custom/refinement)
+
+**MUST NOT:**
+- ✗ Generate images directly (workers do that in future phases)
+- ✗ Skip spawning the research worker
+- ✗ Present options without spawning worker first
+- ✗ Forget to save state after selection
+- ✗ Move to Phase 1b (it's not implemented yet)
+
 ## Workflow Overview
 
 ```
@@ -89,38 +119,71 @@ These commands control the agent's workflow. Some are documented but not fully i
 
 This is the only phase currently active. Later phases (1b: Palette, 1c: Logo) are placeholders.
 
-### Process
+### Process Steps
 
-1. **Brief Collection**
-   - User provides brand description: `/agent brand "artisan coffee shop"`
-   - Agent acknowledges and prepares to research
+When the skill is invoked with `/agent brand "description"`, follow these steps exactly:
 
-2. **Style Research Worker**
-   - Spawn Task tool with research prompt
-   - Worker researches 3 distinct style directions
-   - Each direction includes:
-     - Name
-     - Visual characteristics (colors, typography, elements)
-     - Mood/emotion
-     - Why it fits the brand
-   - Worker returns natural language description
+**Quick Reference:**
+1. Parse brand description and check for `--resume` flag
+2. Spawn Task tool research worker with brand description
+3. Parse worker output into 3 style directions
+4. Present options to user in formatted list
+5. Handle user selection (1/2/3/custom/refinement)
+6. Save state to `.claude/local/agent-state.json`
 
-3. **Present Options**
-   - Parse worker output
-   - Display 3 directions clearly formatted
-   - Offer choice or custom direction
+**Detailed Steps:**
 
-4. **User Selection**
-   - User picks a direction (1, 2, 3, or describes custom)
-   - Agent confirms selection
-   - Checkpoint saved (for future resume functionality)
+#### Step 1: Parse and Acknowledge
 
-### Research Worker Prompt Template
+Extract from the user's invocation:
+- The brand description
+- The `--resume` flag (if present)
+
+If `--resume` is present, skip to Step 1b (Resume Flow).
+
+Otherwise, acknowledge the request:
 
 ```
-You are a style research specialist. Research 3 distinct visual style directions for this brand:
+I'll help create a brand identity for [their brand]. Let me research some style directions.
+```
 
-Brand: [user's brand description]
+#### Step 1b: Resume Flow (if --resume flag)
+
+Check for `.claude/local/agent-state.json`:
+
+**If state file exists:**
+1. Read the file
+2. Parse `current_phase` and `decisions`
+3. Present resume options:
+
+```
+Found previous brand identity session from [timestamp].
+
+**Brand:** [brand_description]
+**Last Phase:** [current_phase] ([decisions made])
+
+Continue from [next phase]? (yes / start fresh)
+```
+
+**If state file doesn't exist:**
+```
+No previous session found. Starting fresh.
+```
+
+Then proceed to Step 2.
+
+#### Step 2: Spawn Research Worker
+
+Use the Task tool to spawn a research worker with the Research Worker Prompt Template (see below).
+
+**Tool invocation:**
+```
+Task(
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are a style research specialist. Research 3 distinct visual style directions for this brand:
+
+Brand: [insert user's brand description here]
 
 For each direction, provide:
 1. Name (2-3 words)
@@ -135,8 +198,108 @@ IMPORTANT: You are a research worker. Do NOT:
 - Spawn other workers (no Task tools)
 - Interact with the user directly
 
-Return your findings as natural language that the orchestrator will parse and present.
+Return your findings as natural language that the orchestrator will parse and present."""
+)
 ```
+
+Wait for the worker to return its findings.
+
+#### Step 3: Parse Worker Output
+
+The worker returns natural language. Extract:
+- 3 direction names
+- Visual characteristics for each
+- Mood/emotion for each
+- Why each fits the brand
+
+**Validation:**
+- Did the worker provide all 3 directions?
+- Does each direction have all 4 required elements?
+
+**If incomplete:**
+- Re-spawn worker with clarified prompt (max 2 retries)
+- If still incomplete after 2 retries, inform user and offer manual input
+
+#### Step 4: Present Options
+
+Format the parsed results clearly:
+
+```
+Based on [brand description] aesthetics, here are 3 style directions:
+
+1. **[Direction 1 Name]**
+   [Visual characteristics in 1-2 sentences]
+   [Mood/emotion]
+
+2. **[Direction 2 Name]**
+   [Visual characteristics in 1-2 sentences]
+   [Mood/emotion]
+
+3. **[Direction 3 Name]**
+   [Visual characteristics in 1-2 sentences]
+   [Mood/emotion]
+
+Which direction resonates? (1, 2, 3, or describe something different)
+```
+
+#### Step 5: Handle User Selection
+
+Wait for user response.
+
+**If user selects 1, 2, or 3:**
+- Confirm selection:
+  ```
+  Perfect! [Direction Name] direction selected.
+
+  ✓ Phase 1a complete: Style direction chosen
+
+  [Phase 1b: Color Palette - coming soon]
+  ```
+- Proceed to Step 6 (Save State)
+
+**If user describes something different:**
+- Parse their custom direction
+- Confirm understanding:
+  ```
+  So you'd like a [their custom direction] style. Let me capture that.
+  ```
+- Proceed to Step 6 (Save State)
+
+**If user asks for refinement ("I like 1 but can it be..."):**
+- Spawn modified research worker with the refinement request
+- Present the adjusted direction
+- Ask for confirmation
+- Proceed to Step 6 when confirmed
+
+#### Step 6: Save State (Checkpoint)
+
+Create `.claude/local/` directory if it doesn't exist:
+```bash
+mkdir -p .claude/local
+```
+
+Write state to `.claude/local/agent-state.json`:
+
+```json
+{
+  "brand_description": "[user's brand description]",
+  "started": "[ISO 8601 timestamp]",
+  "current_phase": "1a_complete",
+  "decisions": {
+    "style_direction": {
+      "name": "[Selected Direction Name]",
+      "characteristics": "[Visual characteristics]",
+      "mood": "[Mood/emotion]",
+      "selected_at": "[ISO 8601 timestamp]"
+    }
+  },
+  "worker_outputs": {
+    "style_research": "[Full worker output]"
+  }
+}
+```
+
+**State saved. Phase 1a complete.**
 
 ### Example Interaction
 
@@ -253,25 +416,43 @@ Do NOT spawn other workers. Do NOT research or interact with user.
 
 ## Worker Communication Protocol
 
-### Spawning a Worker
+### How to Spawn a Worker
 
-```python
-# Orchestrator spawns a worker via Task tool
+When you need to spawn a Task tool worker (see Step 2 in Process Steps):
+
+```
 Task(
-  prompt=worker_prompt_template.format(
-    brand=user_brand_description,
-    context=additional_context
-  ),
-  restrictions="advisory: do not generate images, do not spawn workers"
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="[Your worker prompt here with embedded context]"
 )
 ```
 
-### Parsing Worker Output
+**Key points:**
+- Always use `subagent_type="general-purpose"` for research workers
+- Always use `model="sonnet"` for consistency
+- Embed all necessary context directly in the prompt string
+- Include clear instructions about what the worker should NOT do
 
-Workers return natural language. Orchestrator must parse:
-- Extract structured information (direction names, characteristics)
-- Format for user presentation
-- Validate completeness (did worker provide all requested elements?)
+### How to Parse Worker Output
+
+Workers return natural language responses. You must:
+
+1. **Extract structured information**
+   - Look for the 3 direction names
+   - Extract visual characteristics for each
+   - Extract mood/emotion for each
+   - Extract "why it fits" rationale for each
+
+2. **Format for user presentation**
+   - Use the format shown in Step 4 (Present Options)
+   - Keep it concise but complete
+   - Maintain the user-friendly tone
+
+3. **Validate completeness**
+   - Did the worker provide all 3 directions?
+   - Does each direction have all 4 required elements?
+   - If not, re-spawn with clarified instructions (max 2 retries)
 
 ### Error Handling
 
@@ -281,38 +462,65 @@ Workers return natural language. Orchestrator must parse:
 | Worker violates restrictions (tries to generate) | Ignore invalid actions, parse valid output |
 | Worker fails entirely | Report to user, offer to retry or manual input |
 
-## State Management (Future)
+## State Management
 
-Not fully implemented yet. When implemented:
+State is saved to `.claude/local/agent-state.json` to enable resuming sessions and tracking decisions.
 
-**State File:** `.claude/local/agent-state.json`
+### State File Location
+
+Always use: `.claude/local/agent-state.json`
+
+### When to Create/Update State
+
+| Event | Action |
+|-------|--------|
+| Phase 1a selection confirmed | Create `.claude/local/` directory (if needed), write full state |
+| Phase 1b selection confirmed (future) | Update `current_phase` and add to `decisions` |
+| Phase 1c selection confirmed (future) | Update `current_phase` and add to `decisions` |
+| Project completes | Delete state file |
+| User starts fresh | Delete state file |
+
+### State File Format
 
 ```json
 {
   "brand_description": "artisan coffee shop",
   "started": "2026-01-23T10:30:00Z",
-  "current_phase": "1b",
+  "current_phase": "1a_complete",
   "decisions": {
     "style_direction": {
       "name": "Modern Minimal",
-      "characteristics": "...",
+      "characteristics": "Clean lines, muted earth tones, geometric shapes, sans-serif fonts",
+      "mood": "Sophistication, clarity, contemporary craft",
       "selected_at": "2026-01-23T10:32:00Z"
     },
     "color_palette": null,
     "logo_concept": null
   },
   "worker_outputs": {
-    "style_research": "...",
+    "style_research": "[Full worker output text]",
     "palette_research": null
   }
 }
 ```
 
-**Usage:**
-- Created when Phase 1a begins
-- Updated after each checkpoint
-- Read on `--resume` to continue
-- Deleted when project completes
+### How to Read State (Resume Flow)
+
+In Step 1b of Process Steps, read the state file:
+
+```bash
+# Check if file exists
+if [ -f .claude/local/agent-state.json ]; then
+  # Read and parse the JSON
+  # Present resume options to user
+fi
+```
+
+Parse the JSON to extract:
+- `brand_description` - Show to user for context
+- `current_phase` - Determine where to resume
+- `decisions.style_direction` - What's already been selected
+- `started` - Show how long ago the session started
 
 ## Checkpoints
 
@@ -340,13 +548,74 @@ Agent: Returning to style direction selection.
 
 ## Error Handling
 
-| Situation | Agent Response |
-|-----------|----------------|
-| Empty brand description | "Please describe your brand. What does [business name] do? Who is it for?" |
-| Worker returns invalid output | Re-spawn with clarified prompt, limit 2 retries |
-| User provides unclear selection | "Did you mean option [N]? Or would you like something different?" |
-| State file corrupted (future) | Start fresh, offer to import previous decisions manually |
-| All phases complete | "Brand identity complete! Summary: [recap all decisions]" |
+How to handle common error scenarios:
+
+### Empty or Very Short Brand Description
+
+**If brand description is empty or < 5 characters:**
+
+Respond with:
+```
+Please describe your brand. What does it do? Who is it for? What makes it unique?
+
+Example: "artisan coffee shop focused on single-origin beans"
+```
+
+Wait for user to provide more context, then proceed to Step 2.
+
+### Worker Returns Invalid Output
+
+**If worker doesn't return all 3 directions or missing required elements:**
+
+1. First retry: Re-spawn worker with clarified prompt emphasizing the missing elements
+2. Second retry: Re-spawn worker with even more explicit instructions
+3. After 2 retries: Inform user and offer manual input
+
+```
+The research worker had trouble generating complete options. Would you like me to:
+1. Try one more time with different approach
+2. Let you describe your preferred style directions manually
+```
+
+### User Provides Unclear Selection
+
+**If user response doesn't clearly map to 1, 2, 3, or a custom direction:**
+
+Ask for clarification:
+```
+Did you mean option [N]? Or would you like something different?
+
+You can:
+- Choose 1, 2, or 3
+- Ask to refine an option ("I like 1 but make it warmer")
+- Describe your own direction
+```
+
+### State File Corrupted
+
+**If state file exists but JSON is malformed:**
+
+```
+Found a previous session but the state file is corrupted.
+
+Starting fresh. Would you like to manually re-enter previous decisions? (yes / no)
+```
+
+If yes, walk through what they decided before. If no, start from Step 2.
+
+### All Phases Complete (Future)
+
+**When all phases are done:**
+
+```
+Brand identity complete! Here's a summary:
+
+**Style Direction:** [name and characteristics]
+**Color Palette:** [palette details] (future)
+**Logo Concept:** [logo details] (future)
+
+All decisions saved to .claude/local/agent-state.json
+```
 
 ## Examples
 
