@@ -106,6 +106,8 @@ Show what was created and suggest next steps.
 
 ## File Templates
 
+> **Note:** Templates are defined inline below rather than as separate files. This keeps the skill self-contained and makes customization visible.
+
 ### style-guide.md
 
 ```markdown
