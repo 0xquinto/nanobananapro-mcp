@@ -154,6 +154,25 @@ When the skill is invoked with `/agent brand "description"`, follow these steps 
 
 **Detailed Steps:**
 
+#### Step -1: Invoke Brainstorming Skill (New Projects Only)
+
+**For new brand identity projects** (not `--resume`), invoke the brainstorming skill to explore the brand concept before generating style directions.
+
+**Use the Skill tool:**
+```
+Skill(skill="superpowers:brainstorming")
+```
+
+Follow the brainstorming skill's process to explore:
+- What the brand represents
+- Target audience and their aesthetic expectations
+- Competitive landscape considerations
+- Key differentiators to express visually
+
+After brainstorming completes, proceed to Step 0.
+
+**Skip condition:** When `--resume` is used, skip directly to Step 1b (Resume Flow).
+
 #### Step 0: First-Run Onboarding (if new session)
 
 **Use the Read tool** to check for `.claude/local/agent-state.json`:
@@ -750,52 +769,62 @@ The worker returns natural language. Extract for each of the 3 concepts:
 - Re-spawn worker with clarified prompt (max 2 retries)
 - If still incomplete after 2 retries, inform user and offer manual input
 
-#### Step 15: Spawn Logo Generation Workers
+#### Step 15: Enhance Prompts and Spawn Logo Generation Workers
 
-For each of the 3 logo concepts, spawn a separate logo generation worker.
+For each of the 3 logo concepts, first enhance the prompt using the enhance-prompt skill, then spawn a generation worker.
 
 **Use the Bash tool** first to ensure directory exists:
 ```bash
 mkdir -p outputs/exploration/logos
 ```
 
-**For Concept 1, 2, and 3, spawn workers sequentially:**
+**For each Concept (1, 2, 3), perform these sub-steps:**
 
-**Tool invocation for each:**
+**15a. Invoke Enhance-Prompt Skill**
+
+```
+Skill(skill="enhance-prompt", args="--quick")
+```
+
+Provide to the skill:
+- Concept name
+- Visual elements from the concept
+- Typography approach
+- Color palette from Phase 1b decisions
+- Brand description
+
+The skill returns an enhanced prompt optimized for logo generation.
+
+**15b. Spawn Logo Generation Worker**
+
+**Tool invocation:**
 ```
 Task(
   description="Generate logo image for concept [N]",
   subagent_type="general-purpose",
   model="sonnet",
-  prompt="""You are an image generation specialist. Generate a logo for this concept:
+  prompt="""You are an image generation specialist. Generate a logo using this enhanced prompt:
 
 Brand: [brand_description]
-Style Direction: [style_direction.name and characteristics]
-Color Palette: [color_palette colors with hex codes]
+Enhanced Prompt: [output from enhance-prompt skill]
 
-Logo Concept: [Concept N name]
-Visual Elements: [Concept N visual elements]
-Typography: [Concept N typography approach]
-Color Emphasis: [Concept N color emphasis]
-
-Use the MCP generate_image tool to create this logo. Your prompt should:
-- Clearly describe all visual elements
-- Specify the exact colors using the hex codes from the palette
-- Describe the typography style and how it integrates
-- Request a professional logo design format (clean, vector-style, on transparent or white background)
-
-After generating the image, save it to: outputs/exploration/logos/concept-[N]-[slugified-concept-name].png
+Use the MCP generate_image tool with:
+- prompt: [the enhanced prompt]
+- aspect_ratio: "1:1"
+- resolution: "2K"
+- output_path: outputs/exploration/logos/concept-[N]-[slugified-concept-name].png
 
 Return the saved file path and a brief confirmation.
 
 IMPORTANT: You are a generation worker. You MUST:
-- Use the generate_image MCP tool to create the logo
+- Use the generate_image MCP tool with the enhanced prompt EXACTLY as provided
 - Save the image to the specified path
 - Return the file path
 
 Do NOT:
+- Modify the enhanced prompt
 - Spawn other workers (no Task tools)
-- Research or interact with the user directly"""
+- Interact with the user directly"""
 )
 ```
 
@@ -1723,9 +1752,310 @@ Agent: Resuming from Phase 1c.
        Phase 1c coming soon.
 ```
 
+## Phase 2: Product Designs (ACTIVE)
+
+After brand identity is complete (Phase 1c), this phase creates product designs using the established style and palette. **This phase MUST chain to other skills** - never generate images directly.
+
+### Critical Requirements for Phase 2
+
+**MUST DO:**
+- ✓ Invoke `superpowers:brainstorming` skill BEFORE any creative design work
+- ✓ Use `AskUserQuestion` tool to gather product type, theme, and quantity
+- ✓ Invoke `enhance-prompt` skill to craft effective image prompts
+- ✓ Delegate ALL image generation to Task tool workers
+- ✓ Save design collection to state after completion
+
+**MUST NOT:**
+- ✗ Generate images directly with MCP tools (orchestrator never generates)
+- ✗ Skip the brainstorming skill before creative work
+- ✗ Skip the enhance-prompt skill for prompt crafting
+- ✗ Bypass Task tool workers for generation
+
+### Process Steps
+
+When Phase 1c is complete and user asks "what's next?" or requests product designs:
+
+**Quick Reference:**
+18. Detect Phase 2 trigger (user wants product designs)
+19. Invoke brainstorming skill for creative exploration
+20. Use AskUserQuestion to gather requirements
+21. Spawn Design Concept Worker (Task tool)
+22. Invoke enhance-prompt skill for each design
+23. Spawn Design Generation Workers (Task tool)
+24. Present designs and handle selection
+25. Save design collection to state
+
+**Detailed Steps:**
+
+#### Step 18: Detect Phase 2 Trigger
+
+After Phase 1c completion, if user asks about next steps or product designs:
+
+```
+Brand identity complete! Ready to create product designs using your:
+• Style: [Style Direction Name]
+• Palette: [Palette Name]
+
+Would you like to create product designs? (yes / not now)
+```
+
+If yes, proceed to Step 19.
+
+#### Step 19: Invoke Brainstorming Skill
+
+**REQUIRED:** Before any creative design work, invoke the brainstorming skill.
+
+```
+Skill(skill="superpowers:brainstorming")
+```
+
+Follow the brainstorming skill's process to explore:
+- What product types make sense for this brand
+- What themes align with the style direction
+- What design approaches would work
+
+**Do NOT skip this step.** The brainstorming skill ensures proper creative exploration before execution.
+
+#### Step 20: Gather Requirements with AskUserQuestion
+
+After brainstorming, use `AskUserQuestion` to confirm specifics:
+
+```
+AskUserQuestion(questions=[
+  {
+    "question": "What product type should we design for first?",
+    "header": "Product",
+    "options": [
+      {"label": "Wall Art / Posters", "description": "High-impact visuals"},
+      {"label": "T-Shirts / Apparel", "description": "Simpler compositions"},
+      {"label": "Phone Cases", "description": "Vertical format"},
+      {"label": "All-over prints", "description": "Seamless patterns"}
+    ],
+    "multiSelect": false
+  },
+  {
+    "question": "Which theme should we explore?",
+    "header": "Theme",
+    "options": [
+      // Options based on brainstorming output
+    ],
+    "multiSelect": false
+  },
+  {
+    "question": "How many designs should we create?",
+    "header": "Quantity",
+    "options": [
+      {"label": "3 designs", "description": "Quick test batch"},
+      {"label": "5 designs", "description": "Small collection"},
+      {"label": "10 designs", "description": "Full collection"}
+    ],
+    "multiSelect": false
+  }
+])
+```
+
+#### Step 21: Spawn Design Concept Worker
+
+Based on user answers, spawn a concept worker to create design briefs:
+
+```
+Task(
+  description="Create product design concepts",
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are a product design specialist. Create [N] distinct design concepts for [product type]:
+
+Brand: [brand_description]
+Style Direction: [style_direction.name and characteristics]
+Color Palette: [color_palette colors with hex codes]
+Theme: [selected theme]
+
+For each design concept provide:
+1. Concept name (2-4 words)
+2. Visual description (what the design depicts)
+3. Composition approach (layout, focal points)
+4. Which palette colors to emphasize
+5. Mood/emotion it conveys
+
+Make each concept distinct but all aligned with the brand identity.
+
+IMPORTANT: You are a research worker. Do NOT:
+- Generate images (no MCP image tools)
+- Spawn other workers (no Task tools)
+- Interact with the user directly
+
+Return your findings as natural language."""
+)
+```
+
+#### Step 22: Invoke Enhance-Prompt Skill
+
+For each design concept, **invoke the enhance-prompt skill** to craft an effective image prompt:
+
+```
+Skill(skill="enhance-prompt")
+```
+
+Provide the design concept details and let enhance-prompt transform it into an optimal image generation prompt.
+
+**Do NOT skip this step.** The enhance-prompt skill ensures high-quality image generation prompts.
+
+#### Step 23: Spawn Design Generation Workers
+
+For each enhanced prompt, spawn a generation worker:
+
+**Use the Bash tool** first to ensure directory exists:
+```bash
+mkdir -p outputs/designs/[product-type]
+```
+
+**For each design, spawn worker:**
+```
+Task(
+  description="Generate product design [N]",
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are an image generation specialist. Generate a product design:
+
+Brand: [brand_description]
+Style Direction: [style_direction characteristics]
+Color Palette: [hex codes]
+
+Design Concept: [concept name]
+Enhanced Prompt: [output from enhance-prompt skill]
+
+Use the MCP generate_image tool to create this design.
+
+Save to: outputs/designs/[product-type]/[NN]-[slugified-name].png
+
+Return the saved file path.
+
+IMPORTANT: You are a generation worker. You MUST:
+- Use the generate_image MCP tool
+- Save the image to the specified path
+- Return the file path
+
+Do NOT:
+- Spawn other workers (no Task tools)
+- Research or interact with the user directly"""
+)
+```
+
+#### Step 24: Present Designs and Handle Selection
+
+Present completed designs:
+
+```
+Here are [N] [product type] designs for [Brand]:
+
+1. **[Design 1 Name]**
+   [Brief description]
+   Image: outputs/designs/[product-type]/01-[slug].png
+
+2. **[Design 2 Name]**
+   ...
+
+[Continue for all designs]
+
+Review the designs. You can:
+- Request regeneration of specific designs
+- Create more designs in this collection
+- Move to a different product type
+- Export the collection
+```
+
+#### Step 25: Save Design Collection to State
+
+**Use the Read tool** to load current state, then update:
+
+```json
+{
+  "current_phase": "2_complete",
+  "decisions": {
+    // ... existing Phase 1 decisions ...
+    "product_designs": {
+      "product_type": "[selected product type]",
+      "theme": "[selected theme]",
+      "designs": [
+        {
+          "name": "[Design 1 Name]",
+          "description": "[description]",
+          "image_path": "outputs/designs/...",
+          "created_at": "[timestamp]"
+        }
+        // ... more designs ...
+      ],
+      "completed_at": "[timestamp]"
+    }
+  }
+}
+```
+
+### Example Interaction
+
+```
+[After Phase 1c completion]
+
+Agent: Brand identity complete! Ready to create product designs using your:
+       • Style: Cosmic Glitch
+       • Palette: Nebula Fracture
+
+       Would you like to create product designs? (yes / not now)
+
+User: yes
+
+Agent: I'm invoking the brainstorming skill to explore design directions.
+
+       [Invokes Skill(skill="superpowers:brainstorming")]
+       [Follows brainstorming process]
+
+Agent: Based on our exploration, let me gather specifics.
+
+       [Uses AskUserQuestion for product type, theme, quantity]
+
+User: [Selects T-Shirts, Extra Celestial theme, 10 designs]
+
+Agent: Creating 10 t-shirt design concepts...
+
+       [Spawns Design Concept Worker]
+
+Agent: I have 10 concepts. Now enhancing prompts for optimal generation.
+
+       [Invokes Skill(skill="enhance-prompt") for each]
+
+Agent: Generating designs with enhanced prompts...
+
+       [Spawns 10 Design Generation Workers sequentially]
+
+Agent: Here are 10 t-shirt designs for your AI Art POD store:
+
+       1. **Nebula Burst** ...
+       [... presents all designs ...]
+
+       [Saves collection to state]
+```
+
+### Skill Chaining Requirements
+
+Phase 2 REQUIRES invoking these skills in order:
+
+| Order | Skill | Purpose |
+|-------|-------|---------|
+| 1 | `superpowers:brainstorming` | Creative exploration before design |
+| 2 | `enhance-prompt` | Craft effective image prompts |
+
+**Never skip skill invocations.** The orchestrator coordinates but delegates specialized work to appropriate skills.
+
+### Red Flags - STOP If You Notice
+
+- About to generate an image directly → STOP, spawn a Task tool worker instead
+- About to write an image prompt without enhance-prompt → STOP, invoke the skill first
+- About to start designing without brainstorming → STOP, invoke brainstorming first
+- Rationalizing "this is simple enough to skip skills" → This is ALWAYS wrong
+
 ## Extension Points
 
-Phase 1a, 1b, and 1c are now complete. Future phases can follow the same pattern:
+Phase 1a, 1b, 1c, and Phase 2 are now complete. Future phases can follow the same pattern:
 
 **The architecture is designed to extend naturally:**
 - Each phase follows the same pattern (research → present → select → checkpoint)
