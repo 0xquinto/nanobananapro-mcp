@@ -211,19 +211,37 @@ Example: `mybrand-hero-v2-20260121.png`
 ```markdown
 # Style Library
 
-Presets for [Project Name]
+Presets for [Project Name]. Use with `--style=preset-name`.
 
 ## Art Styles
 
-- **project-main**: "[Style description from interview], [color mood], [medium]"
+- **project-main**: "[Style description]. [Medium]. Consistent [lighting style] lighting. [Color mood] color palette. [Key visual characteristic]."
+
+  Example: "Clean minimalist aesthetic. Professional photography. Consistent soft natural lighting. Neutral palette with warm accents. Emphasis on negative space and clean lines."
 
 ## Color Palettes
 
-- **project-colors**: "[Color preferences from interview]"
+- **project-colors**: "[Primary color description], [secondary color], [accent color]. [Overall mood]. Avoid [colors to avoid]."
+
+  Example: "Warm ivory backgrounds, deep forest green accents, touches of brass metallic. Organic and premium feel. Avoid pure white and saturated primaries."
+
+## Lighting
+
+- **project-lighting**: "[Light quality] [light direction] lighting. [Shadow characteristic]. [Time of day or studio setup reference]."
+
+  Example: "Soft diffused side lighting. Gentle shadows with visible detail. Golden hour warmth without harsh sun."
 
 ## Moods
 
-- **project-mood**: "[Mood keywords from interview]"
+- **project-mood**: "[Emotional quality]. [Energy level]. [Atmosphere]. Evokes [feeling or association]."
+
+  Example: "Calm and confident. Quiet energy. Intimate but not cramped. Evokes a peaceful morning in a well-designed space."
+
+## Compositions
+
+- **project-composition**: "[Framing style]. [Subject placement]. [Background treatment]. [Depth of field]."
+
+  Example: "Generous breathing room around subjects. Rule of thirds placement. Clean uncluttered backgrounds. Shallow depth of field isolating subject."
 ```
 
 ### asset-log.md
