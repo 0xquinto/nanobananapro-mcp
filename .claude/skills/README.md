@@ -351,6 +351,8 @@ All skills follow consistent flag patterns:
 | `--fix` | taste-check | Output only improved prompt |
 | `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
 | `--format=<fmt>` | image-prompt, taste-check, prompt-anatomy | Output format (human, json) |
+| `--lock` | project-setup | Lock current style-guide.md version |
+| `--unlock` | project-setup | Unlock style-guide.md for editing |
 
 ---
 
@@ -366,6 +368,15 @@ Skills are project-aware. When inside a project directory (one containing `style
 **Override context:**
 - `--project=<path>` — Use specific project
 - `--root` — Use root style-library.md
+
+### Style Guide Versioning
+
+Projects support versioned style guides:
+- Version header tracks changes (semver)
+- `--lock` / `--unlock` controls editability
+- History tracked in `style-guide-history.md`
+
+See [project-setup](#project-setup) for details.
 
 ## Pattern Documentation
 

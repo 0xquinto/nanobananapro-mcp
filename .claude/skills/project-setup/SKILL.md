@@ -5,7 +5,7 @@ description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
   and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] [--dry-run]"
+argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] [--dry-run] [--lock] [--unlock]"
 ---
 
 # Project Setup
@@ -26,6 +26,61 @@ project-name/
 │   ├── exploration/         # Work in progress
 │   └── finals/              # Approved assets
 └── asset-log.md             # Generation metadata tracking
+```
+
+## Style Guide Versioning
+
+Project style guides support version tracking to maintain consistency during campaigns.
+
+### Version Header
+
+Every generated `style-guide.md` includes:
+
+```markdown
+---
+version: 1.0.0
+created: 2026-01-23
+modified: 2026-01-23
+locked: false
+---
+```
+
+### Version Semantics
+
+| Change Type | Version Bump | Example |
+|-------------|--------------|---------|
+| Breaking (palette, core style) | Major (1.0 → 2.0) | Changed brand colors |
+| Additive (new elements) | Minor (1.0 → 1.1) | Added character styles |
+| Clarification (wording) | Patch (1.0.0 → 1.0.1) | Fixed typo |
+
+### Locking
+
+During active campaigns, lock the style guide to prevent accidental changes:
+
+```bash
+# Lock the current version
+/project-setup --lock
+
+# Unlock for editing
+/project-setup --unlock
+```
+
+When locked:
+- `/image-prompt` reads but cannot trigger style updates
+- `/capture-trends --guide` warns before modifying
+- Manual edits show warning in git diff
+
+### History
+
+Changes are tracked in `style-guide-history.md`:
+
+```markdown
+## v1.1.0 (2026-01-25)
+- Added secondary color palette
+- Approved by: @designer
+
+## v1.0.0 (2026-01-23)
+- Initial version from brand guidelines
 ```
 
 ## Project Types
@@ -77,6 +132,22 @@ When `--dry-run` is passed, preview the directory structure without creating fil
 ```
 
 Shows what would be created without writing to disk.
+
+### Style Guide Locking (--lock / --unlock flags)
+
+Lock the style guide during active campaigns to prevent accidental changes:
+
+- `--lock` — Lock current style-guide.md version (prevents modifications)
+- `--unlock` — Unlock style-guide.md for editing
+
+**Usage:**
+```bash
+/project-setup --lock              # Lock current project
+/project-setup my-brand --lock     # Lock specific project
+/project-setup --unlock            # Unlock for editing
+```
+
+See [Style Guide Versioning](#style-guide-versioning) for details on locking behavior.
 
 ### Step 2: Interactive Interview (if details missing)
 

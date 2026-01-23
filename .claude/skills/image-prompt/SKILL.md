@@ -456,6 +456,13 @@ When `--style=<preset>` is specified:
 2. Then check **root** `style-library.md`
 3. Project presets override root presets of the same name
 
+#### Locked Style Guide
+
+When `style-guide.md` has `locked: true`:
+- Read constraints normally
+- Do NOT suggest style guide updates
+- Show indicator: `**Style:** Locked (v1.2.0)`
+
 #### Files to Check
 
 | File | If found | Action |
