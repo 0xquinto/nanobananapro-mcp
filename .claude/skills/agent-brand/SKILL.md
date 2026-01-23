@@ -21,7 +21,9 @@ Orchestrates complex brand identity projects through guided collaboration. This 
 ```
 
 **Navigation during the session:**
-Once the skill is active, you interact naturally with the agent. The agent maintains state across messages in the same conversation. Navigation commands (like `/agent show`, `/agent back`, `/agent status`) are planned but not yet implemented - for now, simply respond to the agent's prompts.
+Once the skill is active, you interact naturally with the agent. The agent maintains state across messages in the same conversation. You can use navigation commands at any time:
+- `/agent show` - Redisplay current options
+- `/agent back` - Return to previous phase and re-select
 
 **Example:**
 ```
@@ -59,11 +61,10 @@ When executing this skill:
 - ✓ Load state with Read tool before updating in Phase 1b
 
 **MUST NOT:**
-- ✗ Generate images directly (workers do that in future phases)
+- ✗ Generate images directly (workers do that)
 - ✗ Skip spawning the research worker
 - ✗ Present options without spawning worker first
 - ✗ Forget to save state after selection
-- ✗ Move to Phase 1c (it's not implemented yet)
 
 ## Workflow Overview
 
@@ -86,7 +87,15 @@ Present 3 Palette Options
     ↓
 User Selects Palette
     ↓
-[Phase 1c: Logo Concepts - Not implemented yet]
+Phase 1c: Logo Concepts
+    ↓
+Spawn Logo Concept Worker (Task tool)
+    ↓
+For Each Concept: Spawn Logo Generation Worker (Task tool)
+    ↓
+Present 3 Logo Images
+    ↓
+User Selects Logo
     ↓
 Complete
 ```
@@ -118,8 +127,8 @@ These commands control the agent's workflow. Some are documented but not fully i
 |---------|--------|-------------|
 | `/agent brand "X"` | ✓ Active | Start new brand identity project |
 | `/agent brand --resume` | ✓ Active | Resume from saved state file |
-| `/agent show` | 📋 Planned | Redisplay current options at this phase |
-| `/agent back` | 📋 Planned | Return to previous checkpoint |
+| `/agent show` | ✓ Active | Redisplay current options at this phase |
+| `/agent back` | ✓ Active | Return to previous checkpoint, allow re-selection |
 | `/agent tweak "X"` | 📋 Planned | Refine current options with feedback |
 | `/agent status` | 📋 Planned | Show current phase and all decisions made |
 | `/agent help` | 📋 Planned | List available commands and current context |
@@ -130,13 +139,12 @@ These commands control the agent's workflow. Some are documented but not fully i
 
 ## Phase 1a: Style Direction (ACTIVE)
 
-This is the only phase currently active. Later phases (1b: Palette, 1c: Logo) are placeholders.
-
 ### Process Steps
 
 When the skill is invoked with `/agent brand "description"`, follow these steps exactly:
 
 **Quick Reference:**
+0. First-run onboarding (if new session)
 1. Parse brand description and check for `--resume` flag
 2. Spawn Task tool research worker with brand description
 3. Parse worker output into 3 style directions
@@ -145,6 +153,35 @@ When the skill is invoked with `/agent brand "description"`, follow these steps 
 6. Save state to `.claude/local/agent-state.json`
 
 **Detailed Steps:**
+
+#### Step 0: First-Run Onboarding (if new session)
+
+**Use the Read tool** to check for `.claude/local/agent-state.json`:
+
+**If state file doesn't exist (Read returns error) AND user didn't use --resume:**
+
+Show the welcome message:
+
+```
+Welcome to the Brand Identity Agent!
+
+I'll guide you through creating a complete brand identity in 3 phases:
+
+1. **Style Direction** - We'll explore 3 visual style options
+2. **Color Palette** - I'll create 3 palette variations for your chosen style
+3. **Logo Concepts** - You'll see 3 generated logo designs
+
+At each phase, you decide which direction to pursue. You can use:
+- `/agent show` - Redisplay current options
+- `/agent back` - Return to previous phase and re-select
+
+Let's begin.
+```
+
+Then proceed to Step 1.
+
+**If state file exists (Read succeeds):**
+Skip this welcome message (user has seen it before).
 
 #### Step 1: Parse and Acknowledge
 
@@ -299,6 +336,7 @@ mkdir -p .claude/local
   "brand_description": "[user's brand description]",
   "started": "[ISO 8601 timestamp]",
   "current_phase": "1a_complete",
+  "first_run_complete": true,
   "decisions": {
     "style_direction": {
       "name": "[Selected Direction Name]",
@@ -483,9 +521,10 @@ Wait for user response.
 
   ✓ Phase 1b complete: Color palette chosen
 
-  [Phase 1c: Logo Concepts - coming soon]
+  Moving to Phase 1c: Logo Concepts generation
   ```
 - Proceed to save state (see State Save below)
+- Then proceed to Phase 1c (Step 12)
 
 **If user describes modifications:**
 - Parse their requested changes
@@ -628,50 +667,496 @@ Agent: Excellent! Earthy Contrast (Warm) selected.
        [Saves updated state]
 ```
 
-## Phase 1c: Logo Concepts (PLACEHOLDER)
+## Phase 1c: Logo Concepts (ACTIVE)
 
-Not implemented yet. Future functionality:
+This phase generates logo concept descriptions and corresponding visual logos based on the selected style direction and color palette from previous phases.
 
-- Brief logo concept worker on brand + style + palette
-- Worker generates 3 logo concept descriptions
-- For each concept, spawn image generation worker
-- Present 3 visual options
-- User selects or requests variations
-- Checkpoint saved
+### Process Steps
 
-### Logo Concept Worker Prompt Template (Future)
+When Phase 1b is complete and state is saved, automatically proceed to Phase 1c:
 
+**Quick Reference:**
+12. Transition from Phase 1b (confirm palette is selected)
+13. Spawn Logo Concept Worker (Task tool)
+14. Parse worker output into 3 logo concepts
+15. For each concept, spawn Logo Generation Worker (Task tool)
+16. Present 3 logo images to user
+17. Handle user selection and save final state
+
+**Detailed Steps:**
+
+#### Step 12: Transition from Phase 1b
+
+After Step 11 (Handle User Selection and Save State) in Phase 1b completes, immediately transition to Phase 1c.
+
+Announce the transition:
 ```
-You are a logo concept designer. Create 3 distinct logo concepts for this brand:
+Now let's create logo concepts using the [Style Direction Name] style and [Palette Name] palette.
+```
 
-Brand: [brand description]
-Style: [selected direction]
-Palette: [selected colors]
+**Validation before proceeding:**
+- Confirm `decisions.style_direction` exists in state
+- Confirm `decisions.color_palette` exists in state
+- Extract both for the workers' prompts
+
+#### Step 13: Spawn Logo Concept Worker
+
+Use the Task tool to spawn a logo concept worker with the Logo Concept Worker Prompt Template (see below).
+
+**Tool invocation:**
+```
+Task(
+  description="Generate logo concept descriptions",
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are a logo concept designer. Create 3 distinct logo concepts for this brand:
+
+Brand: [insert brand_description from state]
+Style Direction: [insert style_direction.name and characteristics from state]
+Color Palette: [insert color_palette.name and colors from state]
 
 For each concept provide:
-1. Concept name
-2. Description of visual elements
-3. Typography approach
-4. How it embodies the brand
+1. Concept name (2-4 words, descriptive)
+2. Description of visual elements (shapes, symbols, imagery)
+3. Typography approach (font style, weight, arrangement)
+4. How it embodies the brand and chosen style
+5. Which colors from the palette to emphasize
 
-IMPORTANT: Describe concepts only. Do NOT generate images or spawn workers.
-Return findings as natural language.
+Make the 3 concepts distinct but all aligned with the style direction and palette. Each concept should offer a different visual approach or emphasis.
+
+IMPORTANT: You are a research worker. Do NOT:
+- Generate images (no MCP image tools)
+- Spawn other workers (no Task tools)
+- Interact with the user directly
+
+Return your findings as natural language that the orchestrator will parse and present."""
+)
 ```
 
-### Logo Generation Worker Prompt Template (Future)
+Wait for the worker to return its findings.
+
+#### Step 14: Parse Logo Concept Worker Output
+
+The worker returns natural language. Extract for each of the 3 concepts:
+- Concept name
+- Visual elements description
+- Typography approach
+- Brand embodiment rationale
+- Color emphasis
+
+**Validation:**
+- Did the worker provide all 3 concepts?
+- Does each concept have all required elements?
+- Are the descriptions clear enough for image generation?
+
+**If incomplete:**
+- Re-spawn worker with clarified prompt (max 2 retries)
+- If still incomplete after 2 retries, inform user and offer manual input
+
+#### Step 15: Spawn Logo Generation Workers
+
+For each of the 3 logo concepts, spawn a separate logo generation worker.
+
+**Use the Bash tool** first to ensure directory exists:
+```bash
+mkdir -p outputs/exploration/logos
+```
+
+**For Concept 1, 2, and 3, spawn workers sequentially:**
+
+**Tool invocation for each:**
+```
+Task(
+  description="Generate logo image for concept [N]",
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are an image generation specialist. Generate a logo for this concept:
+
+Brand: [brand_description]
+Style Direction: [style_direction.name and characteristics]
+Color Palette: [color_palette colors with hex codes]
+
+Logo Concept: [Concept N name]
+Visual Elements: [Concept N visual elements]
+Typography: [Concept N typography approach]
+Color Emphasis: [Concept N color emphasis]
+
+Use the MCP generate_image tool to create this logo. Your prompt should:
+- Clearly describe all visual elements
+- Specify the exact colors using the hex codes from the palette
+- Describe the typography style and how it integrates
+- Request a professional logo design format (clean, vector-style, on transparent or white background)
+
+After generating the image, save it to: outputs/exploration/logos/concept-[N]-[slugified-concept-name].png
+
+Return the saved file path and a brief confirmation.
+
+IMPORTANT: You are a generation worker. You MUST:
+- Use the generate_image MCP tool to create the logo
+- Save the image to the specified path
+- Return the file path
+
+Do NOT:
+- Spawn other workers (no Task tools)
+- Research or interact with the user directly"""
+)
+```
+
+Replace `[N]` with 1, 2, or 3 respectively.
+Replace `[slugified-concept-name]` with a slug version of the concept name (lowercase, hyphens for spaces).
+
+Wait for each worker to complete and return the image path.
+
+**Validation after each generation:**
+- Did the worker return a valid file path?
+- Does the file exist at that path?
+
+**If generation fails:**
+- Retry once with clarified instructions
+- If still fails, inform user and continue with other concepts
+
+#### Step 16: Present Logo Images
+
+Once all 3 logos are generated (or attempts completed), present them to the user.
+
+Format the results clearly:
 
 ```
-You are an image generation specialist. Generate this logo concept:
+Here are 3 logo concepts for [Brand Description]:
 
-Concept: [concept description from concept worker]
-Style: [style direction]
-Palette: [color palette]
+1. **[Concept 1 Name]**
+   [Brief description of visual elements and typography]
+   Image: outputs/exploration/logos/concept-1-[slug].png
 
-Use the appropriate MCP image generation tool to create the logo.
-Return the generated image path and a brief description of what was created.
+2. **[Concept 2 Name]**
+   [Brief description of visual elements and typography]
+   Image: outputs/exploration/logos/concept-2-[slug].png
 
-IMPORTANT: You are a generation worker. Use ONLY image generation MCP tools.
-Do NOT spawn other workers. Do NOT research or interact with user.
+3. **[Concept 3 Name]**
+   [Brief description of visual elements and typography]
+   Image: outputs/exploration/logos/concept-3-[slug].png
+
+Which logo concept works best for your brand? (1, 2, 3, or describe modifications)
+```
+
+#### Step 17: Handle User Selection and Save Final State
+
+Wait for user response.
+
+**If user selects 1, 2, or 3:**
+- Confirm selection:
+  ```
+  Perfect! [Concept Name] selected.
+
+  ✓ Phase 1c complete: Logo concept chosen
+
+  Brand identity complete! All 3 phases finished:
+  • Style: [Style Direction Name]
+  • Palette: [Palette Name]
+  • Logo: [Logo Concept Name]
+
+  All files saved to outputs/exploration/logos/
+  ```
+- Proceed to save final state (see Final State Save below)
+
+**If user describes modifications:**
+- Parse their requested changes
+- Confirm understanding:
+  ```
+  I'll adjust [Concept Name] with [their modifications].
+  ```
+- Spawn modified logo generation worker with the refinement request
+- Present the adjusted logo
+- Ask for confirmation
+- Proceed to save final state when confirmed
+
+**If user is unclear:**
+- Ask for clarification:
+  ```
+  Did you mean logo [N]? Or would you like to adjust one of them?
+
+  You can:
+  - Choose 1, 2, or 3
+  - Ask to modify a logo ("I like 1 but make the icon more abstract")
+  - Describe different visual elements you prefer
+  ```
+
+**Final State Save:**
+
+**Use the Read tool** to load current state from `.claude/local/agent-state.json`:
+- This should succeed since Phase 1b saved the state
+
+Parse the JSON and update:
+- Set `current_phase` to `"1c_complete"`
+- Add logo selection to `decisions.logo_concept`
+- Add worker outputs to `worker_outputs`
+
+**Use the Write tool** to save updated state:
+
+```json
+{
+  "brand_description": "[user's brand description]",
+  "started": "[ISO 8601 timestamp from Phase 1a]",
+  "current_phase": "1c_complete",
+  "first_run_complete": true,
+  "decisions": {
+    "style_direction": {
+      "name": "[Selected Direction Name]",
+      "characteristics": "[Visual characteristics]",
+      "mood": "[Mood/emotion]",
+      "selected_at": "[ISO 8601 timestamp]"
+    },
+    "color_palette": {
+      "name": "[Selected Palette Name]",
+      "colors": [
+        {"name": "[Color 1 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 2 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 3 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 4 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 5 usage]", "hex": "#HEXCODE"}
+      ],
+      "rationale": "[Why this palette works]",
+      "selected_at": "[ISO 8601 timestamp]"
+    },
+    "logo_concept": {
+      "name": "[Selected Logo Concept Name]",
+      "visual_elements": "[Visual elements description]",
+      "typography": "[Typography approach]",
+      "rationale": "[How it embodies the brand]",
+      "image_path": "outputs/exploration/logos/concept-[N]-[slug].png",
+      "selected_at": "[ISO 8601 timestamp]"
+    }
+  },
+  "worker_outputs": {
+    "style_research": "[Full worker output from Phase 1a]",
+    "palette_research": "[Full palette worker output from Phase 1b]",
+    "logo_concepts": "[Full logo concept worker output]",
+    "logo_generation": {
+      "concept_1": "[Generation worker 1 output]",
+      "concept_2": "[Generation worker 2 output]",
+      "concept_3": "[Generation worker 3 output]"
+    }
+  }
+}
+```
+
+**State saved. Phase 1c complete. Brand identity project complete.**
+
+### Example Interaction
+
+```
+[Continuing from Phase 1b where Earthy Contrast palette was selected]
+
+Agent: Now let's create logo concepts using the Modern Minimal style and
+       Earthy Contrast palette.
+
+       [Spawns logo concept Task tool worker]
+
+Agent: I've created 3 logo concepts. Now generating the visual logos...
+
+       [Spawns 3 logo generation workers sequentially]
+
+Agent: Here are 3 logo concepts for your artisan coffee shop:
+
+       1. **Bean & Geometry**
+          Simple coffee bean icon with geometric facets, paired with clean
+          sans-serif wordmark. Uses forest gray and terracotta.
+          Image: outputs/exploration/logos/concept-1-bean-geometry.png
+
+       2. **Minimalist Mark**
+          Abstract "A" letterform incorporating negative space cup silhouette.
+          Text-only design with subtle sand accent line.
+          Image: outputs/exploration/logos/concept-2-minimalist-mark.png
+
+       3. **Origin Stamp**
+          Circular badge with simplified mountain/origin illustration,
+          vintage-modern hybrid. Charcoal primary with terracotta accent.
+          Image: outputs/exploration/logos/concept-3-origin-stamp.png
+
+       Which logo concept works best for your brand? (1, 2, 3, or describe
+       modifications)
+
+User: I like 1 but can the bean be more stylized?
+
+Agent: I'll adjust Bean & Geometry with a more stylized, abstract bean.
+
+       [Spawns modified logo generation worker]
+
+Agent: Here's the adjusted logo:
+
+       **Bean & Geometry (Stylized)**
+       Highly geometric, abstract coffee bean with angular facets,
+       paired with clean sans-serif wordmark.
+       Image: outputs/exploration/logos/concept-1-bean-geometry-v2.png
+
+       Does this work? (yes / adjust further / see other options)
+
+User: yes
+
+Agent: Perfect! Bean & Geometry (Stylized) selected.
+
+       ✓ Phase 1c complete: Logo concept chosen
+
+       Brand identity complete! All 3 phases finished:
+       • Style: Modern Minimal
+       • Palette: Earthy Contrast
+       • Logo: Bean & Geometry (Stylized)
+
+       All files saved to outputs/exploration/logos/
+
+       [Saves final state]
+```
+
+## Navigation Command Implementation
+
+### `/agent show` - Redisplay Current Options
+
+When user types `/agent show`, redisplay the options at the current phase without re-running workers.
+
+**Implementation:**
+
+1. **Use the Read tool** to load `.claude/local/agent-state.json`
+2. Check `current_phase` value
+3. Based on phase, redisplay the cached worker output:
+
+**If `current_phase === "1a_complete"` or user is in Phase 1a:**
+- Parse `worker_outputs.style_research`
+- Redisplay the 3 style directions in the same format as Step 4 (Phase 1a)
+- Include reminder: "Previously selected: [style_direction.name]" if already chosen
+
+**If `current_phase === "1b_complete"` or user is in Phase 1b:**
+- Parse `worker_outputs.palette_research`
+- Redisplay the 3 color palettes in the same format as Step 10 (Phase 1b)
+- Include reminder: "Previously selected: [color_palette.name]" if already chosen
+
+**If user is in Phase 1c:**
+- Parse `worker_outputs.logo_concepts` and `worker_outputs.logo_generation`
+- Redisplay the 3 logo images in the same format as Step 16 (Phase 1c)
+- Include reminder: "Previously selected: [logo_concept.name]" if already chosen
+
+**If no state file exists:**
+```
+No active brand identity session found. Use `/agent brand "description"` to start.
+```
+
+**Example:**
+```
+User: /agent show
+
+Agent: Here are the 3 style directions again:
+
+       1. **Rustic Craftsman**
+          Warm browns and burnt orange, hand-drawn illustrations,
+          vintage serif typography. Evokes warmth, tradition, handmade quality.
+
+       2. **Modern Minimal** (Previously selected)
+          Clean lines, muted earth tones (beige, sage, charcoal),
+          geometric shapes, sans-serif fonts. Conveys sophistication,
+          clarity, contemporary craft.
+
+       3. **Botanical Organic**
+          Forest greens and natural creams, botanical illustrations,
+          organic textures, script accents. Suggests freshness,
+          sustainability, connection to nature.
+
+       Keep "Modern Minimal" or select a different direction? (1, 2, 3, or describe)
+```
+
+### `/agent back` - Return to Previous Checkpoint
+
+When user types `/agent back`, allow them to return to a previous phase and re-select.
+
+**Implementation:**
+
+1. **Use the Read tool** to load `.claude/local/agent-state.json`
+2. Check `current_phase` value
+3. Determine which phase to return to:
+
+**If `current_phase === "1b_complete"` or user is in Phase 1c:**
+- Return to Phase 1b (palette selection)
+- Parse `worker_outputs.palette_research`
+- Redisplay the 3 palette options
+- Show warning:
+  ```
+  Returning to Phase 1b: Color Palette selection.
+
+  Previously selected: [color_palette.name]
+
+  Warning: If you change your palette, any logo work will be cleared.
+
+  Here are the 3 color palettes for the [Style Direction Name] style:
+  [Redisplay palettes from Step 10]
+
+  Keep "[color_palette.name]" or select a different palette? (1, 2, 3, or describe)
+  ```
+- If user selects a different palette, clear `decisions.logo_concept` from state
+
+**If `current_phase === "1a_complete"` or user is in Phase 1b:**
+- Return to Phase 1a (style direction selection)
+- Parse `worker_outputs.style_research`
+- Redisplay the 3 style directions
+- Show warning:
+  ```
+  Returning to Phase 1a: Style Direction selection.
+
+  Previously selected: [style_direction.name]
+
+  Warning: If you change your style, all palette and logo work will be cleared.
+
+  Here are the 3 style directions again:
+  [Redisplay directions from Step 4]
+
+  Keep "[style_direction.name]" or select a different direction? (1, 2, 3, or describe)
+  ```
+- If user selects a different direction, clear `decisions.color_palette` and `decisions.logo_concept` from state
+
+**If no state file exists:**
+```
+No active brand identity session found. Use `/agent brand "description"` to start.
+```
+
+**Advanced: `/agent back to [phase]`**
+
+User can specify which phase to return to:
+- `/agent back to style` - Jump to Phase 1a
+- `/agent back to palette` - Jump to Phase 1b
+
+Same logic as above, but skip intermediate phases.
+
+**Example:**
+```
+User: /agent back
+
+Agent: Returning to Phase 1b: Color Palette selection.
+
+       Previously selected: Earthy Contrast
+
+       Warning: If you change your palette, logo work will be cleared.
+
+       Here are the 3 color palettes for the Modern Minimal style:
+
+       1. **Neutral Foundation**
+          [... palette details ...]
+
+       2. **Earthy Contrast** (Previously selected)
+          [... palette details ...]
+
+       3. **Soft Minimalist**
+          [... palette details ...]
+
+       Keep "Earthy Contrast" or select a different palette? (1, 2, 3, or describe)
+
+User: 3
+
+Agent: Soft Minimalist selected.
+
+       ✓ Phase 1b complete: Color palette changed
+
+       Previous logo work has been cleared.
+
+       Moving to Phase 1c: Logo Concepts generation
+
+       [Proceeds with Phase 1c using new palette]
 ```
 
 ## Worker Communication Protocol
@@ -693,10 +1178,13 @@ Task(
 - Always include `description` parameter (3-5 words describing the task)
   - Phase 1a: "Research brand style directions"
   - Phase 1b: "Generate color palette options"
-- Always use `subagent_type="general-purpose"` for research workers
+  - Phase 1c (concept): "Generate logo concept descriptions"
+  - Phase 1c (generation): "Generate logo image for concept [N]"
+- Always use `subagent_type="general-purpose"` for all workers
 - Always use `model="sonnet"` for consistency
 - Embed all necessary context directly in the prompt string
 - Include clear instructions about what the worker should NOT do
+- Logo generation workers ARE allowed to use MCP image tools (unlike research workers)
 
 ### How to Parse Worker Output
 
@@ -716,15 +1204,27 @@ Workers return natural language responses. You must:
    - Extract usage notes for each color (primary, accent, etc.)
    - Extract rationale for each palette
 
+   **Phase 1c (Logo Concepts):**
+   - Look for the 3 concept names
+   - Extract visual elements for each
+   - Extract typography approach for each
+   - Extract rationale for each
+   - Extract color emphasis for each
+
+   **Phase 1c (Logo Generation):**
+   - Extract the image file path returned by the worker
+   - Verify the file exists at that path
+
 2. **Format for user presentation**
-   - Use the format shown in Process Steps (Step 4 for Phase 1a, Step 10 for Phase 1b)
+   - Use the format shown in Process Steps (Step 4 for Phase 1a, Step 10 for Phase 1b, Step 16 for Phase 1c)
    - Keep it concise but complete
    - Maintain the user-friendly tone
 
 3. **Validate completeness**
-   - Did the worker provide all 3 options (directions or palettes)?
+   - Did the worker provide all 3 options (directions, palettes, or concepts)?
    - Does each option have all required elements?
    - For Phase 1b: Are hex codes in valid format (#RRGGBB)?
+   - For Phase 1c generation: Does the image file exist?
    - If not, re-spawn with clarified instructions (max 2 retries)
 
 ### Error Handling
@@ -747,10 +1247,10 @@ Always use: `.claude/local/agent-state.json`
 
 | Event | Action |
 |-------|--------|
-| Phase 1a selection confirmed | Use Bash tool to create `.claude/local/` (if needed), use Write tool to save full state |
+| Phase 1a selection confirmed | Use Bash tool to create `.claude/local/` (if needed), use Write tool to save full state with `first_run_complete: true` |
 | Phase 1b selection confirmed | Use Read tool to load current state, update `current_phase` to "1b_complete" and add `decisions.color_palette`, use Write tool to save |
-| Phase 1c selection confirmed (future) | Use Read tool to load current state, update `current_phase` and `decisions`, use Write tool to save |
-| Project completes | Use Bash tool to delete state file |
+| Phase 1c selection confirmed | Use Read tool to load current state, update `current_phase` to "1c_complete" and add `decisions.logo_concept`, use Write tool to save |
+| Project completes | Brand identity complete, state file preserved for reference |
 | User starts fresh | Use Bash tool to delete state file |
 
 ### State File Format
@@ -761,6 +1261,7 @@ Always use: `.claude/local/agent-state.json`
   "brand_description": "artisan coffee shop",
   "started": "2026-01-23T10:30:00Z",
   "current_phase": "1a_complete",
+  "first_run_complete": true,
   "decisions": {
     "style_direction": {
       "name": "Modern Minimal",
@@ -784,6 +1285,7 @@ Always use: `.claude/local/agent-state.json`
   "brand_description": "artisan coffee shop",
   "started": "2026-01-23T10:30:00Z",
   "current_phase": "1b_complete",
+  "first_run_complete": true,
   "decisions": {
     "style_direction": {
       "name": "Modern Minimal",
@@ -812,6 +1314,54 @@ Always use: `.claude/local/agent-state.json`
 }
 ```
 
+**After Phase 1c (Complete):**
+```json
+{
+  "brand_description": "artisan coffee shop",
+  "started": "2026-01-23T10:30:00Z",
+  "current_phase": "1c_complete",
+  "first_run_complete": true,
+  "decisions": {
+    "style_direction": {
+      "name": "Modern Minimal",
+      "characteristics": "Clean lines, muted earth tones, geometric shapes, sans-serif fonts",
+      "mood": "Sophistication, clarity, contemporary craft",
+      "selected_at": "2026-01-23T10:32:00Z"
+    },
+    "color_palette": {
+      "name": "Earthy Contrast",
+      "colors": [
+        {"name": "Primary", "hex": "#4A5D4F"},
+        {"name": "Secondary", "hex": "#D4C5B0"},
+        {"name": "Accent", "hex": "#8B7355"},
+        {"name": "Background", "hex": "#FAFAF8"},
+        {"name": "Text", "hex": "#2B2B28"}
+      ],
+      "rationale": "Stronger contrast with more depth, still grounded in nature",
+      "selected_at": "2026-01-23T10:35:00Z"
+    },
+    "logo_concept": {
+      "name": "Bean & Geometry",
+      "visual_elements": "Simple coffee bean icon with geometric facets",
+      "typography": "Clean sans-serif wordmark",
+      "rationale": "Combines modern minimalism with coffee shop identity",
+      "image_path": "outputs/exploration/logos/concept-1-bean-geometry.png",
+      "selected_at": "2026-01-23T10:40:00Z"
+    }
+  },
+  "worker_outputs": {
+    "style_research": "[Full worker output text]",
+    "palette_research": "[Full palette worker output]",
+    "logo_concepts": "[Full logo concept worker output]",
+    "logo_generation": {
+      "concept_1": "[Generation worker 1 output]",
+      "concept_2": "[Generation worker 2 output]",
+      "concept_3": "[Generation worker 3 output]"
+    }
+  }
+}
+```
+
 ### How to Read State (Resume Flow)
 
 In Step 1b of Process Steps (Phase 1a), **use the Read tool** to read `.claude/local/agent-state.json`:
@@ -823,14 +1373,17 @@ Parse the JSON to extract:
 - `brand_description` - Show to user for context
 - `current_phase` - Determine where to resume
   - `"1a_complete"`: Resume from Phase 1b (palette generation)
-  - `"1b_complete"`: Resume from Phase 1c (logo concepts - not yet implemented)
+  - `"1b_complete"`: Resume from Phase 1c (logo concepts)
+  - `"1c_complete"`: Brand identity already complete
 - `decisions.style_direction` - Show what's already been selected
 - `decisions.color_palette` - Show if Phase 1b was completed
+- `decisions.logo_concept` - Show if Phase 1c was completed
 - `started` - Show how long ago the session started
 
 **Resume Logic:**
 - If `current_phase === "1a_complete"`: Proceed directly to Step 7 (Phase 1b)
-- If `current_phase === "1b_complete"`: Inform user Phase 1c not yet implemented
+- If `current_phase === "1b_complete"`: Proceed directly to Step 12 (Phase 1c)
+- If `current_phase === "1c_complete"`: Inform user project is complete, offer to start fresh or review
 - If phase is incomplete: Resume at the last incomplete phase
 
 ## Checkpoints
@@ -841,37 +1394,11 @@ Checkpoints allow users to return to previous decisions:
 |------------|------------|-------------|
 | After style selection (Phase 1a) | Style direction + characteristics | Return to style options, allow re-selection |
 | After palette selection (Phase 1b) | Palette name + colors with hex codes | Return to palette options, allow re-selection |
-| After logo selection (Phase 1c - future) | Logo concept + image path | Return to logo options |
+| After logo selection (Phase 1c) | Logo concept + image path | Return to logo options, allow re-selection |
 
-**Back Command (Future):**
-```
-User: /agent back
+**Back Command Examples:**
 
-Agent: Returning to color palette selection.
-
-       Previously selected: Earthy Contrast
-
-       Here are all 3 palettes again:
-       [Redisplays palette options]
-
-       Select again or keep "Earthy Contrast"?
-```
-
-**Back to Earlier Phase (Future):**
-```
-User: /agent back to style
-
-Agent: Returning to style direction selection.
-
-       Previously selected: Modern Minimal
-
-       Warning: Going back will clear your palette selection (Earthy Contrast).
-
-       Here are all 3 style directions again:
-       [Redisplays options]
-
-       Select again or keep "Modern Minimal"?
-```
+See "Navigation Command Implementation" section above for full implementation details.
 
 ## Error Handling
 
@@ -1201,21 +1728,22 @@ Agent: Resuming from Phase 1c.
 
 ## Extension Points
 
-When implementing Phase 1c:
+Phase 1a, 1b, and 1c are now complete. Future phases can follow the same pattern:
 
-1. **Add logo concept worker prompt** (template already outlined above)
-2. **Add logo generation worker prompt** (template already outlined above)
-3. **Implement logo checkpoint save/load** (state file structure needs logo_concept field)
-4. **Add navigation commands** (`/agent show`, `/agent back`, etc.)
-5. **Parse logo outputs** from concept and generation workers
-6. **Spawn image generation workers** for logo visuals
-7. **Update error handling** for logo-specific worker types
-
-The architecture is designed to extend naturally:
+**The architecture is designed to extend naturally:**
 - Each phase follows the same pattern (research → present → select → checkpoint)
 - Worker prompts are templates with clear boundaries
-- State management is centralized
-- Phase 1a and 1b demonstrate the full pattern
+- State management is centralized and consistent
+- All 3 phases demonstrate the full pattern
+
+**To add a new phase:**
+1. Create worker prompt template(s) following Phase 1a/1b/1c examples
+2. Add Process Steps with numbered instructions
+3. Update state file format to include new decision
+4. Add parsing logic for worker outputs
+5. Update resume logic to handle new phase
+6. Update `/agent show` and `/agent back` to support new phase
+7. Add error handling for phase-specific issues
 
 ## Technical Notes
 
@@ -1233,7 +1761,8 @@ The architecture is designed to extend naturally:
 
 **Worker Restrictions:**
 - Advisory only (in prompts), not enforced by system
-- Workers should not generate images (orchestrator spawns generation workers separately)
+- Research workers (Phase 1a style, Phase 1b palette, Phase 1c concept) should not generate images
+- Generation workers (Phase 1c logo generation) ARE allowed to use MCP image tools
 - Workers should not spawn sub-workers (flat hierarchy)
 - Workers return findings to orchestrator, not to user directly
 
