@@ -186,11 +186,42 @@ Follow the brainstorming skill's process to explore:
 - Competitive landscape considerations
 - Key differentiators to express visually
 
-After brainstorming completes, proceed to Step 0.
+After brainstorming completes, proceed to Step 0 (Scaffold Project).
 
 **Skip condition:** When `--resume` is used, skip directly to Step 1b (Resume Flow).
 
-#### Step 0: First-Run Onboarding (if new session)
+#### Step 0: Scaffold Project (New Projects Only)
+
+**For new brand identity projects** (not `--resume`), scaffold the project structure before beginning research.
+
+**Invoke Project-Setup Skill:**
+
+```
+Skill(skill="project-setup", args="[brand-slug] --type=brand --quick")
+```
+
+Where `[brand-slug]` is derived from the brand description (e.g., "artisan coffee shop" → "artisan-coffee-shop").
+
+**This creates:**
+- `style-guide.md` - Brand style documentation (customize during workflow)
+- `style-library.md` - Presets for consistent generation
+- `outputs/exploration/` - Work in progress (used for logos)
+- `outputs/finals/` - Approved assets
+- `references/` - Moodboards and inspiration
+- `asset-log.md` - Generation tracking
+
+**Confirm to user:**
+```
+Project structure created for "[Brand Name]".
+- Style guide: style-guide.md (will be populated during branding)
+- Outputs: outputs/exploration/ (logos will save here)
+```
+
+After scaffolding, proceed to Step 0.5 (First-Run Onboarding).
+
+**Note:** When `--resume` is used, skip this step. The project structure already exists from the previous session.
+
+#### Step 0.5: First-Run Onboarding (if new session)
 
 **Use the Read tool** to check for `.claude/local/agent-state.json`:
 
@@ -818,10 +849,7 @@ The worker returns natural language. Extract for each of the 3 concepts:
 
 For each of the 3 logo concepts, first enhance the prompt using the enhance-prompt skill, then spawn a generation worker.
 
-**Use the Bash tool** first to ensure directory exists:
-```bash
-mkdir -p outputs/exploration/logos
-```
+**Note:** The `outputs/exploration/` directory was created by project-setup in Step 0.
 
 **For each Concept (1, 2, 3), perform these sub-steps:**
 
