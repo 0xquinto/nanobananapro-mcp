@@ -613,6 +613,31 @@ Parse the JSON and update:
 
 **State saved. Phase 1b complete.**
 
+**Save Palette to Style Library:**
+
+After saving state, persist the selected palette to the project's style library for future reuse.
+
+**Use the Skill tool:**
+```
+Skill(skill="style-library", args="add [palette-slug]-palette \"[color definitions with hex codes]\"")
+```
+
+Example:
+```
+Skill(skill="style-library", args="add earthy-contrast-palette \"Primary: #4A5D4F (forest gray), Secondary: #D4C5B0 (sand), Accent: #8B7355 (warm brown), Background: #FAFAF8 (cream white), Text: #2B2B28 (near black)\"")
+```
+
+This creates a reusable preset in `style-library.md` that:
+- Can be referenced in future image generation with `--style=[palette-slug]-palette`
+- Maintains brand consistency across the project
+- Is available to other skills like `enhance-prompt` and `image-prompt`
+
+**Confirm to user:**
+```
+Palette "[Palette Name]" saved to style library as "[palette-slug]-palette".
+You can use --style=[palette-slug]-palette in future image generation.
+```
+
 ### Example Interaction
 
 ```
@@ -676,11 +701,14 @@ User: yes
 
 Agent: Excellent! Earthy Contrast (Warm) selected.
 
+       [Saves updated state]
+       [Invokes Skill(skill="style-library", args="add earthy-contrast-warm-palette ...")]
+
        ✓ Phase 1b complete: Color palette chosen
+       Palette "Earthy Contrast (Warm)" saved to style library as "earthy-contrast-warm-palette".
+       You can use --style=earthy-contrast-warm-palette in future image generation.
 
        Moving to Phase 1c: Logo Concepts generation
-
-       [Saves updated state and proceeds to Phase 1c]
 ```
 
 ## Phase 1c: Logo Concepts (ACTIVE)
