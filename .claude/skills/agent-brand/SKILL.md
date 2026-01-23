@@ -149,11 +149,11 @@ I'll help create a brand identity for [their brand]. Let me research some style 
 
 #### Step 1b: Resume Flow (if --resume flag)
 
-Check for `.claude/local/agent-state.json`:
+**Use the Read tool** to check for `.claude/local/agent-state.json`:
 
-**If state file exists:**
-1. Read the file
-2. Parse `current_phase` and `decisions`
+**If state file exists (Read succeeds):**
+1. Parse the JSON content returned by Read
+2. Extract `current_phase` and `decisions`
 3. Present resume options:
 
 ```
@@ -165,7 +165,7 @@ Found previous brand identity session from [timestamp].
 Continue from [next phase]? (yes / start fresh)
 ```
 
-**If state file doesn't exist:**
+**If state file doesn't exist (Read returns error):**
 ```
 No previous session found. Starting fresh.
 ```
@@ -273,12 +273,12 @@ Wait for user response.
 
 #### Step 6: Save State (Checkpoint)
 
-Create `.claude/local/` directory if it doesn't exist:
+**Use the Bash tool** to create `.claude/local/` directory if it doesn't exist:
 ```bash
 mkdir -p .claude/local
 ```
 
-Write state to `.claude/local/agent-state.json`:
+**Use the Write tool** to save state to `.claude/local/agent-state.json`:
 
 ```json
 {
@@ -474,11 +474,11 @@ Always use: `.claude/local/agent-state.json`
 
 | Event | Action |
 |-------|--------|
-| Phase 1a selection confirmed | Create `.claude/local/` directory (if needed), write full state |
-| Phase 1b selection confirmed (future) | Update `current_phase` and add to `decisions` |
-| Phase 1c selection confirmed (future) | Update `current_phase` and add to `decisions` |
-| Project completes | Delete state file |
-| User starts fresh | Delete state file |
+| Phase 1a selection confirmed | Use Bash tool to create `.claude/local/` (if needed), use Write tool to save full state |
+| Phase 1b selection confirmed (future) | Use Read tool to load current state, update `current_phase` and `decisions`, use Write tool to save |
+| Phase 1c selection confirmed (future) | Use Read tool to load current state, update `current_phase` and `decisions`, use Write tool to save |
+| Project completes | Use Bash tool to delete state file |
+| User starts fresh | Use Bash tool to delete state file |
 
 ### State File Format
 
@@ -506,15 +506,10 @@ Always use: `.claude/local/agent-state.json`
 
 ### How to Read State (Resume Flow)
 
-In Step 1b of Process Steps, read the state file:
+In Step 1b of Process Steps, **use the Read tool** to read `.claude/local/agent-state.json`:
 
-```bash
-# Check if file exists
-if [ -f .claude/local/agent-state.json ]; then
-  # Read and parse the JSON
-  # Present resume options to user
-fi
-```
+- **If Read succeeds:** Parse the JSON content and extract the fields below
+- **If Read returns an error:** The file doesn't exist; inform user no previous session found
 
 Parse the JSON to extract:
 - `brand_description` - Show to user for context
