@@ -71,6 +71,8 @@ When executing this skill:
 ```
 User invokes: /agent brand "artisan coffee shop"
     ↓
+★ Invoke project-setup (new projects only)
+    ↓
 Phase 1a: Style Direction
     ↓
 Spawn Research Worker (Task tool)
@@ -87,11 +89,16 @@ Present 3 Palette Options
     ↓
 User Selects Palette
     ↓
+★ Save palette to style-library
+    ↓
 Phase 1c: Logo Concepts
     ↓
 Spawn Logo Concept Worker (Task tool)
     ↓
-For Each Concept: Spawn Logo Generation Worker (Task tool)
+For Each Concept:
+    ├── ★ Invoke enhance-prompt
+    ├── ★ Run taste-check
+    └── Spawn Logo Generation Worker (Task tool)
     ↓
 Present 3 Logo Images
     ↓
@@ -99,6 +106,8 @@ User Selects Logo
     ↓
 Complete
 ```
+
+★ = Skill invocation (chains to local skills)
 
 ## Architecture Principles
 
