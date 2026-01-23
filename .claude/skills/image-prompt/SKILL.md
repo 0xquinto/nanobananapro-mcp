@@ -419,6 +419,58 @@ Transform the concept using the 6-element formula:
 **Enhanced:**
 "An elderly wizard with a long silver beard and weathered face, wearing deep blue robes embroidered with silver constellations. Standing at the edge of a cliff at twilight, arms raised as swirling magical energy gathers between his hands. Dramatic lighting from the magic illuminates his face from below. Fantasy illustration style with rich colors and painterly brushwork."
 
+### Step 5b: Taste Check (unless --no-taste)
+
+After enhancement, before showing the prompt, run taste analysis.
+
+**What Gets Checked:**
+
+| Check | Trigger | Response |
+|-------|---------|----------|
+| **Cliché detection** | Matches patterns in `.claude/taste-patterns.md` | Suggest concrete replacement |
+| **Specificity score** | Prompt > 150 words OR > 3 modifiers per element | Warn about over-specification |
+| **Intent contradiction** | Enhancement conflicts with stated intent | Flag the mismatch |
+
+**Sensitivity Levels (via --taste flag):**
+
+| Level | What's Flagged |
+|-------|----------------|
+| **Low** | Only egregious patterns (ArtStation spam, 8K quality spam) |
+| **Medium** (default) | Common clichés + mild specificity warnings |
+| **High** | Any generic tendency + strict specificity limits |
+
+**If Issues Found:**
+
+Show a summary block before proceeding:
+
+```
+## Taste Check
+
+Found 2 clichés, prompt is 165 words (approaching over-specified).
+
+**Clichés:**
+- "epic lighting" → "Low sun backlighting with long shadows"
+- "trending on ArtStation" → Remove (causes token collisions)
+
+**Specificity:** Consider leaving composition or atmosphere more ambiguous.
+
+Fix these? [yes / skip / show details]
+```
+
+**User Responses:**
+- **yes** — Apply suggestions automatically, proceed to approval
+- **skip** — Proceed with original enhancement unchanged
+- **show details** — Explain why each pattern is problematic (auto-enabled with `--learn`)
+
+**With --learn Flag:**
+
+After each cliché, show explanation:
+> **Why this matters:** "Epic lighting" is vague — the model defaults to its most common interpretation. Specifying angle, quality, and source gives intentional results.
+
+**If No Issues:**
+
+Proceed directly to Step 6 without interruption.
+
 ### Step 6: Show for Approval
 
 Present the enhanced prompt before generating:
