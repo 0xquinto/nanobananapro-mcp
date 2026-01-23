@@ -51,6 +51,46 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 └─────────────────┘                     └─────────────────┘
 ```
 
+### How to Navigate
+
+**Entry points:**
+- **New to image generation?** → Start with `/quickstart`
+- **Multi-image project (brand, campaign)?** → Start with `/project-setup`
+- **Just want one image?** → Jump straight to `/image-prompt`
+
+**Preparation layer (optional):**
+- `/capture-trends` — Extract style from reference images, URLs, or PDFs
+- `/style-library` — Save and manage reusable presets
+- `/enhance-prompt` — Standalone prompt improvement (also built into image-prompt)
+
+**Generation:**
+- `/image-prompt` — The primary skill. Handles prompt enhancement, generation, and iteration. Includes a taste layer for cliché detection.
+
+**Debugging (when things don't work):**
+- `/prompt-anatomy` — Structural issues (missing elements, poor composition)
+- `/taste-check` — Aesthetic issues (clichés, vague intent, quality spam)
+
+### Decision Logic
+
+```
+"I want an image"
+  → Is this part of a larger project?
+    → Yes → /project-setup first
+    → No  → /image-prompt
+
+"My prompt isn't working"
+  → Is the output structurally wrong (wrong subject, bad framing)?
+    → Yes → /prompt-anatomy
+  → Does it look generic or AI-ish?
+    → Yes → /taste-check
+
+"I have reference images to match"
+  → /capture-trends to extract style → /style-library to save → /image-prompt --style=<preset>
+
+"I want consistency across images"
+  → /project-setup → define style-guide.md → all /image-prompt calls inherit constraints
+```
+
 ## Skills
 
 ### image-prompt
