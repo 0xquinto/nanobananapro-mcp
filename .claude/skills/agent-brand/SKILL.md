@@ -51,24 +51,26 @@ When executing this skill:
 **MUST DO:**
 - ✓ Spawn Task tool workers for research (never do research directly)
 - ✓ Use exact Task tool syntax: `Task(description="...", subagent_type="general-purpose", model="sonnet", prompt="...")`
-- ✓ Save state to `.claude/local/agent-state.json` after user selects direction
-- ✓ Parse worker output to extract all 3 directions with complete information
-- ✓ Present options in the format specified in Step 4
+- ✓ Save state to `.claude/local/agent-state.json` after user selects direction (Phase 1a) and palette (Phase 1b)
+- ✓ Parse worker output to extract all 3 options with complete information (Phase 1a: directions, Phase 1b: palettes)
+- ✓ Present options in the format specified in Process Steps
 - ✓ Handle all user selection types (1/2/3/custom/refinement)
+- ✓ After Phase 1a completes, automatically proceed to Phase 1b
+- ✓ Load state with Read tool before updating in Phase 1b
 
 **MUST NOT:**
 - ✗ Generate images directly (workers do that in future phases)
 - ✗ Skip spawning the research worker
 - ✗ Present options without spawning worker first
 - ✗ Forget to save state after selection
-- ✗ Move to Phase 1b (it's not implemented yet)
+- ✗ Move to Phase 1c (it's not implemented yet)
 
 ## Workflow Overview
 
 ```
 User invokes: /agent brand "artisan coffee shop"
     ↓
-Phase 1a: Brief Collection
+Phase 1a: Style Direction
     ↓
 Spawn Research Worker (Task tool)
     ↓
@@ -76,7 +78,13 @@ Present 3 Style Directions
     ↓
 User Selects Direction
     ↓
-[Phase 1b: Color Palette - Not implemented yet]
+Phase 1b: Color Palette
+    ↓
+Spawn Palette Worker (Task tool)
+    ↓
+Present 3 Palette Options
+    ↓
+User Selects Palette
     ↓
 [Phase 1c: Logo Concepts - Not implemented yet]
     ↓
@@ -259,7 +267,7 @@ Wait for user response.
 
   ✓ Phase 1a complete: Style direction chosen
 
-  [Phase 1b: Color Palette - coming soon]
+  Moving to Phase 1b: Color Palette generation
   ```
 - Proceed to Step 6 (Save State)
 
@@ -305,7 +313,7 @@ mkdir -p .claude/local
 }
 ```
 
-**State saved. Phase 1a complete.**
+**State saved. Phase 1a complete. Proceed to Phase 1b.**
 
 ### Example Interaction
 
@@ -341,37 +349,283 @@ Agent: Perfect! Modern Minimal direction selected.
 
        ✓ Phase 1a complete: Style direction chosen
 
-       [Phase 1b: Color Palette - coming soon]
+       Moving to Phase 1b: Color Palette generation
+
+       [Saves state and proceeds to Phase 1b]
 ```
 
-## Phase 1b: Color Palette (PLACEHOLDER)
+## Phase 1b: Color Palette (ACTIVE)
 
-Not implemented yet. Future functionality:
+This phase generates color palette options based on the selected style direction from Phase 1a.
 
-- Generate 3 palette variations within selected style
-- Each palette: 5-6 colors with hex codes and usage guidance
-- User selects preferred palette
-- Checkpoint saved
+### Process Steps
 
-### Palette Worker Prompt Template (Future)
+When Phase 1a is complete and state is saved, automatically proceed to Phase 1b:
 
+**Quick Reference:**
+7. Transition from Phase 1a (confirm style direction selected)
+8. Spawn Palette Worker (Task tool)
+9. Parse worker output into 3 palette options
+10. Present palettes to user with hex codes
+11. Handle user selection and save state
+
+**Detailed Steps:**
+
+#### Step 7: Transition from Phase 1a
+
+After Step 6 (Save State) in Phase 1a completes, immediately transition to Phase 1b.
+
+Announce the transition:
 ```
-You are a color palette specialist. Create 3 color palette variations
-for this brand, within the [selected style] direction:
+Now let's develop color palettes that match the [Selected Direction Name] style.
+```
 
-Brand: [brand description]
-Style: [selected direction name and characteristics]
+**Validation before proceeding:**
+- Confirm `decisions.style_direction` exists in state
+- Extract `style_direction.name` and `style_direction.characteristics` for the worker prompt
+
+#### Step 8: Spawn Palette Worker
+
+Use the Task tool to spawn a palette research worker with the Palette Worker Prompt Template (see below).
+
+**Tool invocation:**
+```
+Task(
+  description="Generate color palette options",
+  subagent_type="general-purpose",
+  model="sonnet",
+  prompt="""You are a color palette specialist. Create 3 color palette variations for this brand, within the selected style direction:
+
+Brand: [insert brand_description from state]
+Style Direction: [insert style_direction.name and characteristics from state]
 
 For each palette provide:
-1. Palette name
-2. 5-6 colors with hex codes
-3. Usage notes (primary, accent, neutral, etc.)
-4. Why this palette works for the brand
+1. Palette name (2-3 words, descriptive)
+2. 5-6 colors with hex codes (e.g., #F5F5DC)
+3. Usage notes for each color (primary, accent, neutral, background, text, etc.)
+4. Why this palette works for the brand and style
 
-Make the 3 palettes distinct but all aligned with the style direction.
+Make the 3 palettes distinct but all aligned with the style direction. Each palette should offer a different mood or application approach within the chosen aesthetic.
 
-IMPORTANT: You are a research worker. Do NOT generate images or spawn other workers.
-Return findings as natural language.
+IMPORTANT: You are a research worker. Do NOT:
+- Generate images (no MCP image tools)
+- Spawn other workers (no Task tools)
+- Interact with the user directly
+
+Return your findings as natural language that the orchestrator will parse and present."""
+)
+```
+
+Wait for the worker to return its findings.
+
+#### Step 9: Parse Worker Output
+
+The worker returns natural language. Extract for each of the 3 palettes:
+- Palette name
+- 5-6 colors with hex codes
+- Usage notes for each color
+- Rationale (why it works)
+
+**Validation:**
+- Did the worker provide all 3 palettes?
+- Does each palette have a name, colors with hex codes, usage notes, and rationale?
+- Are hex codes in valid format (#RRGGBB)?
+
+**If incomplete:**
+- Re-spawn worker with clarified prompt emphasizing missing elements (max 2 retries)
+- If still incomplete after 2 retries, inform user and offer manual input
+
+#### Step 10: Present Palette Options
+
+Format the parsed results clearly:
+
+```
+Here are 3 color palettes for the [Style Direction Name] style:
+
+1. **[Palette 1 Name]**
+   Colors:
+   • [Color 1 name/usage]: #HEXCODE
+   • [Color 2 name/usage]: #HEXCODE
+   • [Color 3 name/usage]: #HEXCODE
+   • [Color 4 name/usage]: #HEXCODE
+   • [Color 5 name/usage]: #HEXCODE
+   [Rationale in 1-2 sentences]
+
+2. **[Palette 2 Name]**
+   Colors:
+   • [Color 1 name/usage]: #HEXCODE
+   • [Color 2 name/usage]: #HEXCODE
+   • [Color 3 name/usage]: #HEXCODE
+   • [Color 4 name/usage]: #HEXCODE
+   • [Color 5 name/usage]: #HEXCODE
+   [Rationale in 1-2 sentences]
+
+3. **[Palette 3 Name]**
+   Colors:
+   • [Color 1 name/usage]: #HEXCODE
+   • [Color 2 name/usage]: #HEXCODE
+   • [Color 3 name/usage]: #HEXCODE
+   • [Color 4 name/usage]: #HEXCODE
+   • [Color 5 name/usage]: #HEXCODE
+   [Rationale in 1-2 sentences]
+
+Which palette resonates? (1, 2, 3, or describe modifications)
+```
+
+#### Step 11: Handle User Selection and Save State
+
+Wait for user response.
+
+**If user selects 1, 2, or 3:**
+- Confirm selection:
+  ```
+  Excellent! [Palette Name] selected.
+
+  ✓ Phase 1b complete: Color palette chosen
+
+  [Phase 1c: Logo Concepts - coming soon]
+  ```
+- Proceed to save state (see State Save below)
+
+**If user describes modifications:**
+- Parse their requested changes
+- Confirm understanding:
+  ```
+  I'll adjust [Palette Name] with [their modifications].
+  ```
+- Spawn modified palette worker with the refinement request
+- Present the adjusted palette
+- Ask for confirmation
+- Proceed to save state when confirmed
+
+**If user is unclear:**
+- Ask for clarification:
+  ```
+  Did you mean palette [N]? Or would you like to adjust one of them?
+
+  You can:
+  - Choose 1, 2, or 3
+  - Ask to modify a palette ("I like 1 but make the accent warmer")
+  - Describe different colors you prefer
+  ```
+
+**State Save:**
+
+**Use the Read tool** to load current state from `.claude/local/agent-state.json`:
+- This should succeed since Phase 1a saved the state
+
+Parse the JSON and update:
+- Set `current_phase` to `"1b_complete"`
+- Add palette selection to `decisions.color_palette`
+- Add palette worker output to `worker_outputs.palette_research`
+
+**Use the Write tool** to save updated state:
+
+```json
+{
+  "brand_description": "[user's brand description]",
+  "started": "[ISO 8601 timestamp from Phase 1a]",
+  "current_phase": "1b_complete",
+  "decisions": {
+    "style_direction": {
+      "name": "[Selected Direction Name]",
+      "characteristics": "[Visual characteristics]",
+      "mood": "[Mood/emotion]",
+      "selected_at": "[ISO 8601 timestamp]"
+    },
+    "color_palette": {
+      "name": "[Selected Palette Name]",
+      "colors": [
+        {"name": "[Color 1 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 2 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 3 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 4 usage]", "hex": "#HEXCODE"},
+        {"name": "[Color 5 usage]", "hex": "#HEXCODE"}
+      ],
+      "rationale": "[Why this palette works]",
+      "selected_at": "[ISO 8601 timestamp]"
+    }
+  },
+  "worker_outputs": {
+    "style_research": "[Full worker output from Phase 1a]",
+    "palette_research": "[Full palette worker output]"
+  }
+}
+```
+
+**State saved. Phase 1b complete.**
+
+### Example Interaction
+
+```
+[Continuing from Phase 1a where Modern Minimal was selected]
+
+Agent: Now let's develop color palettes that match the Modern Minimal style.
+
+       [Spawns palette Task tool worker]
+
+Agent: Here are 3 color palettes for the Modern Minimal style:
+
+       1. **Neutral Foundation**
+          Colors:
+          • Primary neutral: #E8E3DB (warm beige)
+          • Secondary neutral: #9C9A8F (sage gray)
+          • Accent: #2C2C2A (charcoal)
+          • Background: #F7F5F2 (off-white)
+          • Text: #3A3A38 (dark gray)
+          Creates a sophisticated, understated base with earthy warmth.
+
+       2. **Earthy Contrast**
+          Colors:
+          • Primary: #4A5D4F (forest gray)
+          • Secondary: #D4C5B0 (sand)
+          • Accent: #8B7355 (warm brown)
+          • Background: #FAFAF8 (cream white)
+          • Text: #2B2B28 (near black)
+          Stronger contrast with more depth, still grounded in nature.
+
+       3. **Soft Minimalist**
+          Colors:
+          • Primary: #C9C5BA (light taupe)
+          • Secondary: #A8A196 (warm gray)
+          • Accent: #5F5E58 (medium gray)
+          • Background: #FFFFFF (pure white)
+          • Text: #454542 (soft black)
+          Ultra-clean with subtle warmth, maximum clarity and space.
+
+       Which palette resonates? (1, 2, 3, or describe modifications)
+
+User: I like 2 but can the accent be a bit more terracotta?
+
+Agent: I'll adjust Earthy Contrast with a warmer terracotta accent.
+
+       [Spawns modified palette worker]
+
+Agent: Here's the adjusted palette:
+
+       **Earthy Contrast (Warm)**
+       Colors:
+       • Primary: #4A5D4F (forest gray)
+       • Secondary: #D4C5B0 (sand)
+       • Accent: #B85C42 (terracotta)
+       • Background: #FAFAF8 (cream white)
+       • Text: #2B2B28 (near black)
+       Stronger contrast with earthy warmth from the terracotta accent.
+
+       Does this work? (yes / adjust further / see other options)
+
+User: yes
+
+Agent: Excellent! Earthy Contrast (Warm) selected.
+
+       ✓ Phase 1b complete: Color palette chosen
+
+       [Phase 1c: Logo Concepts - coming soon]
+
+       When Phase 1c is implemented, I'll generate logo concepts using
+       this palette and the Modern Minimal style.
+
+       [Saves updated state]
 ```
 
 ## Phase 1c: Logo Concepts (PLACEHOLDER)
@@ -424,7 +678,7 @@ Do NOT spawn other workers. Do NOT research or interact with user.
 
 ### How to Spawn a Worker
 
-When you need to spawn a Task tool worker (see Step 2 in Process Steps):
+When you need to spawn a Task tool worker (see Step 2 in Phase 1a, Step 8 in Phase 1b):
 
 ```
 Task(
@@ -437,6 +691,8 @@ Task(
 
 **Key points:**
 - Always include `description` parameter (3-5 words describing the task)
+  - Phase 1a: "Research brand style directions"
+  - Phase 1b: "Generate color palette options"
 - Always use `subagent_type="general-purpose"` for research workers
 - Always use `model="sonnet"` for consistency
 - Embed all necessary context directly in the prompt string
@@ -447,19 +703,28 @@ Task(
 Workers return natural language responses. You must:
 
 1. **Extract structured information**
+
+   **Phase 1a (Style Research):**
    - Look for the 3 direction names
    - Extract visual characteristics for each
    - Extract mood/emotion for each
    - Extract "why it fits" rationale for each
 
+   **Phase 1b (Palette Research):**
+   - Look for the 3 palette names
+   - Extract 5-6 colors with hex codes for each
+   - Extract usage notes for each color (primary, accent, etc.)
+   - Extract rationale for each palette
+
 2. **Format for user presentation**
-   - Use the format shown in Step 4 (Present Options)
+   - Use the format shown in Process Steps (Step 4 for Phase 1a, Step 10 for Phase 1b)
    - Keep it concise but complete
    - Maintain the user-friendly tone
 
 3. **Validate completeness**
-   - Did the worker provide all 3 directions?
-   - Does each direction have all 4 required elements?
+   - Did the worker provide all 3 options (directions or palettes)?
+   - Does each option have all required elements?
+   - For Phase 1b: Are hex codes in valid format (#RRGGBB)?
    - If not, re-spawn with clarified instructions (max 2 retries)
 
 ### Error Handling
@@ -483,13 +748,14 @@ Always use: `.claude/local/agent-state.json`
 | Event | Action |
 |-------|--------|
 | Phase 1a selection confirmed | Use Bash tool to create `.claude/local/` (if needed), use Write tool to save full state |
-| Phase 1b selection confirmed (future) | Use Read tool to load current state, update `current_phase` and `decisions`, use Write tool to save |
+| Phase 1b selection confirmed | Use Read tool to load current state, update `current_phase` to "1b_complete" and add `decisions.color_palette`, use Write tool to save |
 | Phase 1c selection confirmed (future) | Use Read tool to load current state, update `current_phase` and `decisions`, use Write tool to save |
 | Project completes | Use Bash tool to delete state file |
 | User starts fresh | Use Bash tool to delete state file |
 
 ### State File Format
 
+**After Phase 1a:**
 ```json
 {
   "brand_description": "artisan coffee shop",
@@ -512,9 +778,43 @@ Always use: `.claude/local/agent-state.json`
 }
 ```
 
+**After Phase 1b:**
+```json
+{
+  "brand_description": "artisan coffee shop",
+  "started": "2026-01-23T10:30:00Z",
+  "current_phase": "1b_complete",
+  "decisions": {
+    "style_direction": {
+      "name": "Modern Minimal",
+      "characteristics": "Clean lines, muted earth tones, geometric shapes, sans-serif fonts",
+      "mood": "Sophistication, clarity, contemporary craft",
+      "selected_at": "2026-01-23T10:32:00Z"
+    },
+    "color_palette": {
+      "name": "Earthy Contrast",
+      "colors": [
+        {"name": "Primary", "hex": "#4A5D4F"},
+        {"name": "Secondary", "hex": "#D4C5B0"},
+        {"name": "Accent", "hex": "#8B7355"},
+        {"name": "Background", "hex": "#FAFAF8"},
+        {"name": "Text", "hex": "#2B2B28"}
+      ],
+      "rationale": "Stronger contrast with more depth, still grounded in nature",
+      "selected_at": "2026-01-23T10:35:00Z"
+    },
+    "logo_concept": null
+  },
+  "worker_outputs": {
+    "style_research": "[Full worker output text]",
+    "palette_research": "[Full palette worker output]"
+  }
+}
+```
+
 ### How to Read State (Resume Flow)
 
-In Step 1b of Process Steps, **use the Read tool** to read `.claude/local/agent-state.json`:
+In Step 1b of Process Steps (Phase 1a), **use the Read tool** to read `.claude/local/agent-state.json`:
 
 - **If Read succeeds:** Parse the JSON content and extract the fields below
 - **If Read returns an error:** The file doesn't exist; inform user no previous session found
@@ -522,8 +822,16 @@ In Step 1b of Process Steps, **use the Read tool** to read `.claude/local/agent-
 Parse the JSON to extract:
 - `brand_description` - Show to user for context
 - `current_phase` - Determine where to resume
-- `decisions.style_direction` - What's already been selected
+  - `"1a_complete"`: Resume from Phase 1b (palette generation)
+  - `"1b_complete"`: Resume from Phase 1c (logo concepts - not yet implemented)
+- `decisions.style_direction` - Show what's already been selected
+- `decisions.color_palette` - Show if Phase 1b was completed
 - `started` - Show how long ago the session started
+
+**Resume Logic:**
+- If `current_phase === "1a_complete"`: Proceed directly to Step 7 (Phase 1b)
+- If `current_phase === "1b_complete"`: Inform user Phase 1c not yet implemented
+- If phase is incomplete: Resume at the last incomplete phase
 
 ## Checkpoints
 
@@ -531,19 +839,35 @@ Checkpoints allow users to return to previous decisions:
 
 | Checkpoint | Data Saved | Back Action |
 |------------|------------|-------------|
-| After style selection | Style direction + characteristics | Return to style options, allow re-selection |
-| After palette selection | Palette + hex codes | Return to palette options |
-| After logo selection | Logo concept + image path | Return to logo options |
+| After style selection (Phase 1a) | Style direction + characteristics | Return to style options, allow re-selection |
+| After palette selection (Phase 1b) | Palette name + colors with hex codes | Return to palette options, allow re-selection |
+| After logo selection (Phase 1c - future) | Logo concept + image path | Return to logo options |
 
 **Back Command (Future):**
 ```
 User: /agent back
 
+Agent: Returning to color palette selection.
+
+       Previously selected: Earthy Contrast
+
+       Here are all 3 palettes again:
+       [Redisplays palette options]
+
+       Select again or keep "Earthy Contrast"?
+```
+
+**Back to Earlier Phase (Future):**
+```
+User: /agent back to style
+
 Agent: Returning to style direction selection.
 
        Previously selected: Modern Minimal
 
-       Here are all 3 directions again:
+       Warning: Going back will clear your palette selection (Earthy Contrast).
+
+       Here are all 3 style directions again:
        [Redisplays options]
 
        Select again or keep "Modern Minimal"?
@@ -568,7 +892,7 @@ Wait for user to provide more context, then proceed to Step 2.
 
 ### Worker Returns Invalid Output
 
-**If worker doesn't return all 3 directions or missing required elements:**
+**Phase 1a: If style research worker doesn't return all 3 directions or missing required elements:**
 
 1. First retry: Re-spawn worker with clarified prompt emphasizing the missing elements
 2. Second retry: Re-spawn worker with even more explicit instructions
@@ -578,6 +902,18 @@ Wait for user to provide more context, then proceed to Step 2.
 The research worker had trouble generating complete options. Would you like me to:
 1. Try one more time with different approach
 2. Let you describe your preferred style directions manually
+```
+
+**Phase 1b: If palette worker doesn't return all 3 palettes or missing hex codes:**
+
+1. First retry: Re-spawn worker with clarified prompt emphasizing complete palettes with hex codes
+2. Second retry: Re-spawn worker with explicit format requirements
+3. After 2 retries: Inform user and offer manual input
+
+```
+The palette worker had trouble generating complete color palettes. Would you like me to:
+1. Try one more time with different approach
+2. Let you describe your preferred palette manually (color names and hex codes)
 ```
 
 ### User Provides Unclear Selection
@@ -622,7 +958,91 @@ All decisions saved to .claude/local/agent-state.json
 
 ## Examples
 
-### Complete Phase 1a Flow
+### Complete Phase 1a + 1b Flow
+
+```
+User: /agent brand "boutique yoga studio focused on mindfulness"
+
+Agent: I'll help create a brand identity for your boutique yoga studio
+       focused on mindfulness. Let me research some style directions.
+
+       [Spawns research worker]
+
+Agent: Based on mindfulness-focused yoga studio aesthetics, here are 3
+       style directions:
+
+       1. **Serene Minimalist**
+          Soft neutrals (cream, warm gray, pale sand), generous white space,
+          simple line art, clean sans-serif fonts. Evokes calm, clarity,
+          spaciousness.
+
+       2. **Organic Earth**
+          Terracotta, sage green, natural textures, hand-drawn elements,
+          earthy typography. Conveys grounding, connection to nature, warmth.
+
+       3. **Modern Zen**
+          Deep navy and soft blush, geometric mandalas, balanced compositions,
+          refined serif fonts. Suggests discipline, elegance, inner peace.
+
+       Which direction resonates? (1, 2, 3, or describe something different)
+
+User: 1
+
+Agent: Perfect! Serene Minimalist direction selected.
+
+       ✓ Phase 1a complete: Style direction chosen
+
+       Moving to Phase 1b: Color Palette generation
+
+       [Saves state]
+
+Agent: Now let's develop color palettes that match the Serene Minimalist style.
+
+       [Spawns palette worker]
+
+Agent: Here are 3 color palettes for the Serene Minimalist style:
+
+       1. **Soft Foundation**
+          Colors:
+          • Primary neutral: #F5F1EA (warm cream)
+          • Secondary neutral: #D8D3CA (soft taupe)
+          • Accent: #A89F91 (warm gray)
+          • Background: #FEFDFB (off-white)
+          • Text: #4A4741 (charcoal)
+          Creates a gentle, inviting base with subtle warmth.
+
+       2. **Natural Light**
+          Colors:
+          • Primary: #FAF7F2 (pale sand)
+          • Secondary: #E6DFD5 (light beige)
+          • Accent: #C9BFB3 (medium taupe)
+          • Background: #FFFFFF (pure white)
+          • Text: #3D3935 (soft black)
+          Maximizes brightness and airy spaciousness.
+
+       3. **Warm Minimal**
+          Colors:
+          • Primary: #F0EBE3 (warm white)
+          • Secondary: #CFC7BC (greige)
+          • Accent: #B5A393 (sand brown)
+          • Background: #F8F6F3 (cream)
+          • Text: #45423E (dark gray)
+          Balances minimalism with inviting warmth.
+
+       Which palette resonates? (1, 2, 3, or describe modifications)
+
+User: 3
+
+Agent: Excellent! Warm Minimal selected.
+
+       ✓ Phase 1b complete: Color palette chosen
+
+       [Phase 1c: Logo Concepts - coming soon]
+
+       [Saves updated state]
+```
+
+### Complete Phase 1a Flow (Simple)
 
 ```
 User: /agent brand "boutique yoga studio focused on mindfulness"
@@ -679,6 +1099,7 @@ Agent: Perfect! Serene Minimalist (Warm) direction selected.
 
 ### Requesting Status (Future)
 
+**After Phase 1a:**
 ```
 User: /agent status
 
@@ -689,22 +1110,50 @@ Agent: ## Brand Identity Progress
        **Current Phase:** 1a complete, 1b pending
 
        **Decisions Made:**
-       ✓ Style Direction: Serene Minimalist (Warm)
-         - Warm whites, soft beige, pale peach accents
-         - Generous space, simple line art
-         - Rounded sans-serif fonts
+       ✓ Style Direction: Serene Minimalist
+         - Soft neutrals, generous white space
+         - Simple line art, clean sans-serif fonts
+         - Evokes calm, clarity, spaciousness
 
        **Next Steps:**
-       Phase 1b will generate color palette options (not implemented yet)
+       Phase 1b: Color Palette generation
 
        Use `/agent show` to review current options
        Use `/agent back` to change previous decisions
 ```
 
-### Resuming (Future)
+**After Phase 1b:**
+```
+User: /agent status
+
+Agent: ## Brand Identity Progress
+
+       **Brand:** Boutique yoga studio focused on mindfulness
+       **Started:** 2026-01-23 at 10:30 AM
+       **Current Phase:** 1b complete, 1c pending
+
+       **Decisions Made:**
+       ✓ Style Direction: Serene Minimalist
+         - Soft neutrals, generous white space, simple line art
+
+       ✓ Color Palette: Warm Minimal
+         - Primary: #F0EBE3 (warm white)
+         - Secondary: #CFC7BC (greige)
+         - Accent: #B5A393 (sand brown)
+         - Background: #F8F6F3 (cream)
+         - Text: #45423E (dark gray)
+
+       **Next Steps:**
+       Phase 1c: Logo Concepts (not implemented yet)
+
+       Use `/agent show` to review current options
+       Use `/agent back` to change previous decisions
+```
+
+### Resuming After Phase 1a
 
 ```
-User: /agent resume
+User: /agent brand --resume
 
 Agent: Found previous brand identity session from 2 hours ago.
 
@@ -720,26 +1169,53 @@ Agent: Resuming from Phase 1b.
        Selected style: Modern Minimal (clean lines, muted earth tones,
        geometric shapes, sans-serif fonts)
 
-       [Would spawn palette worker - not implemented yet]
+       Now let's develop color palettes that match the Modern Minimal style.
 
-       Phase 1b coming soon. For now, session restored but can't proceed further.
+       [Spawns palette worker and proceeds with Phase 1b]
+```
+
+### Resuming After Phase 1b (Future)
+
+```
+User: /agent brand --resume
+
+Agent: Found previous brand identity session from yesterday.
+
+       **Brand:** Artisan coffee shop
+       **Last Phase:** 1b complete
+
+       Decisions made:
+       • Style: Modern Minimal
+       • Palette: Earthy Contrast (forest gray, sand, warm brown)
+
+       Continue from Phase 1c: Logo Concepts? (yes / start fresh)
+
+User: yes
+
+Agent: Resuming from Phase 1c.
+
+       [Would spawn logo concept worker - not implemented yet]
+
+       Phase 1c coming soon.
 ```
 
 ## Extension Points
 
-When implementing Phase 1b and 1c:
+When implementing Phase 1c:
 
-1. **Add worker prompt templates** (already outlined above)
-2. **Implement checkpoint save/load** (state file structure defined)
-3. **Add navigation commands** (`/agent show`, `/agent back`, etc.)
-4. **Parse palette and logo outputs** from workers
-5. **Spawn image generation workers** for logo concepts
-6. **Update error handling** for new worker types
+1. **Add logo concept worker prompt** (template already outlined above)
+2. **Add logo generation worker prompt** (template already outlined above)
+3. **Implement logo checkpoint save/load** (state file structure needs logo_concept field)
+4. **Add navigation commands** (`/agent show`, `/agent back`, etc.)
+5. **Parse logo outputs** from concept and generation workers
+6. **Spawn image generation workers** for logo visuals
+7. **Update error handling** for logo-specific worker types
 
 The architecture is designed to extend naturally:
 - Each phase follows the same pattern (research → present → select → checkpoint)
 - Worker prompts are templates with clear boundaries
 - State management is centralized
+- Phase 1a and 1b demonstrate the full pattern
 
 ## Technical Notes
 
