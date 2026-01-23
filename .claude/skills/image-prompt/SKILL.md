@@ -525,6 +525,59 @@ Enhanced prompt includes: "...warm earth tone palette with terracotta and sage a
   > "I see reference images in `references/`. Would you like to use them for style consistency? (Use `--refs=references/`)"
 - If `--refs` specified, use `compose_images` instead of `generate_image`
 
+## Reference Calibration
+
+When the project has a `references/` folder with images, automatically extract a taste profile.
+
+### Automatic Extraction
+
+1. Scan `references/` for image files
+2. Analyze each for taste signals (palette, lighting, composition, texture, mood)
+3. Extract commonalities into a taste profile
+4. Cache to `.nanobananapro-taste-cache.json`
+
+### What Gets Extracted
+
+| Signal | Example Output |
+|--------|----------------|
+| **Dominant palette** | "Muted earth tones, desaturated greens" |
+| **Lighting tendency** | "Soft diffused light, minimal harsh shadows" |
+| **Composition patterns** | "Centered subjects, generous negative space" |
+| **Texture/finish** | "Film grain, organic imperfections" |
+| **Mood consistency** | "Contemplative, quiet, intimate" |
+
+### How It's Applied
+
+During enhancement, the extracted profile acts as soft constraints:
+
+- **Flag contradictions:** "Your references are muted — 'vibrant saturated colors' may clash with your established aesthetic."
+- **Suggest alignment:** "Consider 'desaturated earth tones' to match your reference palette."
+
+### Cache Storage
+
+Cache extracted profile to `.nanobananapro-taste-cache.json` in project root:
+
+```json
+{
+  "extracted_from": ["ref1.jpg", "ref2.jpg", "ref3.jpg"],
+  "last_updated": "2026-01-23T10:30:00Z",
+  "profile": {
+    "palette": "muted earth tones, desaturated",
+    "lighting": "soft diffused, minimal shadows",
+    "composition": "centered subjects, negative space",
+    "texture": "film grain, organic",
+    "mood": "contemplative, quiet"
+  }
+}
+```
+
+### Re-extraction Triggers
+
+Re-extract automatically if:
+- Files in `references/` change (add/remove/modify)
+- Cache is older than 7 days
+- User runs with `--recalibrate` flag
+
 ## Examples
 
 ### Basic Generation
