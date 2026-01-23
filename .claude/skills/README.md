@@ -340,7 +340,7 @@ project-name/
 
 ### agent-brand
 
-**Guided brand identity agent.** Orchestrates a complete brand identity workflow through 3 phases with checkpoints at each decision point.
+**Guided brand identity agent.** Orchestrates a complete brand identity workflow through multiple phases with checkpoints at each decision point.
 
 ```bash
 # Start a new brand identity project
@@ -353,6 +353,7 @@ project-name/
 # Navigation during session
 /agent show      # Redisplay current options
 /agent back      # Return to previous phase
+/agent designs   # Start Phase 2: Product Designs
 ```
 
 **Workflow Phases:**
@@ -362,12 +363,52 @@ project-name/
 | **1a: Style Direction** | Research 3 visual style directions | Selected style (e.g., "Modern Minimal") |
 | **1b: Color Palette** | Generate 3 palette variations | Selected palette with hex codes |
 | **1c: Logo Concepts** | Create 3 logo concepts + images | Selected logo image |
+| **2: Product Designs** | Create product-ready designs | Design collection for POD/store |
+
+**Skill Chaining Architecture**
+
+Agent-brand chains to local skills throughout execution for consistency and code reuse:
+
+```
+Workflow with Skill Chaining:
+
+★ project-setup (new projects)     ← Scaffolds project structure
+    ↓
+Phase 1a: Style Direction
+    ↓
+Phase 1b: Color Palette
+    ↓
+★ style-library add                ← Saves palette as reusable preset
+    ↓
+Phase 1c: Logo Concepts
+    ├── ★ enhance-prompt --quick   ← Optimizes each logo prompt
+    ├── ★ taste-check --taste=medium ← Validates for clichés
+    └── Spawn Logo Generation Worker
+    ↓
+Phase 2: Product Designs
+    ├── ★ brainstorming            ← Creative exploration
+    └── ★ enhance-prompt           ← Crafts design prompts
+
+★ = Skill invocation (chains to local skills)
+```
+
+**Required Skill Invocations:**
+| Phase | Skill | Purpose |
+|-------|-------|---------|
+| Start | `project-setup --type=brand --quick` | Scaffold directories (new projects) |
+| After 1b | `style-library add` | Save palette as reusable preset |
+| Phase 1c | `enhance-prompt --quick` | Optimize logo prompts |
+| Phase 1c | `taste-check --taste=medium` | Validate prompts for clichés |
+| Phase 2 | `superpowers:brainstorming` | Creative exploration |
+| Phase 2 | `enhance-prompt` | Craft design prompts |
 
 **How It Works:**
 - Agent proposes options at each phase
 - You select or request refinements
 - Agent saves checkpoints for resumption
 - Uses Task tool workers for research and generation
+- **Never generates images directly** - always delegates to workers
+- **Phase 2 chains to other skills** - brainstorming and enhance-prompt
 
 **Navigation Commands:**
 
@@ -375,6 +416,7 @@ project-name/
 |---------|-------------|
 | `/agent show` | Redisplay current options without regenerating |
 | `/agent back` | Return to previous checkpoint |
+| `/agent designs` | Trigger Phase 2: Product Designs |
 | `/agent brand --resume` | Continue from saved state |
 
 **State Persistence:**
@@ -397,7 +439,17 @@ Agent: [Researches style directions]
 User: 2
 
 Agent: Modern Minimal selected. Generating palette options...
-       [Continues to Phase 1b]
+       [Continues through Phase 1b, 1c]
+
+Agent: Brand identity complete! Would you like to create product designs?
+
+User: yes
+
+Agent: [Invokes brainstorming skill]
+       [Gathers requirements via AskUserQuestion]
+       [Invokes enhance-prompt skill]
+       [Spawns design generation workers]
+       Here are your 10 t-shirt designs...
 ```
 
 **Architecture:**
@@ -405,6 +457,7 @@ Agent: Modern Minimal selected. Generating palette options...
 - Task tool workers for research and generation
 - Flat hierarchy (workers don't spawn sub-workers)
 - Natural language communication between workers and orchestrator
+- **Skill chaining**: Invokes project-setup, style-library, enhance-prompt, taste-check, and brainstorming skills at appropriate points
 
 ## Flag Syntax Standard
 
