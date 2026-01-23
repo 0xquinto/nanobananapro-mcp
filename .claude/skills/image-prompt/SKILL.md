@@ -49,6 +49,9 @@ Save and log (if in project)
 | `--aspect=<ratio>` | `--aspect=16:9` | Set aspect ratio |
 | `--grounded` | `--grounded` | Use search-grounded generation for real-world data |
 | `--project=<path>` | `--project=demo-campaign` | Use specific project's context (style-guide, style-library, outputs) |
+| `--taste=<level>` | `--taste=high` | Cliche detection sensitivity (low/medium/high, default: medium) |
+| `--learn` | `--learn` | Show reasoning for taste suggestions |
+| `--no-taste` | `--no-taste` | Skip taste checks entirely (speed mode) |
 
 ## MCP Tool Selection
 
