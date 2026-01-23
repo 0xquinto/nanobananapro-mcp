@@ -4,7 +4,7 @@ description: Scaffold an image generation project with style guide, references,
   and output directories. Use when starting a new visual project, brand work,
   or any multi-image effort requiring consistency. Creates project structure
   and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product] | validate [path]"
+argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] | validate [path]"
 ---
 
 # Project Setup
@@ -43,6 +43,25 @@ project-name/
 Check for project name and type in the command:
 - `/project-setup my-brand --type=brand`
 - `/project-setup` (will prompt for details)
+
+### Quick Mode (--quick flag)
+
+When `--quick` is passed, skip the interview and use these defaults:
+
+| Parameter | Default Value |
+|-----------|---------------|
+| Project Type | `brand` |
+| Visual Style | "clean and modern" |
+| Color Preferences | "neutral palette with one accent color" |
+| Reference Medium | Photography |
+
+**Usage:**
+```bash
+/project-setup my-project --quick
+/project-setup my-project --type=character --quick
+```
+
+When `--type` is also provided, only that parameter is set—others use defaults above.
 
 ### Step 2: Interactive Interview (if details missing)
 

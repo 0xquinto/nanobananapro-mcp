@@ -220,7 +220,14 @@ Scaffold a complete image generation project with style guide, directories, and 
 /project-setup hero-campaign --type=campaign
 /project-setup luna-character --type=character
 /project-setup product-shots --type=product
+
+# Quick setup with defaults
+/project-setup my-project --quick
 ```
+
+**Options:**
+- `--type=<type>` — Project type (brand, campaign, character, product)
+- `--quick` — Skip interview, use sensible defaults
 
 **Generated Structure:**
 ```
