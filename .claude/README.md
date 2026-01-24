@@ -10,6 +10,7 @@ Claude Code configuration for the nanobananapro-mcp project.
 │   ├── README.md            # Full skill documentation
 │   ├── image-prompt/        # Primary generation skill
 │   ├── enhance-prompt/      # Prompt improvement
+│   ├── moodboard/           # Learn design through moodboards
 │   ├── taste-check/         # Cliché and quality analysis
 │   ├── prompt-anatomy/      # Structural analysis
 │   ├── style-library/       # Preset management
@@ -33,6 +34,7 @@ See [skills/README.md](skills/README.md) for full documentation.
 |-------|---------|---------|
 | image-prompt | `/image-prompt` | Generate images from concepts |
 | enhance-prompt | `/enhance-prompt` | Improve naive prompts |
+| moodboard | `/moodboard` | Learn design through moodboard creation |
 | taste-check | `/taste-check` | Detect clichés and quality issues |
 | prompt-anatomy | `/prompt-anatomy` | Analyze prompt structure |
 | style-library | `/style-library` | Manage style presets |

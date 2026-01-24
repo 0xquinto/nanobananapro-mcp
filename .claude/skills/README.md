@@ -7,6 +7,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | [quickstart](#quickstart) | `/quickstart` | New user onboarding |
+| [moodboard](#moodboard) | `/moodboard` | Learn design through moodboard creation |
 | [image-prompt](#image-prompt) | `/image-prompt` | Generate images from concepts |
 | [enhance-prompt](#enhance-prompt) | `/enhance-prompt` | Improve naive prompts |
 | [prompt-anatomy](#prompt-anatomy) | `/prompt-anatomy` | Analyze prompt quality |
@@ -22,14 +23,18 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
                     │   quickstart    │ ← Start here if new
                     └────────┬────────┘
                              │
-                             ▼
-                    ┌─────────────────┐
-                    │  project-setup  │
-                    └────────┬────────┘
+            ┌────────────────┴────────────────┐
+            │                                 │
+            ▼                                 ▼
+   ┌─────────────────┐               ┌─────────────────┐
+   │  project-setup  │               │    moodboard    │ ← Learn design thinking
+   └────────┬────────┘               └────────┬────────┘
+            │                                 │
+            └────────────────┬────────────────┘
                              │
          ┌───────────────────┼───────────────────┐
-         │                  │                   │
-         ▼                  ▼                   ▼
+         │                   │                   │
+         ▼                   ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
 │ capture-trends  │ │  style-library  │ │ enhance-prompt  │
 │ (from refs)     │ │ (manage presets)│ │ (improve ideas) │
@@ -55,6 +60,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 
 **Entry points:**
 - **New to image generation?** → Start with `/quickstart`
+- **Want to learn design fundamentals?** → Use `/moodboard` for guided learning
 - **Multi-image project (campaign, brand, product)?** → Start with `/project-setup`
 - **Just want one image?** → Jump straight to `/image-prompt`
 
@@ -73,6 +79,9 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 ### Decision Logic
 
 ```
+"I want to get better at design"
+  → /moodboard — Guided learning through moodboard creation
+
 "I want an image"
   → Is this part of a larger project?
     → Yes → /project-setup first
@@ -166,6 +175,46 @@ Automatically suggests itself when:
 - No style-library.md found
 - First image-related request in session
 - User asks "how do I start?" or "what can you do?"
+
+---
+
+### moodboard
+
+**Learn design thinking through guided moodboard creation.** For vibecoders who want to develop visual design intuition.
+
+```bash
+# Guided moodboard creation (recommended for learning)
+/moodboard
+
+# Create for a specific project
+/moodboard "coffee shop brand"
+
+# Quick mode (skip explanations)
+/moodboard "summer campaign" --quick
+
+# Analyze an existing image to learn from it
+/moodboard analyze ./reference.png
+
+# Learn about a specific design concept
+/moodboard learn colors
+```
+
+**What you'll learn:**
+- Articulate visual preferences (move from "I like this" to "I like warm tones with organic textures")
+- Build design vocabulary (name what you see)
+- Make intentional choices (understand why combinations work)
+- Create consistency (apply principles across projects)
+
+**Workflow:** Define intent → Build palette (colors, textures, mood) → Generate → Reflect → Extract and save
+
+**Learning milestones:**
+
+| Level | You Can... |
+|-------|-----------|
+| Beginner | Answer intent questions, recognize what you like |
+| Intermediate | Name colors/textures specifically, critique your own work |
+| Confident | Create consistent styles, iterate purposefully |
+| Fluent | Predict what will work, teach others your approach |
 
 ---
 
