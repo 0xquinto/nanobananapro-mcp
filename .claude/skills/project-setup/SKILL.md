@@ -83,37 +83,25 @@ Parse project name and type from command (e.g., `/project-setup my-brand --type=
 | `--lock` | Lock style-guide.md (see [Locking](#locking)) |
 | `--unlock` | Unlock style-guide.md for editing |
 
-**Minimal Mode:**
+**Minimal Mode (`--minimal`):**
 
-`--minimal` creates just the style-guide.md file. Use when:
-- You're experimenting and don't need full structure yet
-- You want to define style before committing to a project folder
-- You're adding AI generation to an existing project
+Creates only `style-guide.md`—no folders. Useful for experiments or adding AI generation to existing projects. Folders are created on first image generation.
 
-Folders are created automatically when you first generate an image.
-
-**--dry-run Example:**
+**Dry Run (`--dry-run`):**
 
 ```
-User: /project-setup coastal-brand --type=brand --dry-run
+> /project-setup coastal-brand --type=brand --dry-run
 
-Claude:
-## Preview: coastal-brand (not created yet)
+Preview: coastal-brand
 
 Would create:
-├── coastal-brand/
-│   ├── style-guide.md (brand template)
-│   ├── style-library.md (15 starter presets)
-│   ├── asset-log.md
-│   ├── references/
-│   │   ├── moodboards/
-│   │   ├── characters/
-│   │   └── inspiration/
-│   └── outputs/
-│       ├── exploration/
-│       └── finals/
+├── style-guide.md (brand template)
+├── style-library.md (15 starter presets)
+├── asset-log.md
+├── references/{moodboards,characters,inspiration}/
+└── outputs/{exploration,finals}/
 
-Run without --dry-run to create this structure.
+Run without --dry-run to create.
 ```
 
 **Quick Mode Defaults:**
@@ -155,26 +143,19 @@ Create all directories and files based on answers, then show what was created an
 
 ### Step 4: First Image (Optional)
 
-After creating the structure, offer to generate a sample image:
+After structure creation, offer a sample image:
 
 ```
-Structure created! Want to test your style with a quick sample image?
-
-1. Yes - Generate a simple test image with your style
+Structure created! Test your style with a sample image?
+1. Yes - Generate a test image
 2. No - I'll add references first
-3. Show me a prompt I can use later
+3. Show me a prompt for later
 ```
 
-**If "Yes":**
-- Generate: "A simple [project-type appropriate subject] in [user's style]. [User's color mood]."
-- Save to: `outputs/exploration/first-test.png`
-- Log in asset-log.md
-
-**If "Show me a prompt":**
-- Display a ready-to-copy prompt using their style guide
-- Explain what each part does
-
-This gets users to their first generated image within the setup flow.
+| Choice | Action |
+|--------|--------|
+| Yes | Generate "[project-type subject] in [user's style]" → save to `outputs/exploration/first-test.png` |
+| Show prompt | Display a ready-to-copy prompt with explanation |
 
 ## File Templates
 
