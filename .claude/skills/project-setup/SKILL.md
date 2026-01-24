@@ -1,11 +1,10 @@
 ---
 name: project-setup
-version: 1.1.0
-description: Scaffold an image generation project with style guide, references,
-  and output directories. Use when starting a new visual project, brand work,
-  or any multi-image effort requiring consistency. Creates project structure
-  and style-guide.md template.
-argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick] [--dry-run] [--lock] [--unlock]"
+version: 2.0.0
+description: Bootstrap your creative project in under 2 minutes. Creates style guide,
+  presets, and folders for consistent AI image generation. Built for vibecoders who
+  know what they want but not the design jargon.
+argument-hint: "[project-name] [--type=brand|campaign|character|product] [--quick[=cozy|minimal|bold|dreamy]] [--minimal] [--dry-run] [--lock] [--unlock]"
 ---
 
 # Project Setup
