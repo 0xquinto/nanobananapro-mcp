@@ -276,6 +276,275 @@ This builds your vocabulary by connecting what you see to design language.
 
 ---
 
+## Moodboard Best Practices
+
+Professional practices compiled from UX and design research:
+
+| Practice | Why It Matters | How to Apply |
+|----------|----------------|--------------|
+| **Define mood statements first** | Anchors all visual decisions | Write "User should feel [emotion] when [action]" before collecting images |
+| **Limit to 4 style keywords** | Too many = unfocused direction | Brainstorm many, then ruthlessly cut to 4 that complement each other |
+| **Apply consistent color palette** | Creates brand recognition | Pick 3 colors max (60/30/10 rule) and use across all boards |
+| **Match lighting across elements** | Incoherent lighting = amateur feel | All reference images should have similar light quality/direction |
+| **Document what worked** | Builds reusable knowledge | Save successful boards with notes on why they work |
+| **Align with target audience** | Design serves users, not ego | Reference your personas when selecting visual elements |
+| **Use current sources** | Dated references = dated design | Search design sites by "most recent", not "most popular" |
+| **Balance visual weight** | Prevents chaotic layouts | Distribute light/dark, dense/sparse across the composition |
+| **Include texture variety** | Adds depth and interest | Mix 2-3 complementary textures (smooth/rough, matte/glossy) |
+| **Save before presenting** | Moodboards evolve | Keep versions as your understanding develops |
+
+### The Voice and Tone Test
+
+Your moodboard should pass this consistency check:
+
+| Element | Should Align With |
+|---------|-------------------|
+| Colors | Emotional response you want |
+| Textures | Brand personality (playful, serious, organic, tech) |
+| Typography feel | Voice (loud, quiet, formal, casual) |
+| Imagery style | Target audience expectations |
+| White space | Energy level (dense = energetic, sparse = calm) |
+
+---
+
+## Extracting Style from Moodboards
+
+When you create a moodboard you love, extract its essence for reuse. Use this template:
+
+### Style Extraction Template
+
+```markdown
+## Moodboard Analysis: [filename]
+
+### Summary
+One-sentence description of the overall feel.
+
+### Colors
+- **Primary**: [color name] ([hex code]) - [where/how used]
+- **Secondary**: [color name] ([hex code]) - [where/how used]
+- **Accent**: [color name] ([hex code]) - [where/how used]
+- **Neutrals**: [color names] - [background, text, etc.]
+
+### Color Relationships
+- Temperature: [warm/cool/mixed]
+- Saturation: [vivid/muted/mixed]
+- Contrast level: [high/medium/low]
+
+### Textures & Materials
+- [texture 1]: [material name, e.g., "raw linen weave"]
+- [texture 2]: [material name]
+- [texture 3]: [material name]
+- Surface finish: [matte/glossy/mixed]
+
+### Lighting
+- Quality: [soft/hard/mixed]
+- Direction: [e.g., "upper left", "diffused overhead"]
+- Color temperature: [warm/neutral/cool]
+- Shadow depth: [deep/soft/minimal]
+
+### Composition
+- Layout: [grid/organic/asymmetric]
+- Density: [minimal/balanced/dense]
+- Visual weight: [top-heavy/bottom-heavy/centered/balanced]
+
+### Mood & Emotion
+- Primary feeling: [one word]
+- Secondary feelings: [2-3 words]
+- Energy: [calm/neutral/energetic]
+- Formality: [casual/neutral/formal]
+
+### Style Keywords (for prompts)
+"[5-10 keywords that capture this style, comma-separated]"
+
+### What Makes This Work
+[2-3 sentences on why this combination succeeds]
+
+### Potential Applications
+- [ ] Hero images
+- [ ] Product photography
+- [ ] Social media
+- [ ] Packaging
+- [ ] Environmental design
+```
+
+### Example Extraction
+
+```markdown
+## Moodboard Analysis: sustainable-fashion-brand.png
+
+### Summary
+Modern earth tones with natural textures, feeling grounded but contemporary.
+
+### Colors
+- **Primary**: Dusty terracotta (#C4A484) - large color blocks, backgrounds
+- **Secondary**: Olive (#808000) - accent elements, text
+- **Accent**: Sand (#C2B280) - highlights, borders
+- **Neutrals**: Warm cream (#FFFDD0), soft charcoal - backgrounds, text
+
+### Color Relationships
+- Temperature: Warm
+- Saturation: Muted (desaturated by ~30%)
+- Contrast level: Medium-low (harmonious)
+
+### Textures & Materials
+- Linen weave: visible thread pattern, natural imperfections
+- Raw cotton: soft, unbleached, slightly nubby
+- Light wood grain: blonde oak, visible but subtle grain
+- Surface finish: Predominantly matte
+
+### Lighting
+- Quality: Soft, diffused
+- Direction: Upper left, mimicking morning window light
+- Color temperature: Warm (slight golden cast)
+- Shadow depth: Soft, gradient shadows
+
+### Composition
+- Layout: Asymmetric but balanced
+- Density: Minimal with breathing room
+- Visual weight: Slightly bottom-heavy (grounded)
+
+### Mood & Emotion
+- Primary feeling: Grounded
+- Secondary feelings: Calm, authentic, approachable
+- Energy: Calm
+- Formality: Casual-neutral
+
+### Style Keywords (for prompts)
+"dusty terracotta palette, natural linen textures, soft morning light,
+organic minimalist, muted earth tones, raw cotton, blonde wood accents,
+warm matte finish, contemporary natural aesthetic"
+
+### What Makes This Work
+The muted saturation prevents the warm tones from feeling aggressive.
+Natural textures add depth without visual noise. The soft lighting
+unifies all elements and creates an inviting, approachable feel.
+
+### Potential Applications
+- [x] Hero images
+- [x] Product photography
+- [x] Social media
+- [ ] Packaging (needs more contrast for shelf impact)
+- [ ] Environmental design
+```
+
+---
+
+## Using Moodboards as References
+
+Once you have a moodboard, use it to guide actual image generation with `compose_images`.
+
+### Save Location
+
+Store moodboards where skills can find them:
+
+```
+project/
+├── references/
+│   └── moodboards/
+│       ├── brand-moodboard.png       # Primary brand direction
+│       ├── summer-campaign.png       # Seasonal variant
+│       └── product-style.png         # Product photography guide
+```
+
+### Reference Prompt Patterns
+
+**Basic pattern:**
+```
+Using the attached moodboard as style reference, generate [subject].
+Maintain the same color palette, lighting quality, and [specific element]
+from the moodboard.
+```
+
+**Detailed pattern:**
+```
+Using the attached moodboard as style reference, generate [subject].
+
+Match these elements from the moodboard:
+- Color palette: [describe the colors you want carried over]
+- Lighting: [describe the lighting quality]
+- Texture feel: [describe the texture approach]
+- Mood: [describe the emotional tone]
+
+Scene-specific details:
+- [Additional context for this specific image]
+```
+
+### compose_images Examples
+
+**Product shot guided by moodboard:**
+```python
+compose_images(
+    prompt="""
+    Using the attached moodboard as style reference, generate a product shot
+    of a ceramic coffee mug. Maintain the same:
+    - Warm terracotta and cream color palette
+    - Soft, diffused morning lighting
+    - Natural linen and wood textures in background
+    - Calm, grounded mood
+
+    The mug should be cream-colored with a matte finish.
+    Composition: centered, eye-level, with soft shadows.
+    """,
+    image_paths=["./references/moodboards/brand-moodboard.png"],
+    aspect_ratio="4:5",
+    resolution="2K"
+)
+```
+
+**Hero image guided by moodboard:**
+```python
+compose_images(
+    prompt="""
+    Using the attached moodboard as style reference, generate a lifestyle
+    hero image for a sustainable fashion brand.
+
+    Match the moodboard's:
+    - Muted earth tone palette
+    - Natural fiber textures
+    - Soft natural lighting
+    - Contemporary-organic aesthetic
+
+    Scene: Model in linen clothing, standing in a sunlit studio space.
+    Composition: Wide shot, model off-center, negative space for text overlay.
+    """,
+    image_paths=["./references/moodboards/sustainable-fashion.png"],
+    aspect_ratio="16:9",
+    resolution="2K"
+)
+```
+
+**Multi-reference composition:**
+```python
+compose_images(
+    prompt="""
+    Combine elements from the attached references:
+    - Reference 1 (moodboard): Overall color palette and mood
+    - Reference 2 (product): The actual product to feature
+
+    Generate a product photography scene that places the product
+    in an environment matching the moodboard's aesthetic.
+    """,
+    image_paths=[
+        "./references/moodboards/brand-moodboard.png",
+        "./references/products/coffee-mug.png"
+    ],
+    aspect_ratio="1:1",
+    resolution="2K"
+)
+```
+
+### What to Specify vs. What to Inherit
+
+| Specify in Prompt | Inherit from Moodboard |
+|-------------------|------------------------|
+| Subject (what to generate) | Color palette |
+| Composition (framing, angle) | Lighting quality |
+| Specific props or elements | Texture vocabulary |
+| Text overlay requirements | Mood and atmosphere |
+| Aspect ratio | Material finishes |
+
+---
+
 ## Progress Tracking
 
 As you use this skill, you're building:
