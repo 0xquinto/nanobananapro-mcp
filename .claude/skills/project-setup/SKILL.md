@@ -143,6 +143,29 @@ Ask these questions to gather project requirements:
 
 Create all directories and files based on answers, then show what was created and suggest next steps.
 
+### Step 4: First Image (Optional)
+
+After creating the structure, offer to generate a sample image:
+
+```
+Structure created! Want to test your style with a quick sample image?
+
+1. Yes - Generate a simple test image with your style
+2. No - I'll add references first
+3. Show me a prompt I can use later
+```
+
+**If "Yes":**
+- Generate: "A simple [project-type appropriate subject] in [user's style]. [User's color mood]."
+- Save to: `outputs/exploration/first-test.png`
+- Log in asset-log.md
+
+**If "Show me a prompt":**
+- Display a ready-to-copy prompt using their style guide
+- Explain what each part does
+
+This gets users to their first generated image within the setup flow.
+
 ## File Templates
 
 ### style-guide.md
