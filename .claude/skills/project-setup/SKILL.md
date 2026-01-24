@@ -93,6 +93,23 @@ Parse project name and type from command (e.g., `/project-setup my-brand --type=
 
 When `--type` is also provided, only that parameter is set—others use defaults.
 
+**Quick Vibe Presets:**
+
+For even faster setup, use `--quick=<vibe>`:
+
+| Preset | Style | Colors | Feeling |
+|--------|-------|--------|---------|
+| `--quick=cozy` | Warm, inviting | Earth tones, warm neutrals | Like a favorite cafe |
+| `--quick=minimal` | Clean, modern | White, black, one accent | Calm confidence |
+| `--quick=bold` | High contrast | Saturated, vibrant | Attention-grabbing |
+| `--quick=dreamy` | Soft, ethereal | Pastels, soft focus | Nostalgic, romantic |
+
+**Usage:**
+```bash
+/project-setup my-brand --quick=cozy
+/project-setup portfolio --quick=minimal --type=brand
+```
+
 ### Step 2: Interactive Interview (if details missing)
 
 Ask these questions to gather project requirements:
