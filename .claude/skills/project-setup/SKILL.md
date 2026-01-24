@@ -472,29 +472,58 @@ This skill creates files that other skills detect and use:
 
 ```
 User: /project-setup
-Claude: What's the project called?
-User: coastal-retreat-brand
-Claude: What are you making? (brand/campaign/character/product)
+
+Claude: What's your project called? (This creates your folder)
+
+User: coastal-retreat
+
+Claude: What are you making?
+• brand - Visual identity (logos, colors, the whole look)
+• campaign - Marketing stuff (ads, social posts)
+• character - Characters/mascots
+• product - Product photography
+
 User: brand
-Claude: What vibe are you going for?
-User: serene, natural, upscale coastal living
+
+Claude: What vibe are you going for? Describe it like you'd tell a friend.
+
+User: serene, natural, upscale coastal living - think expensive beach house, not spring break
+
 Claude: What colors feel right?
-User: ocean blues, sandy beiges, weathered white, touches of coral
-Claude: Real photos or artistic? (photography/illustration/3D/mixed)
+
+User: ocean blues, sandy beiges, weathered white, maybe touches of coral
+
+Claude: Real photos or more artistic?
+• photography - Realistic images
+• illustration - Artistic/drawn style
+• 3D - Digital renders
+• mixed - Whatever fits
+
 User: photography
-Claude: What should this NOT look like?
-User: no tropical/tacky beach vibes, avoid neon colors
+
+Claude: Last one - what should this NOT look like? Any styles to avoid?
+
+User: no tropical/tacky beach vibes, nothing that looks like a generic resort ad
 
 Claude:
-## Project Created: coastal-retreat-brand
-✓ style-guide.md, style-library.md, asset-log.md
-✓ references/{moodboards,characters,inspiration}/
-✓ outputs/{exploration,finals}/
+## Created: coastal-retreat/
 
-Next: Add references → customize style-guide.md → `/image-prompt`
+✓ style-guide.md - Your brand rules (customized with your answers)
+✓ style-library.md - 15 ready-to-use presets
+✓ asset-log.md - Tracks everything you generate
+✓ references/ - Drop inspiration images here
+✓ outputs/ - Your generated images land here
+
+### Try it now
+
+Generate your first test image:
+`/image-prompt a hero image for coastal retreat website --style=project-main`
+
+Or add some reference images first:
+Drop images into `references/inspiration/` then run `/capture-trends`
 ```
 
-**Quick mode:** `/project-setup summer-campaign --type=campaign --quick` creates the structure with defaults (style: "clean and modern", colors: "neutral with accent", medium: photography).
+**Quick mode:** `/project-setup summer-campaign --quick=cozy` creates everything with warm, inviting defaults - customize the style-guide.md after.
 
 ## Common Use Cases
 
