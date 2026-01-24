@@ -125,22 +125,49 @@ Use `--quick=<vibe>` for instant styling: `cozy`, `minimal`, `bold`, `dreamy`, `
 
 ### Step 2: Interactive Interview (if details missing)
 
-Ask these questions to gather project requirements:
+**Start with one open question:**
 
-| # | Question | Example Answers |
-|---|----------|-----------------|
-| 1 | What's your project called? | `coastal-retreat`, `my-brand` |
-| 2 | What are you making? | brand / campaign / character / product |
-| 3 | What vibe are you going for? | "cozy coffee shop", "clean tech startup" |
-| 4 | What colors feel right? | "earthy and warm", "bold neons" |
-| 5 | Real photos or artistic? | photography / illustration / 3D / mixed |
-| 6 | What should this NOT look like? | "not corporate", "avoid stock photo vibes" |
+> "What are you building? Tell me about it like you'd tell a friend."
 
-### Step 3: Generate Structure
+From their answer, extract:
+
+| Extract | How to Identify | Example |
+|---------|-----------------|---------|
+| **Project name** | Slugify the main noun/concept | "luxury coastal retreat brand" → `coastal-retreat` |
+| **Type** | Keywords: "brand/identity" → brand, "campaign/ads/marketing" → campaign, "character/mascot" → character, "product shots" → product | "visual identity for..." → brand |
+| **Vibe** | Adjectives and mood words | "serene, upscale, natural" |
+| **Colors** | Color words if mentioned | "ocean blues, sandy tones" |
+| **Medium** | "photos/photography", "illustrated", "3D renders" | "realistic photography" |
+| **Constraints** | "not X", "avoid Y", "no Z" | "not tacky or generic" |
+
+**Then ask only what's missing.** If their pitch covered vibe and colors but not medium, only ask about medium. Keep it conversational:
+
+| Missing | Follow-up |
+|---------|-----------|
+| Medium | "Real photos or more artistic (illustration, 3D)?" |
+| Colors | "Any colors that feel right for this?" |
+| Constraints | "Anything this should NOT look like?" |
+
+**Never ask what they already told you.**
+
+### Step 3: Offer Inspiration Extraction
+
+Before creating files, ask:
+
+> "Do you have any inspiration to pull from? (URL, image, or PDF) Or should I set up with these defaults?"
+
+| Response | Action |
+|----------|--------|
+| User provides source | Use `/capture-trends` to extract styles, then populate style-guide.md with extracted values |
+| "No" / "just set it up" | Proceed with values from their pitch |
+
+This step is optional but powerful—extracted styles are more specific than user descriptions.
+
+### Step 4: Generate Structure
 
 Create all directories and files based on answers, then show what was created and suggest next steps.
 
-### Step 4: First Image (Optional)
+### Step 5: First Image (Optional)
 
 After structure creation, offer a sample image:
 
@@ -472,42 +499,28 @@ This skill creates files that other skills detect and use:
 ```
 User: /project-setup
 
-Claude: What's your project called? (This creates your folder)
+Claude: What are you building? Tell me about it like you'd tell a friend.
 
-User: coastal-retreat
+User: I'm creating a brand for a luxury coastal retreat. Think serene, natural, upscale
+beach house vibes - definitely not spring break tacky. Ocean blues, sandy beiges,
+weathered whites. Real photography, nothing illustrated.
 
-Claude: What are you making?
-• brand - Visual identity (logos, colors, the whole look)
-• campaign - Marketing stuff (ads, social posts)
-• character - Characters/mascots
-• product - Product photography
+Claude: Got it - I'm seeing:
+• Project: coastal-retreat (brand)
+• Vibe: serene, natural, upscale
+• Colors: ocean blues, sandy beiges, weathered white
+• Medium: photography
+• Avoid: tacky/spring break vibes
 
-User: brand
+Do you have any inspiration to pull from? (URL, image, or PDF)
+Or should I set up with these defaults?
 
-Claude: What vibe are you going for? Describe it like you'd tell a friend.
-
-User: serene, natural, upscale coastal living - think expensive beach house, not spring break
-
-Claude: What colors feel right?
-
-User: ocean blues, sandy beiges, weathered white, maybe touches of coral
-
-Claude: Real photos or more artistic?
-• photography - Realistic images
-• illustration - Artistic/drawn style
-• 3D - Digital renders
-• mixed - Whatever fits
-
-User: photography
-
-Claude: Last one - what should this NOT look like? Any styles to avoid?
-
-User: no tropical/tacky beach vibes, nothing that looks like a generic resort ad
+User: no, just set it up
 
 Claude:
 ## Created: coastal-retreat/
 
-✓ style-guide.md - Your brand rules (customized with your answers)
+✓ style-guide.md - Your brand rules (customized)
 ✓ style-library.md - 15 ready-to-use presets
 ✓ asset-log.md - Tracks everything you generate
 ✓ references/ - Drop inspiration images here
@@ -517,9 +530,38 @@ Claude:
 
 Generate your first test image:
 `/image-prompt a hero image for coastal retreat website --style=project-main`
+```
 
-Or add some reference images first:
-Drop images into `references/inspiration/` then run `/capture-trends`
+**With inspiration source:**
+
+```
+User: /project-setup
+
+Claude: What are you building? Tell me about it like you'd tell a friend.
+
+User: a moody coffee brand, dark and cozy
+
+Claude: Got it - moody coffee brand, dark and cozy vibes.
+
+Do you have any inspiration to pull from? (URL, image, or PDF)
+Or should I set up with these defaults?
+
+User: yeah check out this site: https://example-roastery.com
+
+Claude: [Uses /capture-trends to extract styles from the URL]
+
+Extracted from example-roastery.com:
+• Colors: deep espresso browns, cream, muted gold
+• Vibe: intimate, artisanal, warm shadows
+• Medium: photography with moody lighting
+
+Adding these to your style guide. Creating project...
+
+## Created: moody-coffee/
+
+✓ style-guide.md - Populated with extracted styles
+✓ style-library.md - Includes "roastery-dark" preset from source
+...
 ```
 
 **Quick mode:** `/project-setup summer-campaign --quick=cozy` creates everything with warm, inviting defaults - customize the style-guide.md after.
