@@ -79,8 +79,18 @@ Parse project name and type from command (e.g., `/project-setup my-brand --type=
 |------|--------|
 | `--quick` | Skip interview, use defaults below |
 | `--dry-run` | Preview structure without creating files |
+| `--minimal` | Create only style-guide.md (no folders) |
 | `--lock` | Lock style-guide.md (see [Locking](#locking)) |
 | `--unlock` | Unlock style-guide.md for editing |
+
+**Minimal Mode:**
+
+`--minimal` creates just the style-guide.md file. Use when:
+- You're experimenting and don't need full structure yet
+- You want to define style before committing to a project folder
+- You're adding AI generation to an existing project
+
+Folders are created automatically when you first generate an image.
 
 **--dry-run Example:**
 
