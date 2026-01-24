@@ -14,7 +14,6 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 | [style-library](#style-library) | `/style-library` | Manage style presets |
 | [capture-trends](#capture-trends) | `/capture-trends` | Extract styles from references |
 | [project-setup](#project-setup) | `/project-setup` | Scaffold visual projects |
-| [agent-brand](#agent-brand) | `/agent brand` | **Agent:** Guided brand identity creation |
 
 ## Workflow Overview
 
@@ -23,15 +22,12 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
                     │   quickstart    │ ← Start here if new
                     └────────┬────────┘
                              │
-            ┌────────────────┴────────────────┐
-            │                                 │
-            ▼                                 ▼
-   ┌─────────────────┐               ┌─────────────────┐
-   │  project-setup  │               │  agent-brand    │ ← Multi-step brand identity
-   │  (manual)       │               │  (guided agent) │   (style→palette→logo)
-   └────────┬────────┘               └─────────────────┘
-            │
-         ┌──┴───────────────┬───────────────────┐
+                             ▼
+                    ┌─────────────────┐
+                    │  project-setup  │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
          │                  │                   │
          ▼                  ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
@@ -59,8 +55,7 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 
 **Entry points:**
 - **New to image generation?** → Start with `/quickstart`
-- **Want a complete brand identity?** → Use `/agent brand` (guided workflow)
-- **Multi-image project (campaign, product)?** → Start with `/project-setup`
+- **Multi-image project (campaign, brand, product)?** → Start with `/project-setup`
 - **Just want one image?** → Jump straight to `/image-prompt`
 
 **Preparation layer (optional):**
@@ -78,9 +73,6 @@ Claude Code skills for AI-powered image generation using the nanobananapro MCP s
 ### Decision Logic
 
 ```
-"I want a complete brand identity"
-  → /agent brand "description" — Guided 3-phase workflow (style, palette, logo)
-
 "I want an image"
   → Is this part of a larger project?
     → Yes → /project-setup first
@@ -335,129 +327,6 @@ project-name/
 │   └── finals/              # Approved assets
 └── asset-log.md             # Generation tracking
 ```
-
----
-
-### agent-brand
-
-**Guided brand identity agent.** Orchestrates a complete brand identity workflow through multiple phases with checkpoints at each decision point.
-
-```bash
-# Start a new brand identity project
-/agent brand "artisan coffee shop"
-/agent brand "boutique yoga studio focused on mindfulness"
-
-# Resume a previous session
-/agent brand --resume
-
-# Navigation during session
-/agent show      # Redisplay current options
-/agent back      # Return to previous phase
-/agent designs   # Start Phase 2: Product Designs
-```
-
-**Workflow Phases:**
-
-| Phase | What Happens | Output |
-|-------|--------------|--------|
-| **1a: Style Direction** | Research 3 visual style directions | Selected style (e.g., "Modern Minimal") |
-| **1b: Color Palette** | Generate 3 palette variations | Selected palette with hex codes |
-| **1c: Logo Concepts** | Create 3 logo concepts + images | Selected logo image |
-| **2: Product Designs** | Create product-ready designs | Design collection for POD/store |
-
-**Skill Chaining Architecture**
-
-Agent-brand chains to local skills throughout execution for consistency and code reuse:
-
-```
-Workflow with Skill Chaining:
-
-★ project-setup (new projects)     ← Scaffolds project structure
-    ↓
-Phase 1a: Style Direction
-    ↓
-Phase 1b: Color Palette
-    ↓
-★ style-library add                ← Saves palette as reusable preset
-    ↓
-Phase 1c: Logo Concepts
-    ├── ★ enhance-prompt --quick   ← Optimizes each logo prompt
-    ├── ★ taste-check --taste=medium ← Validates for clichés
-    └── Spawn Logo Generation Worker
-    ↓
-Phase 2: Product Designs
-    ├── ★ brainstorming            ← Creative exploration
-    └── ★ enhance-prompt           ← Crafts design prompts
-
-★ = Skill invocation (chains to local skills)
-```
-
-**Required Skill Invocations:**
-| Phase | Skill | Purpose |
-|-------|-------|---------|
-| Start | `project-setup --type=brand --quick` | Scaffold directories (new projects) |
-| After 1b | `style-library add` | Save palette as reusable preset |
-| Phase 1c | `enhance-prompt --quick` | Optimize logo prompts |
-| Phase 1c | `taste-check --taste=medium` | Validate prompts for clichés |
-| Phase 2 | `superpowers:brainstorming` | Creative exploration |
-| Phase 2 | `enhance-prompt` | Craft design prompts |
-
-**How It Works:**
-- Agent proposes options at each phase
-- You select or request refinements
-- Agent saves checkpoints for resumption
-- Uses Task tool workers for research and generation
-- **Never generates images directly** - always delegates to workers
-- **Phase 2 chains to other skills** - brainstorming and enhance-prompt
-
-**Navigation Commands:**
-
-| Command | Description |
-|---------|-------------|
-| `/agent show` | Redisplay current options without regenerating |
-| `/agent back` | Return to previous checkpoint |
-| `/agent designs` | Trigger Phase 2: Product Designs |
-| `/agent brand --resume` | Continue from saved state |
-
-**State Persistence:**
-- State saved to `.claude/local/agent-state.json`
-- Resume anytime with `--resume` flag
-- First-run shows onboarding, subsequent runs skip it
-
-**Example Session:**
-```
-User: /agent brand "artisan coffee shop"
-
-Agent: [Researches style directions]
-       Here are 3 style directions:
-       1. Rustic Craftsman - warm browns, vintage feel
-       2. Modern Minimal - clean lines, earth tones
-       3. Botanical Organic - green accents, natural textures
-
-       Which direction? (1, 2, 3, or describe something different)
-
-User: 2
-
-Agent: Modern Minimal selected. Generating palette options...
-       [Continues through Phase 1b, 1c]
-
-Agent: Brand identity complete! Would you like to create product designs?
-
-User: yes
-
-Agent: [Invokes brainstorming skill]
-       [Gathers requirements via AskUserQuestion]
-       [Invokes enhance-prompt skill]
-       [Spawns design generation workers]
-       Here are your 10 t-shirt designs...
-```
-
-**Architecture:**
-- Orchestrator skill (never generates images directly)
-- Task tool workers for research and generation
-- Flat hierarchy (workers don't spawn sub-workers)
-- Natural language communication between workers and orchestrator
-- **Skill chaining**: Invokes project-setup, style-library, enhance-prompt, taste-check, and brainstorming skills at appropriate points
 
 ## Flag Syntax Standard
 
