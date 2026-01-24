@@ -217,35 +217,55 @@ Example: `mybrand-hero-v2-20260121.png`
 
 Presets for [Project Name]. Use with `--style=preset-name`.
 
-## Art Styles
+## Ready-to-Use Presets
 
-- **project-main**: "[Style description]. [Medium]. Consistent [lighting style] lighting. [Color mood] color palette. [Key visual characteristic]."
+These work immediately. Copy and customize for your project.
 
-  Example: "Clean minimalist aesthetic. Professional photography. Consistent soft natural lighting. Neutral palette with warm accents. Emphasis on negative space and clean lines."
+### Vibes
 
-## Color Palettes
+- **cozy**: "Warm intimate atmosphere. Soft textures, natural materials, golden lighting. Feels like a favorite coffee shop or well-loved home. Rich shadows, inviting spaces."
 
-- **project-colors**: "[Primary color description], [secondary color], [accent color]. [Overall mood]. Avoid [colors to avoid]."
+- **minimal**: "Clean and uncluttered. Lots of white space, simple forms, precise geometry. Calm and confident. No decoration for decoration's sake."
 
-  Example: "Warm ivory backgrounds, deep forest green accents, touches of brass metallic. Organic and premium feel. Avoid pure white and saturated primaries."
+- **bold**: "High contrast, saturated colors, strong shapes. Confident and attention-grabbing. Makes a statement. Not subtle."
 
-## Lighting
+- **dreamy**: "Soft focus, pastel colors, ethereal quality. Slightly hazy atmosphere. Romantic and nostalgic. Like a memory or daydream."
 
-- **project-lighting**: "[Light quality] [light direction] lighting. [Shadow characteristic]. [Time of day or studio setup reference]."
+- **editorial**: "Magazine-quality polish. Intentional composition, sophisticated color grading. Looks professionally art-directed."
 
-  Example: "Soft diffused side lighting. Gentle shadows with visible detail. Golden hour warmth without harsh sun."
+### Color Moods
 
-## Moods
+- **earthy**: "Terracotta, sage green, warm browns, cream. Natural and grounded. Avoid pure black or neon."
 
-- **project-mood**: "[Emotional quality]. [Energy level]. [Atmosphere]. Evokes [feeling or association]."
+- **monochrome**: "Single color in multiple shades. Sophisticated and cohesive. Add one accent color sparingly."
 
-  Example: "Calm and confident. Quiet energy. Intimate but not cramped. Evokes a peaceful morning in a well-designed space."
+- **sunset**: "Warm oranges, pinks, deep purples. Golden hour warmth. Rich and atmospheric."
 
-## Compositions
+- **ocean**: "Deep blues, seafoam, sandy beige, coral accents. Fresh but not tropical-tacky."
 
-- **project-composition**: "[Framing style]. [Subject placement]. [Background treatment]. [Depth of field]."
+### Lighting
 
-  Example: "Generous breathing room around subjects. Rule of thirds placement. Clean uncluttered backgrounds. Shallow depth of field isolating subject."
+- **golden-hour**: "Warm side lighting, long shadows. Magic hour feeling. Soft and flattering."
+
+- **studio-soft**: "Even, diffused lighting. Minimal shadows. Clean and professional."
+
+- **dramatic**: "Single strong light source. Deep shadows, high contrast. Moody and cinematic."
+
+### Compositions
+
+- **centered**: "Subject dead center. Bold and direct. Works for portraits and product hero shots."
+
+- **rule-of-thirds**: "Subject offset. Creates visual flow. More dynamic than centered."
+
+- **negative-space**: "Generous empty areas. Subject small in frame. Elegant and airy."
+
+## Your Project Presets
+
+Customize these for [Project Name]:
+
+- **project-main**: "[Describe your core visual style here]"
+- **project-colors**: "[Your color palette description]"
+- **project-mood**: "[The feeling your brand evokes]"
 ```
 
 ### asset-log.md
