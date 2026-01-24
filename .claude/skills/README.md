@@ -167,14 +167,10 @@ Transform vague concepts into effective prompts using the 6-element formula.
 **New user onboarding.** Guided introduction that routes to the right skill.
 
 ```bash
-# Start guided onboarding
 /quickstart
 ```
 
-Automatically suggests itself when:
-- No style-library.md found
-- First image-related request in session
-- User asks "how do I start?" or "what can you do?"
+Auto-suggests when: no style-library.md found, first image request, or user asks "how do I start?"
 
 ---
 
@@ -183,101 +179,44 @@ Automatically suggests itself when:
 **Learn design thinking through guided moodboard creation.** For vibecoders who want to develop visual design intuition.
 
 ```bash
-# Guided moodboard creation (recommended for learning)
 /moodboard
-
-# Create for a specific project
 /moodboard "coffee shop brand"
-
-# Quick mode (skip explanations)
 /moodboard "summer campaign" --quick
-
-# Analyze an existing image to learn from it
 /moodboard analyze ./reference.png
-
-# Learn about a specific design concept
 /moodboard learn colors
 ```
 
-**What you'll learn:**
-- Articulate visual preferences (move from "I like this" to "I like warm tones with organic textures")
-- Build design vocabulary (name what you see)
-- Make intentional choices (understand why combinations work)
-- Create consistency (apply principles across projects)
+**Workflow:** Define intent -> Build palette -> Generate -> Reflect -> Extract and save
 
-**Workflow:** Define intent → Build palette (colors, textures, mood) → Generate → Reflect → Extract and save
-
-**Learning milestones:**
-
-| Level | You Can... |
-|-------|-----------|
-| Beginner | Answer intent questions, recognize what you like |
-| Intermediate | Name colors/textures specifically, critique your own work |
-| Confident | Create consistent styles, iterate purposefully |
-| Fluent | Predict what will work, teach others your approach |
+**What you'll learn:** Articulate visual preferences, build design vocabulary, make intentional choices, create consistency.
 
 ---
 
 ### prompt-anatomy
 
-Analyze prompts against the 6-element framework. Educational tool for understanding prompt structure.
+Analyze prompts against the 6-element framework (Subject, Composition, Action, Location, Style, Constraints). Educational tool for understanding prompt structure.
 
 ```bash
-# Basic analysis
 /prompt-anatomy a cat sitting
-
-# With fix suggestions
 /prompt-anatomy "a mountain landscape" --fix
-
-# Verbose mode with explanations
 /prompt-anatomy "cyberpunk city at night" --verbose
 ```
-
-**The 6-Element Framework:**
-
-| Element | What it defines |
-|---------|-----------------|
-| Subject | Who/what is the main focus |
-| Composition | How the frame is arranged |
-| Action | What's happening |
-| Location | Where it takes place |
-| Style | Visual treatment |
-| Constraints | Text, aspect ratio, specifics |
 
 ---
 
 ### taste-check
 
-Analyze prompts for aesthetic quality, accessibility, and content considerations. Detects clichés, checks specificity, evaluates intent clarity, and flags potential issues.
+Analyze prompts for aesthetic quality, accessibility, and content considerations. Detects cliches, checks specificity, evaluates intent clarity, and flags potential issues.
 
 ```bash
-# Basic analysis
 /taste-check "An epic fantasy landscape"
-
-# Include accessibility checks
 /taste-check "A busy infographic with small text" --accessibility
-
-# All checks with explanations
 /taste-check "A portrait of a child" --learn --accessibility
 ```
 
-**What It Checks:**
+**Options:** `--learn`, `--taste=<level>`, `--fix`, `--accessibility`
 
-| Check | What It Detects |
-|-------|-----------------|
-| Intent clarity | Does the prompt convey what the viewer should feel? |
-| Clichés | Generic AI-art patterns (ArtStation spam, quality spam, vague lighting) |
-| Specificity | Over-specified (mode collapse risk) or under-specified (vague) |
-| Accessibility hints | Prompts that may produce low-contrast or hard-to-read images |
-| Content flags | Potentially problematic patterns (faces, crowds, sensitive topics) |
-
-**Options:**
-- `--learn` — Show explanations for why each issue matters
-- `--taste=<level>` — Detection sensitivity (low/medium/high, default: medium)
-- `--fix` — Output only the improved prompt, skip analysis
-- `--accessibility` — Include accessibility-focused checks (contrast, readability)
-
-**Patterns are defined in:** `taste-check/taste-patterns.md`
+See `taste-check/taste-patterns.md` for pattern definitions.
 
 ---
 
@@ -286,23 +225,10 @@ Analyze prompts for aesthetic quality, accessibility, and content considerations
 Manage reusable style presets for consistent image generation.
 
 ```bash
-# List all presets
-/style-library list
-
-# List by category
-/style-library list art-styles
-
-# Add a preset
+/style-library list [category]
 /style-library add vintage-photo "Faded colors, light leaks, film grain"
-
-# Apply a preset (shows definition)
 /style-library apply cinematic
-
-# Remove a preset
 /style-library remove old-preset
-
-# Save to root (global) library
-/style-library add shared-style "..." --root
 ```
 
 **Categories:** art-styles, color-palettes, lighting, characters, compositions, moods
@@ -314,29 +240,13 @@ Manage reusable style presets for consistent image generation.
 Extract visual trends from URLs, images, PDFs, or articles and save as presets.
 
 ```bash
-# From an image
 /capture-trends ./inspiration/mood-photo.jpg --name=dark-editorial
-
-# From a URL
 /capture-trends https://example.com/design-trends
-
-# From a trend report (extracts all trends)
 /capture-trends ./Pinterest-2026.pdf --modular
-
-# Also create style-guide.md
 /capture-trends ./brand-doc.pdf --guide
-
-# Preview without saving
-/capture-trends ./reference.jpg --preview
 ```
 
-**Options:**
-- `--name=<preset>` — Name for the extracted preset
-- `--category=<cat>` — Target category
-- `--modular` — Extract separate style/palette/mood/lighting presets
-- `--guide` — Also create/update style-guide.md
-- `--preview` — Show extraction without saving
-- `--merge` — Combine with existing preset
+**Options:** `--name`, `--category`, `--modular`, `--guide`, `--preview`, `--merge`
 
 ---
 
@@ -345,22 +255,12 @@ Extract visual trends from URLs, images, PDFs, or articles and save as presets.
 Scaffold a complete image generation project with style guide, directories, and templates.
 
 ```bash
-# Interactive setup
 /project-setup
-
-# With name and type
 /project-setup my-brand --type=brand
-/project-setup hero-campaign --type=campaign
-/project-setup luna-character --type=character
-/project-setup product-shots --type=product
-
-# Quick setup with defaults
 /project-setup my-project --quick
 ```
 
-**Options:**
-- `--type=<type>` — Project type (brand, campaign, character, product)
-- `--quick` — Skip interview, use sensible defaults
+**Options:** `--type=<brand|campaign|character|product>`, `--quick`, `--lock`, `--unlock`
 
 **Generated Structure:**
 ```
@@ -377,63 +277,29 @@ project-name/
 └── asset-log.md             # Generation tracking
 ```
 
-## Flag Syntax Standard
+## Flag Syntax
 
-All skills follow consistent flag patterns:
+All skills use consistent flag patterns: `--flag` (boolean) or `--flag=<value>` (parameter).
 
-| Pattern | Type | Example | Meaning |
-|---------|------|---------|---------|
-| `--flag` | Boolean | `--chat`, `--quick` | Enables a feature |
-| `--flag=<value>` | Value | `--style=cinematic` | Sets a parameter |
-
-**Common flags across skills:**
-
-| Flag | Available In | Description |
-|------|--------------|-------------|
-| `--style=<preset>` | image-prompt, enhance-prompt | Apply style from style-library.md |
-| `--project=<path>` | image-prompt, enhance-prompt | Use specific project context |
-| `--quick` | enhance-prompt | Skip interactive questions |
-| `--generate` | enhance-prompt | Generate image after enhancing |
-| `--chat` | image-prompt | Enable iterative refinement session |
-| `--taste=<level>` | image-prompt, taste-check | Cliché detection sensitivity |
-| `--learn` | image-prompt, taste-check | Show explanations for suggestions |
-| `--fix` | taste-check | Output only improved prompt |
-| `--accessibility` | taste-check | Include accessibility-focused checks |
-| `--dry-run` | image-prompt, enhance-prompt, project-setup, capture-trends | Preview without executing |
-| `--format=<fmt>` | image-prompt, taste-check, prompt-anatomy | Output format (human, json) |
-| `--seed=<n>` | image-prompt | Seed for reproducible generation (0-2147483647) |
-| `--lock` | project-setup | Lock current style-guide.md version |
-| `--unlock` | project-setup | Unlock style-guide.md for editing |
+Common flags: `--style`, `--project`, `--quick`, `--dry-run`, `--format`. See individual skill documentation for complete flag reference.
 
 ---
 
 ## Project Context
 
-Skills are project-aware. When inside a project directory (one containing `style-guide.md`, `style-library.md`, `outputs/`, or `references/`):
+Skills are project-aware. When inside a project directory (containing `style-guide.md`, `style-library.md`, `outputs/`, or `references/`):
 
-- Style presets are loaded from the project's `style-library.md`
-- Brand constraints are read from `style-guide.md`
+- Style presets load from the project's `style-library.md`
+- Brand constraints apply from `style-guide.md`
 - Generated images save to `outputs/`
 - Project presets override root presets of the same name
 
-**Override context:**
-- `--project=<path>` — Use specific project
-- `--root` — Use root style-library.md
-
-### Style Guide Versioning
-
-Projects support versioned style guides:
-- Version header tracks changes (semver)
-- `--lock` / `--unlock` controls editability
-- History tracked in `style-guide-history.md`
-
-See [project-setup](#project-setup) for details.
+**Override:** `--project=<path>` or `--root`
 
 ## Pattern Documentation
 
-For understanding which prompt patterns are Gemini-specific vs. universal:
 - **[gemini-patterns.md](../gemini-patterns.md)** — Model-specific behaviors
-- **[taste-patterns.md](./taste-check/taste-patterns.md)** — Cliché detection patterns (tagged by universality)
+- **[taste-patterns.md](./taste-check/taste-patterns.md)** — Cliche detection patterns
 
 ## MCP Tools Used
 
@@ -451,45 +317,20 @@ These skills orchestrate the nanobananapro MCP tools:
 
 ## Hooks
 
-This project uses Claude Code hooks for deterministic enforcement of project conventions.
+Claude Code hooks enforce project conventions automatically.
 
-### Active Hooks
+| Hook | Purpose |
+|------|---------|
+| `check-style-guide-lock.sh` | Block edits to locked style-guide.md |
+| `protect-finals.sh` | Prevent modification of outputs/finals/ |
+| `log-generated-image.sh` | Auto-log generated images to asset-log.md |
 
-| Event | Hook | Purpose |
-|-------|------|---------|
-| `PreToolUse` | `check-style-guide-lock.sh` | Block edits to locked style-guide.md |
-| `PreToolUse` | `protect-finals.sh` | Prevent modification of outputs/finals/ |
-| `PostToolUse` | `log-generated-image.sh` | Auto-log generated images to asset-log.md |
+**Key behaviors:**
+- Locked style guides (`locked: true` in frontmatter) require `/project-setup --unlock` to edit
+- Files in `outputs/finals/` are protected; copy to `outputs/exploration/` to iterate
+- Asset logging captures date, filename, prompt summary, tool, seed, and path
 
-### Hook Behavior
-
-**Style Guide Protection:**
-- When `style-guide.md` has `locked: true` in frontmatter, edits are blocked
-- Use `/project-setup --unlock` to enable editing
-- Use `/project-setup --lock` to re-lock after changes
-
-**Finals Protection:**
-- Files in `outputs/finals/` cannot be modified
-- Copy to `outputs/exploration/` to iterate on approved assets
-
-**Asset Logging:**
-- Every image generation automatically appends to `asset-log.md`
-- Captures: date, filename, prompt summary, tool used, seed, output path
-- Creates `asset-log.md` if missing in project root
-
-### Configuration
-
-Hooks are defined in `.claude/settings.json` (checked in) and can be overridden in `.claude/settings.local.json` (git-ignored).
-
-To disable a hook temporarily, add to `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": []
-  }
-}
-```
+Hooks are defined in `.claude/settings.json` and can be overridden in `.claude/settings.local.json`.
 
 ## Examples
 

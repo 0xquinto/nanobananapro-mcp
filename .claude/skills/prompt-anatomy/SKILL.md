@@ -13,14 +13,7 @@ Analyze image prompts against the 6-element framework. Educational tool that sho
 
 ## The 6-Element Framework
 
-| Element | What it defines | Strong indicators |
-|---------|-----------------|-------------------|
-| **Subject** | Who/what is the main focus | Specific nouns, adjectives describing appearance, materials, condition |
-| **Composition** | How the frame is arranged | Shot types (close-up, wide), angles (low, eye-level), framing rules |
-| **Action** | What's happening | Verbs, gerunds (-ing), movement words, states of being |
-| **Location** | Where it takes place | Environment words, settings, "in a...", "at the...", backgrounds |
-| **Style** | Visual treatment | Art movements, mediums, lighting descriptors, artist references |
-| **Constraints** | Text, aspect ratio, specifics | Quoted text, ratios, "no X", explicit requirements |
+See `/enhance-prompt` for the authoritative element definitions. Elements: **Subject**, **Composition**, **Action**, **Location**, **Style**, **Constraints**.
 
 ## Process
 
@@ -62,77 +55,37 @@ Always output in this structure:
 
 ## Scoring Criteria
 
-### Subject
-- ✓ Present: Specific noun with descriptive details ("a weathered wooden fishing boat with peeling blue paint")
-- △ Weak: Generic or vague ("a boat", "a person")
-- ✗ Missing: No clear subject
+| Element | ✓ Present | △ Weak | ✗ Missing |
+|---------|-----------|--------|-----------|
+| Subject | Specific noun with details ("weathered wooden fishing boat with peeling blue paint") | Generic ("a boat", "a person") | No clear subject |
+| Composition | Shot type AND angle ("close-up from low angle") | Only one aspect ("close-up") | No framing info |
+| Action | Dynamic state ("leaping through morning mist") | Static/implied ("sitting") | No indication |
+| Location | Environment + atmosphere ("misty harbor with old stone walls at dawn") | Generic ("in a park") | No context |
+| Style | Clear treatment ("oil painting, Dutch masters style, warm palette") | Vague ("artistic", "beautiful") | No style |
+| Constraints | Explicit requirements ("text reading 'OPEN', square format") | Implied or ineffective | Usually fine if none needed |
 
-### Composition
-- ✓ Present: Shot type AND camera angle ("close-up portrait from low angle")
-- △ Weak: Only one aspect mentioned ("close-up")
-- ✗ Missing: No framing information
+### Constraint Language
 
-### Action
-- ✓ Present: Clear action or dynamic state ("leaping through morning mist")
-- △ Weak: Static or implied ("sitting", "standing")
-- ✗ Missing: No indication of what's happening
+Negative prompting works better when you specify what you *do* want instead.
 
-### Location
-- ✓ Present: Specific environment with atmosphere ("in a misty harbor with old stone walls at dawn")
-- △ Weak: Generic location ("in a park", "outside")
-- ✗ Missing: No environmental context
+| Goal | Weak | Strong |
+|------|------|--------|
+| No text | "no text" | "without any text or lettering" |
+| No people | "no people" | "empty scene, unoccupied space" |
+| Plain background | "simple background" | "solid white background, no distractions" |
+| No specific object | "no [object]" | "scene without [object], [alternative focus]" |
 
-### Style
-- ✓ Present: Clear visual treatment ("oil painting in the style of the Dutch masters, warm palette")
-- △ Weak: Vague style words ("artistic", "beautiful")
-- ✗ Missing: No style indication
-
-### Constraints
-- ✓ Present: Explicit requirements stated ("text reading 'OPEN', no people, square format")
-- △ Weak: Implied constraints or ineffective language
-- ✗ Missing: Usually fine if none needed
-
-**Effective constraint language:**
-
-| Want to Avoid | Effective | Ineffective |
-|---------------|-----------|-------------|
-| No text | "without any text or lettering" | "no text" (too brief) |
-| No people | "empty scene, unoccupied space" | "no people" (model may ignore) |
-| Simple background | "solid white background, no distractions" | "simple background" (vague) |
-| No specific object | "scene without [object], [alternative focus]" | "no [object]" (negative alone) |
-
-**Key insight:** Negative prompting works better when you specify what you *do* want instead. "Empty street at dawn" is more effective than "street with no cars".
+**Example:** "a park with no people" → "Empty street at dawn"
 
 ## Options
 
 | Flag | Behavior |
 |------|----------|
-| `--fix` | After analysis, output an improved version of the prompt |
-| `--verbose` | Include explanations of why each element matters for AI generation |
+| `--fix` | Append a complete rewritten prompt addressing all gaps |
+| `--verbose` | Add "Why X matters" educational notes after each element row |
+| `--format=json` | Output structured JSON instead of markdown |
 
-## With --fix Flag
-
-After the analysis table, add:
-
-```
-## Fixed Prompt
-
-"[Complete rewritten prompt addressing all gaps]"
-```
-
-## With --verbose Flag
-
-Add educational notes after each element:
-
-```
-| Element | Status | Found | Suggestion |
-|---------|--------|-------|------------|
-| Subject | △ | "a cat" | Add: breed, coloring, age, distinguishing features |
-
-> **Why Subject matters:** The AI needs specifics to generate consistent, interesting results. "A cat" could be any of thousands of interpretations. "A sleepy marmalade tabby with white paws" dramatically narrows the output space.
-```
-
-## JSON Output (`--format=json`)
+## JSON Output
 
 ```json
 {
@@ -151,79 +104,9 @@ Add educational notes after each element:
 }
 ```
 
-## Examples
+## Example
 
-### Basic Analysis
-
-User: `/prompt-anatomy a cat sitting`
-
-Response:
-
-```
-## Prompt Analysis
-
-**Original prompt:** "a cat sitting"
-
-| Element | Status | Found | Suggestion |
-|---------|--------|-------|------------|
-| Subject | △ | "a cat" | Add descriptors: breed, color, age, markings |
-| Composition | ✗ | — | Add: shot type (portrait, full body), angle |
-| Action | ✓ | "sitting" | Good! Could enhance: "sitting on...", "sitting alertly" |
-| Location | ✗ | — | Add environment: windowsill, garden, studio backdrop |
-| Style | ✗ | — | Add: photograph, illustration, painting style |
-| Constraints | ✗ | — | Optional: aspect ratio, no-text requirement |
-
-**Score: 2/6 elements defined**
-
-### What's Working
-You have a clear subject (cat) and action (sitting). This is a good foundation.
-
-### Key Improvements
-1. **Specify the cat** — "a fluffy gray Persian" or "a sleek black shorthair"
-2. **Add location** — Where is it sitting? This contextualizes the entire image
-3. **Choose a style** — Photography? Illustration? This dramatically affects the output
-```
-
-### Analysis with --fix
-
-User: `/prompt-anatomy "a mountain landscape" --fix`
-
-Response:
-
-```
-## Prompt Analysis
-
-**Original prompt:** "a mountain landscape"
-
-| Element | Status | Found | Suggestion |
-|---------|--------|-------|------------|
-| Subject | △ | "mountain" | Add: specific range, season, conditions |
-| Composition | ✗ | — | Add: wide panorama, foreground interest, rule of thirds |
-| Action | ✗ | — | Add: weather movement, light changes, wildlife |
-| Location | △ | "landscape" | Already implied; add region or biome specifics |
-| Style | ✗ | — | Add: photography style, time of day, color treatment |
-| Constraints | ✗ | — | Consider: aspect ratio for landscape (16:9?) |
-
-**Score: 2/6 elements defined**
-
-### What's Working
-Clear subject matter. "Landscape" suggests composition intent.
-
-### Key Improvements
-1. **Specify the mountains** — Alpine? Desert range? Snow-capped?
-2. **Add dramatic lighting** — Golden hour, stormy sky, misty dawn
-3. **Include foreground** — Wildflowers, rocky outcrop, winding path
-
-## Fixed Prompt
-
-"A dramatic alpine mountain range with snow-capped peaks piercing through morning clouds. Golden sunrise light illuminating the eastern faces while western slopes remain in cool shadow. Wide panoramic composition with a meadow of wildflowers in the foreground leading the eye toward the distant summits. Landscape photography style with rich, saturated colors and sharp detail throughout."
-```
-
-### Verbose Analysis
-
-User: `/prompt-anatomy "cyberpunk city at night" --verbose`
-
-Response:
+User: `/prompt-anatomy "cyberpunk city at night" --verbose --fix`
 
 ```
 ## Prompt Analysis
@@ -232,32 +115,46 @@ Response:
 
 | Element | Status | Found | Suggestion |
 |---------|--------|-------|------------|
-| Subject | △ | "cyberpunk city" | Good genre. Add: specific elements—neon signs, flying cars, crowds |
+| Subject | △ | "cyberpunk city" | Add: specific elements—neon signs, flying cars, crowds |
 
 > **Why Subject matters:** "Cyberpunk city" is a genre descriptor, not a specific subject. The AI needs anchor points: a specific building, street scene, or character to focus on.
 
 | Composition | ✗ | — | Add: street-level view, aerial shot, window POV |
 
-> **Why Composition matters:** Without framing guidance, the AI chooses arbitrarily. A street-level shot creates intimacy; an aerial view shows scale. This choice fundamentally shapes the image.
+> **Why Composition matters:** Without framing guidance, the AI chooses arbitrarily. A street-level shot creates intimacy; an aerial view shows scale.
 
 | Action | ✗ | — | Add: rain falling, crowds moving, vehicles flying |
 
-> **Why Action matters:** Static cityscapes feel lifeless. Movement—rain, people, vehicles—adds energy and story to the scene.
+> **Why Action matters:** Static cityscapes feel lifeless. Movement—rain, people, vehicles—adds energy and story.
 
 | Location | ✓ | "city at night" | Solid foundation. Could specify district type |
 
-> **Why Location matters:** "At night" establishes mood and lighting. Consider: is this a slum, corporate district, market area?
+> **Why Location matters:** "At night" establishes mood. Consider: slum, corporate district, market area?
 
-| Style | △ | "cyberpunk" | Genre implies style, but add: Blade Runner influence? Anime? Photorealistic? |
+| Style | △ | "cyberpunk" | Genre implies style. Add: Blade Runner? Anime? Photorealistic? |
 
-> **Why Style matters:** "Cyberpunk" suggests neon and tech, but there's huge visual variety—from gritty photorealism to clean anime aesthetics.
+> **Why Style matters:** "Cyberpunk" suggests neon and tech, but there's huge visual variety—from gritty realism to clean anime.
 
-| Constraints | ✗ | — | Consider: aspect ratio (vertical for towers, wide for panorama) |
+| Constraints | ✗ | — | Consider: aspect ratio (9:16 for towers, 21:9 for panorama) |
 
-> **Why Constraints matter:** Aspect ratio shapes composition. A vertical 9:16 emphasizes towering buildings; 21:9 ultrawide creates cinematic scope.
+> **Why Constraints matter:** Aspect ratio shapes composition. Vertical emphasizes height; ultrawide creates cinematic scope.
 
 **Score: 2/6 elements defined**
+
+### What's Working
+Clear genre and time of day. "At night" provides lighting context.
+
+### Key Improvements
+1. **Anchor the subject** — Focus on a specific element: street corner, building, character
+2. **Add movement** — Rain, crowds, flying vehicles bring the scene to life
+3. **Specify style** — Blade Runner grit? Anime neon? This choice shapes everything
+
+## Fixed Prompt
+
+"A rain-slicked street corner in a cyberpunk megacity at night. Neon signs in Japanese and English cast pink and cyan reflections on wet pavement. Crowds with umbrellas hurry past steaming food stalls while flying vehicles streak overhead. Street-level shot looking up at towering corporate spires disappearing into smog. Blade Runner-inspired cinematography with film grain. 21:9 aspect ratio."
 ```
+
+**Note:** Without `--verbose`, the "Why X matters" blocks are omitted. Without `--fix`, the fixed prompt is omitted.
 
 ## Tips for Users
 

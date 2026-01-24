@@ -30,11 +30,7 @@ project-name/
 
 ## Style Guide Versioning
 
-Project style guides support version tracking to maintain consistency during campaigns.
-
-### Version Header
-
-Every generated `style-guide.md` includes:
+Every generated `style-guide.md` includes a version header:
 
 ```markdown
 ---
@@ -55,33 +51,12 @@ locked: false
 
 ### Locking
 
-During active campaigns, lock the style guide to prevent accidental changes:
-
-```bash
-# Lock the current version
-/project-setup --lock
-
-# Unlock for editing
-/project-setup --unlock
-```
-
-When locked:
+Lock style guides during active campaigns with `--lock` / `--unlock`. When locked:
 - `/image-prompt` reads but cannot trigger style updates
 - `/capture-trends --guide` warns before modifying
 - Manual edits show warning in git diff
 
-### History
-
-Changes are tracked in `style-guide-history.md`:
-
-```markdown
-## v1.1.0 (2026-01-25)
-- Added secondary color palette
-- Approved by: @designer
-
-## v1.0.0 (2026-01-23)
-- Initial version from brand guidelines
-```
+Changes are tracked in `style-guide-history.md`.
 
 ## Project Types
 
@@ -96,103 +71,46 @@ Changes are tracked in `style-guide-history.md`:
 
 ### Step 1: Parse Input
 
-Check for project name and type in the command:
-- `/project-setup my-brand --type=brand`
-- `/project-setup` (will prompt for details)
+Parse project name and type from command (e.g., `/project-setup my-brand --type=brand`).
 
-### Quick Mode (--quick flag)
+**Flags:**
 
-When `--quick` is passed, skip the interview and use these defaults:
+| Flag | Effect |
+|------|--------|
+| `--quick` | Skip interview, use defaults below |
+| `--dry-run` | Preview structure without creating files |
+| `--lock` | Lock style-guide.md (see [Locking](#locking)) |
+| `--unlock` | Unlock style-guide.md for editing |
 
-| Parameter | Default Value |
-|-----------|---------------|
+**Quick Mode Defaults:**
+
+| Parameter | Default |
+|-----------|---------|
 | Project Type | `brand` |
 | Visual Style | "clean and modern" |
 | Color Preferences | "neutral palette with one accent color" |
 | Reference Medium | Photography |
 
-**Usage:**
-```bash
-/project-setup my-project --quick
-/project-setup my-project --type=character --quick
-```
-
-When `--type` is also provided, only that parameter is set—others use defaults above.
-
-### Dry Run Mode (--dry-run flag)
-
-When `--dry-run` is passed, preview the directory structure without creating files:
-
-- `--dry-run` — Preview directory structure without creating files
-
-**Usage:**
-```bash
-/project-setup my-project --dry-run
-/project-setup my-brand --type=brand --dry-run
-```
-
-Shows what would be created without writing to disk.
-
-### Style Guide Locking (--lock / --unlock flags)
-
-Lock the style guide during active campaigns to prevent accidental changes:
-
-- `--lock` — Lock current style-guide.md version (prevents modifications)
-- `--unlock` — Unlock style-guide.md for editing
-
-**Usage:**
-```bash
-/project-setup --lock              # Lock current project
-/project-setup my-brand --lock     # Lock specific project
-/project-setup --unlock            # Unlock for editing
-```
-
-See [Style Guide Versioning](#style-guide-versioning) for details on locking behavior.
+When `--type` is also provided, only that parameter is set—others use defaults.
 
 ### Step 2: Interactive Interview (if details missing)
 
 Ask these questions to gather project requirements:
 
-**Question 1: Project Name**
-> "What's the project name? (This creates the folder)"
-
-**Question 2: Project Type**
-> "What type of project is this?"
-> - Brand identity (logos, colors, visual system)
-> - Marketing campaign (ads, social, promotional)
-> - Character design (characters, expressions, poses)
-> - Product photography (product shots, lifestyle images)
-
-**Question 3: Visual Style Direction**
-> "Describe the visual style you're going for in a few words"
-> (Examples: "minimal and modern", "warm and nostalgic", "bold and energetic")
-
-**Question 4: Color Preferences**
-> "Any specific colors or color mood?"
-> (Examples: "earth tones", "neon accents on dark", "pastel palette")
-
-**Question 5: Reference Medium**
-> "What visual medium fits best?"
-> - Photography (realistic)
-> - Illustration (artistic)
-> - 3D Render (digital)
-> - Mixed/Flexible
-
-**Question 6: Visual Constraints**
-> "Anything to specifically avoid? (competitors, styles, elements)"
-> (Examples: "no corporate blue", "avoid stock photo look", "don't look like Apple")
+| # | Question | Example Answers |
+|---|----------|-----------------|
+| 1 | Project name? | `coastal-retreat-brand` |
+| 2 | Project type? (brand / campaign / character / product) | `brand` |
+| 3 | Visual style direction? | "minimal and modern", "warm and nostalgic" |
+| 4 | Color preferences? | "earth tones", "neon accents on dark" |
+| 5 | Visual medium? (photography / illustration / 3D / mixed) | `photography` |
+| 6 | What to avoid? | "no corporate blue", "don't look like Apple" |
 
 ### Step 3: Generate Structure
 
-Create all directories and files based on answers.
-
-### Step 4: Confirm
-
-Show what was created and suggest next steps.
+Create all directories and files based on answers, then show what was created and suggest next steps.
 
 ## File Templates
-
-> **Note:** Templates are defined inline below rather than as separate files. This keeps the skill self-contained and makes customization visible.
 
 ### style-guide.md
 
@@ -477,30 +395,7 @@ Add to style-guide.md:
 
 ## Output Format
 
-After scaffolding, display:
-
-```
-## Project Created: [project-name]
-
-### Structure
-✓ style-guide.md - Ready for customization
-✓ style-library.md - 3 starter presets added
-✓ references/moodboards/
-✓ references/characters/
-✓ references/inspiration/
-✓ outputs/exploration/
-✓ outputs/finals/
-✓ asset-log.md - Ready for tracking
-
-### Next Steps
-1. Add reference images to `references/inspiration/`
-2. Review and customize `style-guide.md`
-3. Use `/capture-trends` on references to populate style library
-4. Start generating with `/image-prompt`
-
-### Quick Start
-Try: `/image-prompt a hero image for this project --style=project-main`
-```
+After scaffolding, display created structure with checkmarks, next steps (add references, customize style-guide, start generating), and a quick start command. See [Example Session](#example-session).
 
 ## Integration with Other Skills
 
@@ -525,94 +420,31 @@ This skill creates files that other skills detect and use:
 
 ## Example Session
 
-Complete interactive example showing project creation:
-
 ```
 User: /project-setup
-
-Claude: What's the project name? (This creates the folder)
-
+Claude: What's the project name?
 User: coastal-retreat-brand
-
-Claude: What type of project is this?
-1. Brand identity (logos, colors, visual system)
-2. Marketing campaign (ads, social, promotional)
-3. Character design (characters, expressions, poses)
-4. Product photography (product shots, lifestyle images)
-
-User: 1
-
-Claude: Describe the visual style you're going for in a few words
-
+Claude: What type of project? (brand/campaign/character/product)
+User: brand
+Claude: Visual style direction?
 User: serene, natural, upscale coastal living
-
-Claude: Any specific colors or color mood?
-
+Claude: Color preferences?
 User: ocean blues, sandy beiges, weathered white, touches of coral
-
-Claude: What visual medium fits best?
-1. Photography (realistic)
-2. Illustration (artistic)
-3. 3D Render (digital)
-4. Mixed/Flexible
-
-User: 1
-
-Claude: Anything to specifically avoid? (competitors, styles, elements)
-
-User: no tropical/tacky beach vibes, avoid neon colors, don't look like generic resort marketing
+Claude: Visual medium? (photography/illustration/3D/mixed)
+User: photography
+Claude: Anything to avoid?
+User: no tropical/tacky beach vibes, avoid neon colors
 
 Claude:
 ## Project Created: coastal-retreat-brand
+✓ style-guide.md, style-library.md (5 presets), asset-log.md
+✓ references/{moodboards,characters,inspiration}/
+✓ outputs/{exploration,finals}/
 
-### Structure
-✓ style-guide.md - Ready for customization
-✓ style-library.md - 5 starter presets added
-✓ references/moodboards/
-✓ references/characters/
-✓ references/inspiration/
-✓ outputs/exploration/
-✓ outputs/finals/
-✓ asset-log.md - Ready for tracking
-
-### Next Steps
-1. Add reference images to `references/inspiration/`
-2. Review and customize `style-guide.md`
-3. Use `/capture-trends` on references to populate style library
-4. Start generating with `/image-prompt`
-
-### Quick Start
-Try: `/image-prompt a hero image for coastal retreat --style=project-main`
+Next: Add references → customize style-guide.md → `/image-prompt`
 ```
 
-### Quick Mode Example
-
-```
-User: /project-setup summer-campaign --type=campaign --quick
-
-Claude:
-## Project Created: summer-campaign
-
-### Structure
-✓ style-guide.md - Created with defaults (customize recommended)
-✓ style-library.md - 5 starter presets added
-✓ references/moodboards/
-✓ references/inspiration/
-✓ outputs/exploration/
-✓ outputs/finals/
-✓ asset-log.md - Ready for tracking
-
-### Defaults Applied
-- Style: clean and modern
-- Colors: neutral palette with one accent color
-- Medium: Photography
-- Constraints: none specified
-
-### Next Steps
-1. Customize `style-guide.md` with your specific requirements
-2. Add reference images to `references/`
-3. Start generating with `/image-prompt`
-```
+**Quick mode:** `/project-setup summer-campaign --type=campaign --quick` creates the same structure with defaults applied (style: "clean and modern", colors: "neutral with accent", medium: photography).
 
 ## Error Handling
 
@@ -627,106 +459,29 @@ Claude:
 
 ### /project-setup validate
 
-Check project structure integrity and report issues.
-
-**Usage:**
-```bash
-/project-setup validate
-/project-setup validate ./my-project
-```
-
-**Checks performed:**
+Check project structure integrity: `/project-setup validate [./path]`
 
 | Check | Pass | Fail |
 |-------|------|------|
-| style-guide.md exists | ✓ Found | ⚠ Missing — run `/project-setup` to create |
+| style-guide.md exists | ✓ Found | ⚠ Missing — run `/project-setup` |
 | style-library.md exists | ✓ Found | ⚠ Missing — will use root library |
-| outputs/ directory | ✓ Found | ⚠ Missing — will be created on first generation |
-| references/ directory | ✓ Found | ℹ Missing — optional, create if using `--refs` |
+| outputs/ directory | ✓ Found | ⚠ Missing — created on first generation |
+| references/ directory | ✓ Found | ℹ Missing (optional) |
 | asset-log.md exists | ✓ Found | ⚠ Missing — create for tracking |
-| style-guide.md has content | ✓ Populated | ⚠ Template only — customize for your project |
-| style-library.md has presets | ✓ Has presets | ℹ Empty — use `/capture-trends` to populate |
+| style-guide.md customized | ✓ Populated | ⚠ Template only |
+| style-library.md has presets | ✓ Has presets | ℹ Empty — use `/capture-trends` |
 
-**Output format:**
-
-```
-## Project Validation: [project-name]
-
-✓ style-guide.md — Found, customized
-✓ style-library.md — Found, 3 presets
-✓ outputs/exploration/ — Found
-✓ outputs/finals/ — Found
-⚠ references/ — Missing (optional)
-✓ asset-log.md — Found
-
-**Status: Ready** (1 optional item missing)
-
-Suggestions:
-- Create `references/` if you plan to use reference images
-```
-
-**Validation states:**
-
-| State | Meaning |
-|-------|---------|
-| ✓ Ready | All required files present and populated |
-| ⚠ Needs attention | Missing required files or uncustomized templates |
-| ✗ Not a project | No project markers found |
+**States:** ✓ Ready | ⚠ Needs attention | ✗ Not a project
 
 ### /project-setup update
 
-Refresh project structure while preserving customizations.
-
-**Usage:**
-```bash
-/project-setup update
-/project-setup update ./my-project
-```
-
-**Behavior:**
+Refresh structure while preserving customizations: `/project-setup update [./path]`
 
 | Item | Action |
 |------|--------|
-| Missing directories | Create them |
-| Missing files | Create with template |
+| Missing directories/files | Create with template |
 | Existing style-guide.md | **Preserve** (never overwrite) |
 | Existing style-library.md | **Merge** new presets, keep existing |
 | Existing asset-log.md | **Preserve** (never overwrite) |
 
-**Update checks:**
-
-1. Detect project type from existing style-guide.md
-2. Compare current structure against expected structure
-3. Add missing pieces only
-4. Report what was added
-
-**Output format:**
-
-```
-## Project Updated: [project-name]
-
-### Added
-✓ references/moodboards/ — Created (was missing)
-✓ outputs/finals/ — Created (was missing)
-
-### Preserved
-- style-guide.md — Kept existing (customized)
-- style-library.md — Kept existing (has 5 presets)
-- asset-log.md — Kept existing (has 12 entries)
-
-### No Changes Needed
-- outputs/exploration/ — Already exists
-- references/inspiration/ — Already exists
-```
-
-**Merge behavior for style-library.md:**
-
-When updating, check if starter presets exist. If missing, append:
-
-```markdown
-## Added by update
-
-- **project-main**: "[detect from style-guide or use default]"
-- **project-colors**: "[detect from style-guide or use default]"
-- **project-mood**: "[detect from style-guide or use default]"
-```
+Reports what was added, preserved, and already exists.

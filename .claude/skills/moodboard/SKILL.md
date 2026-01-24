@@ -180,37 +180,12 @@ Reference sheet layout.
 
 ## Design Concepts Explained
 
-### Color Temperature
-
-**Warm colors** (reds, oranges, yellows): Energetic, welcoming, appetizing
-**Cool colors** (blues, greens, purples): Calm, professional, refreshing
-
-**Exercise:** Generate two moodboards for the same concept - one warm, one cool. Notice how the feeling changes completely.
-
-### Visual Weight
-
-**Heavy:** Dark colors, dense textures, large elements, bottom-weighted
-**Light:** Bright colors, airy spacing, small elements, top-weighted
-
-**Exercise:** Create a "heavy" moodboard (luxury, grounded) then a "light" one (minimal, ethereal) for the same brand.
-
-### Texture Rhythm
-
-Mixing textures creates visual interest:
-- **Contrast:** Smooth glass against rough concrete
-- **Harmony:** Natural wood with linen fabric
-- **Tension:** Industrial metal with organic plants
-
-**Exercise:** Create a moodboard with intentional texture contrast. Name each texture you included.
-
-### Color Restraint
-
-Fewer colors = stronger identity. Professional design often uses:
-- 1 dominant color (60%)
-- 1 secondary color (30%)
-- 1 accent color (10%)
-
-**Exercise:** Create a moodboard with only 3 colors. Notice how the constraint forces intentionality.
+| Concept | Definition | Exercise |
+|---------|------------|----------|
+| **Color Temperature** | Warm (reds, oranges, yellows) = energetic, welcoming. Cool (blues, greens, purples) = calm, professional. | Generate two moodboards for the same concept - one warm, one cool. |
+| **Visual Weight** | Heavy = dark, dense, bottom-weighted (luxury feel). Light = bright, airy, top-weighted (minimal feel). | Create a "heavy" then "light" moodboard for the same brand. |
+| **Texture Rhythm** | Contrast (glass vs concrete), Harmony (wood + linen), Tension (metal + plants). | Create a moodboard with intentional texture contrast. Name each texture. |
+| **Color Restraint** | 60/30/10 rule: dominant, secondary, accent. Fewer colors = stronger identity. | Create a 3-color moodboard. Notice how constraint forces intentionality. |
 
 ---
 
@@ -278,31 +253,23 @@ This builds your vocabulary by connecting what you see to design language.
 
 ## Moodboard Best Practices
 
-Professional practices compiled from UX and design research:
+| Practice | Guidance |
+|----------|----------|
+| **Define mood first** | Write "User should feel [emotion] when [action]" before collecting images |
+| **Limit to 4 keywords** | Brainstorm many, ruthlessly cut to 4 that complement each other |
+| **3-color palette** | Use 60/30/10 rule across all boards for brand recognition |
+| **Match lighting** | All reference images should have similar light quality/direction |
+| **Document successes** | Save boards with notes on why they work |
+| **Balance visual weight** | Distribute light/dark, dense/sparse across composition |
+| **Include texture variety** | Mix 2-3 complementary textures (smooth/rough, matte/glossy) |
 
-| Practice | Why It Matters | How to Apply |
-|----------|----------------|--------------|
-| **Define mood statements first** | Anchors all visual decisions | Write "User should feel [emotion] when [action]" before collecting images |
-| **Limit to 4 style keywords** | Too many = unfocused direction | Brainstorm many, then ruthlessly cut to 4 that complement each other |
-| **Apply consistent color palette** | Creates brand recognition | Pick 3 colors max (60/30/10 rule) and use across all boards |
-| **Match lighting across elements** | Incoherent lighting = amateur feel | All reference images should have similar light quality/direction |
-| **Document what worked** | Builds reusable knowledge | Save successful boards with notes on why they work |
-| **Align with target audience** | Design serves users, not ego | Reference your personas when selecting visual elements |
-| **Use current sources** | Dated references = dated design | Search design sites by "most recent", not "most popular" |
-| **Balance visual weight** | Prevents chaotic layouts | Distribute light/dark, dense/sparse across the composition |
-| **Include texture variety** | Adds depth and interest | Mix 2-3 complementary textures (smooth/rough, matte/glossy) |
-| **Save before presenting** | Moodboards evolve | Keep versions as your understanding develops |
+### Voice and Tone Alignment
 
-### The Voice and Tone Test
-
-Your moodboard should pass this consistency check:
-
-| Element | Should Align With |
-|---------|-------------------|
+| Element | Should Match |
+|---------|--------------|
 | Colors | Emotional response you want |
-| Textures | Brand personality (playful, serious, organic, tech) |
+| Textures | Brand personality |
 | Typography feel | Voice (loud, quiet, formal, casual) |
-| Imagery style | Target audience expectations |
 | White space | Energy level (dense = energetic, sparse = calm) |
 
 ---
@@ -431,106 +398,25 @@ unifies all elements and creates an inviting, approachable feel.
 
 ## Using Moodboards as References
 
-Once you have a moodboard, use it to guide actual image generation with `compose_images`.
+Use `compose_images` to apply your moodboard's style to new generations.
 
 ### Save Location
 
-Store moodboards where skills can find them:
-
 ```
-project/
-├── references/
-│   └── moodboards/
-│       ├── brand-moodboard.png       # Primary brand direction
-│       ├── summer-campaign.png       # Seasonal variant
-│       └── product-style.png         # Product photography guide
+project/references/moodboards/
+├── brand-moodboard.png       # Primary brand direction
+├── summer-campaign.png       # Seasonal variant
+└── product-style.png         # Product photography guide
 ```
 
-### Reference Prompt Patterns
+### Prompt Pattern
 
-**Basic pattern:**
-```
-Using the attached moodboard as style reference, generate [subject].
-Maintain the same color palette, lighting quality, and [specific element]
-from the moodboard.
-```
-
-**Detailed pattern:**
 ```
 Using the attached moodboard as style reference, generate [subject].
 
-Match these elements from the moodboard:
-- Color palette: [describe the colors you want carried over]
-- Lighting: [describe the lighting quality]
-- Texture feel: [describe the texture approach]
-- Mood: [describe the emotional tone]
+Match from moodboard: [color palette, lighting, textures, mood]
 
-Scene-specific details:
-- [Additional context for this specific image]
-```
-
-### compose_images Examples
-
-**Product shot guided by moodboard:**
-```python
-compose_images(
-    prompt="""
-    Using the attached moodboard as style reference, generate a product shot
-    of a ceramic coffee mug. Maintain the same:
-    - Warm terracotta and cream color palette
-    - Soft, diffused morning lighting
-    - Natural linen and wood textures in background
-    - Calm, grounded mood
-
-    The mug should be cream-colored with a matte finish.
-    Composition: centered, eye-level, with soft shadows.
-    """,
-    image_paths=["./references/moodboards/brand-moodboard.png"],
-    aspect_ratio="4:5",
-    resolution="2K"
-)
-```
-
-**Hero image guided by moodboard:**
-```python
-compose_images(
-    prompt="""
-    Using the attached moodboard as style reference, generate a lifestyle
-    hero image for a sustainable fashion brand.
-
-    Match the moodboard's:
-    - Muted earth tone palette
-    - Natural fiber textures
-    - Soft natural lighting
-    - Contemporary-organic aesthetic
-
-    Scene: Model in linen clothing, standing in a sunlit studio space.
-    Composition: Wide shot, model off-center, negative space for text overlay.
-    """,
-    image_paths=["./references/moodboards/sustainable-fashion.png"],
-    aspect_ratio="16:9",
-    resolution="2K"
-)
-```
-
-**Multi-reference composition:**
-```python
-compose_images(
-    prompt="""
-    Combine elements from the attached references:
-    - Reference 1 (moodboard): Overall color palette and mood
-    - Reference 2 (product): The actual product to feature
-
-    Generate a product photography scene that places the product
-    in an environment matching the moodboard's aesthetic.
-    """,
-    image_paths=[
-        "./references/moodboards/brand-moodboard.png",
-        "./references/products/coffee-mug.png"
-    ],
-    aspect_ratio="1:1",
-    resolution="2K"
-)
+Scene-specific: [composition, props, framing]
 ```
 
 ### What to Specify vs. What to Inherit
@@ -540,8 +426,7 @@ compose_images(
 | Subject (what to generate) | Color palette |
 | Composition (framing, angle) | Lighting quality |
 | Specific props or elements | Texture vocabulary |
-| Text overlay requirements | Mood and atmosphere |
-| Aspect ratio | Material finishes |
+| Aspect ratio | Mood and atmosphere |
 
 ---
 
@@ -559,45 +444,12 @@ As you use this skill, you're building:
 
 ## MCP Tools Used
 
-| Tool | When Used |
-|------|-----------|
-| `generate_image` | Create moodboard images |
-| `edit_image` | Refine specific elements |
-| `compose_images` | Use moodboard as reference for other generations |
-| `start_image_chat` | Iterate on moodboard design |
-
-### Tool Selection
-
-```
-Creating a moodboard from scratch?
-  → generate_image
-
-Refining an existing moodboard?
-  → edit_image OR start_image_chat
-
-Using moodboard to guide new generation?
-  → compose_images with moodboard as reference
-```
-
-### MCP Tool Signatures
-
-```python
-generate_image(
-    prompt,
-    model="pro",
-    aspect_ratio="4:3",  # Good for moodboard layouts
-    resolution="2K",
-    output_path="./references/moodboards/[name].png"
-)
-
-compose_images(
-    prompt="Using the attached moodboard as style reference...",
-    image_paths=["./references/moodboards/project-moodboard.png"],
-    model="pro",
-    aspect_ratio="1:1",
-    resolution="2K"
-)
-```
+| Task | Tool | Notes |
+|------|------|-------|
+| Create moodboard | `generate_image` | Use `aspect_ratio="4:3"` for layouts |
+| Refine elements | `edit_image` | Target specific areas |
+| Iterate design | `start_image_chat` | Multi-turn refinement |
+| Apply style | `compose_images` | Pass moodboard as reference |
 
 ---
 

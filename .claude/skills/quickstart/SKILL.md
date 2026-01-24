@@ -8,17 +8,9 @@ argument-hint: ""
 
 # Quickstart
 
-Interactive onboarding for new users. Explains capabilities and routes to the right skill.
+Interactive onboarding that routes users to the right skill.
 
-## When This Skill Activates
-
-- User invokes `/quickstart`
-- User asks: "how do I start?", "what can you do?", "help with images"
-- First-time detection (no `style-library.md` or projects found)
-
-## Flow
-
-### Step 1: Welcome Message
+## Welcome Message
 
 Display:
 
@@ -35,28 +27,24 @@ I can help you create images using AI. Here's what's possible:
 What would you like to do?
 ```
 
-### Step 2: Route Based on Response
+## Routing Table
 
-| User Intent | Route To | Suggested Command |
-|-------------|----------|-------------------|
-| "generate an image" / "make something" | image-prompt | `/image-prompt [their idea]` |
-| "start a project" / "brand work" | project-setup | `/project-setup` |
-| "improve my prompt" / "why isn't this working" | prompt-anatomy | `/prompt-anatomy [their prompt]` |
+| User Intent | Skill | Command |
+|-------------|-------|---------|
+| "generate an image", "make something" | image-prompt | `/image-prompt [idea]` |
+| "start a project", "brand work" | project-setup | `/project-setup` |
+| "improve my prompt", "why isn't this working" | prompt-anatomy | `/prompt-anatomy [prompt]` |
 | "extract style from reference" | capture-trends | `/capture-trends [path]` |
 | "what styles do I have" | style-library | `/style-library list` |
 
-### Step 3: Guided First Generation
+## First Generation Flow
 
-If user chooses "generate an image":
+When user wants to generate an image:
+1. Ask what they want to create
+2. Invoke `/image-prompt` with their response
+3. After success, offer next steps: refine the image, start a project (`/project-setup`), or save the style (`/capture-trends`)
 
-1. Ask: "What do you want to create? (Describe in a few words)"
-2. Take their response and invoke `/image-prompt` with it
-3. After generation, show: "Nice! Here are some next steps:"
-   - "Refine this image — just describe changes"
-   - "Start a project for multiple related images → `/project-setup`"
-   - "Save this style for reuse → `/capture-trends [output-path]`"
-
-### Step 4: Success Confirmation
+## Success Confirmation
 
 After first successful action:
 
@@ -75,22 +63,18 @@ After first successful action:
 
 ## First-Run Detection
 
-Suggest quickstart if:
-- No `style-library.md` in current directory or root
-- No project directories detected
-- User's first image-related request in session
+Suggest `/quickstart` when no `style-library.md` or project directories exist, or on the user's first image request in a session.
 
-Detection message:
-> "Looks like you're just getting started! Want a quick walkthrough? (`/quickstart`)"
+Detection message: "Looks like you're just getting started! Want a quick walkthrough? (`/quickstart`)"
 
 ## Error Handling
 
 | Situation | Response |
 |-----------|----------|
-| User unclear | Offer multiple choice: "Are you trying to: generate an image / set up a project / improve a prompt?" |
-| User asks about capabilities | Show full skill list with one-line descriptions |
-| User wants to skip | "No problem! Just use `/image-prompt [your idea]` anytime." |
+| User unclear | Offer choices: generate / project / improve prompt |
+| Asks about capabilities | Show skill list with descriptions |
+| Wants to skip | "No problem! Use `/image-prompt [idea]` anytime." |
 
-## Integration
+## Note
 
-This skill is an entry point that routes to other skills. It does not call MCP tools directly.
+This skill routes to other skills. It does not call MCP tools directly.

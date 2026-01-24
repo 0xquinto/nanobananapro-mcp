@@ -30,66 +30,30 @@ Analyze image prompts for aesthetic quality before generation.
 
 ## Output Format
 
-### Standard Output
-
 ```
-TASTE CHECK
+TASTE CHECK                        # With --learn: "TASTE CHECK (Learning Mode)"
 ===========
 
 Prompt: [original prompt]
 
 INTENT CLARITY: [Clear / Vague / Missing]
-[Brief assessment of what emotion/response the prompt targets]
+[Brief assessment]
+  # With --learn: "Why this matters: [explanation]"
 
 CLICHÉS DETECTED: [count]
-- [cliché 1]: [where it appears]
-- [cliché 2]: [where it appears]
+- [cliché]: [where it appears]
+  # With --learn: "Why this matters: [explanation]"
 
 SPECIFICITY: [Under-specified / Good / Warning / Over-specified]
 Word count: [N] words
-[Assessment of balance]
+[Assessment]
+  # With --learn: "Why this matters: [explanation]"
 
 OVERALL: [Pass / Needs Work / Rethink]
 [One-line summary]
 ```
 
-### With --learn Flag
-
-```
-TASTE CHECK (Learning Mode)
-===========================
-
-Prompt: [original prompt]
-
-INTENT CLARITY: [Clear / Vague / Missing]
-[Brief assessment]
-
-  Why this matters: Intent clarity determines whether the image will
-  evoke the response you want. Vague intent leads to technically correct
-  but emotionally flat images.
-
-CLICHÉS DETECTED: [count]
-- [cliché]: [where it appears]
-
-  Why this matters: [Explanation of why this cliché produces generic
-  results and what alternatives exist]
-
-SPECIFICITY: [Level]
-Word count: [N] words
-
-  Why this matters: Under-specified prompts rely on model defaults
-  (often generic). Over-specified prompts cause mode collapse where
-  the model struggles to satisfy all constraints.
-
-OVERALL: [Rating]
-[Summary with learning takeaways]
-```
-
-### With --fix Flag
-
-```
-[Improved prompt only - no analysis, no explanation]
-```
+**With --fix**: Returns only the improved prompt, no analysis.
 
 ## JSON Output (`--format=json`)
 
@@ -127,76 +91,44 @@ OVERALL: [Rating]
 
 ## Sensitivity Levels
 
-- **low**: Only flag the most egregious issues. Best for experienced users who want a quick sanity check.
-- **medium** (default): Balanced detection. Flags common clichés and clear specificity issues.
-- **high**: Strict mode. Flags subtle clichés, borderline specificity, and any ambiguous intent. Best for learning or high-stakes generations.
+| Level | Flags |
+|-------|-------|
+| **low** | High-severity clichés only |
+| **medium** (default) | High + medium severity |
+| **high** | All patterns, strict specificity |
+
+See `taste-patterns.md` for complete pattern definitions.
 
 ## Extended Checks
 
-### Accessibility Hints
+Accessibility and content patterns are defined in `taste-patterns.md`. Key behaviors:
 
-Flags prompts that may produce accessibility issues:
-
-| Pattern | Concern | Suggestion |
-|---------|---------|------------|
-| "low contrast" | Hard to see | Add "ensuring readable contrast" |
-| "tiny text" | Illegible | Specify minimum text size |
-| "complex busy background" | Cognitive load | Simplify or specify focal area |
-| "red/green indicators" | Color blindness | Add shape differentiation |
-
-### Content Considerations
-
-Flags for user awareness (not automatically blocked):
-
-| Pattern | Flag | Rationale |
-|---------|------|-----------|
-| Face generation | `[FACE]` | May require consent considerations |
-| Crowd scenes | `[CROWD]` | Multiple faces, consent complexity |
-| Children | `[SENSITIVE]` | Extra review recommended |
-| Identifiable brands | `[BRAND]` | Trademark considerations |
-
-**Flags are informational.** The skill does not block generation; it informs the user.
-
-**Example output:**
-```
-TASTE CHECK
-===========
-
-CONTENT FLAGS: [FACE]
-This prompt will generate a human face.
-Consider whether a real photo or stylized illustration better fits your use case.
-
-[rest of analysis...]
-```
+- **Accessibility hints** (`--accessibility`): Flags contrast, readability, and color blindness concerns
+- **Content flags**: `[FACE]`, `[CROWD]`, `[SENSITIVE]`, `[BRAND]` - informational only, does not block generation
 
 ## Specificity Assessment
 
-| Level | Word Count | Assessment |
-|-------|------------|------------|
-| Under-specified | < 30 words | May produce generic results |
-| Good | 30-120 words | Balanced |
-| Warning | 120-180 words | Approaching over-specified |
-| Over-specified | > 180 words | Risk of mode collapse |
+| Level | Word Count | Notes |
+|-------|------------|-------|
+| Under-specified | < 30 | Generic results likely |
+| Good | 30-120 | Balanced |
+| Warning | 120-180 | Approaching over-specified |
+| Over-specified | > 180 | Mode collapse risk |
 
-Word count alone is not determinative. A 50-word prompt with only adjectives may be under-specified for *meaning* while a 25-word prompt with strong narrative elements may be sufficient.
+Word count is a heuristic. A 50-word prompt of pure adjectives may be under-specified for *meaning* while a 25-word narrative prompt may suffice.
 
-## Intent Clarity Indicators
+## Intent Clarity
 
-**Clear intent signals:**
-- Emotional target stated ("evoke melancholy", "create tension")
-- Viewer relationship defined ("intimate close-up", "voyeuristic distance")
-- Narrative moment specified ("just before the storm breaks")
-- Atmosphere/mood anchored to concrete references
+| Clear Intent | Vague Intent |
+|--------------|--------------|
+| Emotional target ("evoke melancholy") | Pure description without direction |
+| Viewer relationship ("intimate close-up") | Listing elements without relationship |
+| Narrative moment ("before the storm") | Generic mood words ("beautiful", "epic") |
+| Atmosphere anchored to references | No sense of moment |
 
-**Vague intent signals:**
-- Pure description without emotional direction
-- Listing visual elements without relationship
-- Generic mood words without grounding ("beautiful", "epic", "stunning")
-- No sense of moment or narrative
+See `taste-patterns.md` for intent-to-technique mappings.
 
-## Examples
-
-### Basic Analysis
+## Example
 
 ```
 > /taste-check "A beautiful sunset over mountains with dramatic lighting,
@@ -205,8 +137,7 @@ Word count alone is not determinative. A 50-word prompt with only adjectives may
 TASTE CHECK
 ===========
 
-Prompt: A beautiful sunset over mountains with dramatic lighting,
-cinematic composition, highly detailed, 8k
+Prompt: A beautiful sunset over mountains with dramatic lighting...
 
 INTENT CLARITY: Vague
 Generic "beautiful" scene with no emotional target or narrative moment.
@@ -220,76 +151,24 @@ CLICHÉS DETECTED: 4
 SPECIFICITY: Under-specified
 Word count: 14 words
 All description, no substance. Which mountains? What time of year?
-What should the viewer feel?
 
 OVERALL: Rethink
-This prompt will produce a generic AI sunset. Consider: What makes THIS
-sunset different from every other AI sunset?
+This prompt will produce a generic AI sunset.
 ```
 
-### With --learn
+**With --fix** on the same prompt:
 
 ```
-> /taste-check --learn "ethereal goddess in flowing robes"
-
-TASTE CHECK (Learning Mode)
-===========================
-
-Prompt: ethereal goddess in flowing robes
-
-INTENT CLARITY: Vague
-No emotional target beyond "impressive figure."
-
-  Why this matters: Without intent, the model defaults to its most
-  common interpretation of "goddess" - typically a generic beautiful
-  woman in white fabric. The image will be technically competent but
-  indistinguishable from thousands of similar generations.
-
-CLICHÉS DETECTED: 2
-- "ethereal": AI-art staple that triggers homogeneous soft-glow aesthetic
-- "flowing robes": Default goddess attire, signals nothing specific
-
-  Why this matters: These terms appear in millions of AI prompts. The
-  model has learned to map them to a narrow visual range. Using them
-  guarantees your image looks like everyone else's "ethereal goddess."
-
-SPECIFICITY: Under-specified
-Word count: 5 words
-
-  Why this matters: Five words cannot differentiate your vision from
-  the model's defaults. You're essentially asking for "the average of
-  all goddess images in training data."
-
-OVERALL: Rethink
-Ask yourself: What goddess? From what culture? In what moment?
-Feeling what emotion? Why should anyone care about this image?
-```
-
-### With --fix
-
-```
-> /taste-check --fix "A beautiful sunset over mountains with dramatic
-  lighting, cinematic composition, highly detailed, 8k"
-
 Late autumn sunset over the Dolomites, the last light catching fresh
 snow on the Tre Cime while the valleys below sink into blue shadow.
 A solitary rifugio glows warm against the cold peaks. The moment before
 the alpenglow fades completely, that held-breath stillness.
 ```
 
-## Integration
-
-Pattern definitions are maintained in `./taste-patterns.md`. The taste-check skill references this file for:
-
-- Cliché dictionary and severity levels
-- Cultural and temporal context for patterns
-- Positive alternatives for common clichés
-- Domain-specific pattern variations (portrait, landscape, abstract, etc.)
-
 ## Usage Tips
 
 1. Run taste-check BEFORE generation to catch issues early
 2. Use `--learn` when building prompt intuition
-3. Use `--fix` for quick iteration when you trust the suggestions
-4. Adjust `--taste` based on how critical the output is
-5. Check patterns file for domain-specific cliché lists
+3. Use `--fix` for quick iteration
+4. Adjust `--taste` based on output criticality
+5. See `taste-patterns.md` for cliché dictionary, intent mappings, and accessibility patterns

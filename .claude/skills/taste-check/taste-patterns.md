@@ -73,64 +73,35 @@ Guidelines for prompt length and modifier density to avoid over-specification.
 
 ---
 
-## Sensitivity Levels
-
-Controls which patterns are flagged during taste checks.
-
-| Level | What's Flagged |
-|-------|----------------|
-| **Low** | Only high-severity patterns |
-| **Medium** (default) | High + medium severity, mild specificity warnings |
-| **High** | All patterns, strict specificity limits |
-
-**Usage:**
-- Use **low** for experienced users who want minimal intervention
-- Use **medium** (default) for balanced guidance
-- Use **high** for learning mode or when quality is paramount
-
----
-
 ## Intent Mappings
 
-Maps emotional/atmospheric intents to concrete visual techniques.
+Translate emotional intents to concrete visual techniques. Multiple intents can combine if compatible.
 
-| Intent | Enhancement Direction |
-|--------|----------------------|
-| "peaceful" | Soft light, muted colors, open space, horizontal lines |
-| "tense" | High contrast, tight framing, diagonal lines, shadows |
-| "nostalgic" | Warm tones, film grain, soft focus, golden hour |
-| "energetic" | Saturated colors, dynamic angles, motion blur |
-| "mysterious" | Low key lighting, partial reveals, fog/atmosphere |
-| "intimate" | Close framing, shallow DOF, warm palette |
-| "epic" | Wide angle, dramatic scale, strong verticals |
-| "joyful" | Bright colors, open composition, upward angles |
-| "melancholic" | Desaturated, cool tones, empty space, downward gaze |
-| "dramatic" | High contrast, rim lighting, strong shadows |
-
-**Usage:**
-- When a user specifies an intent, translate it to these concrete techniques
-- Multiple intents can be combined if they don't conflict
-- Prefer specific techniques over abstract mood words in final prompts
+| Intent | Techniques |
+|--------|------------|
+| peaceful | Soft light, muted colors, open space, horizontal lines |
+| tense | High contrast, tight framing, diagonal lines, shadows |
+| nostalgic | Warm tones, film grain, soft focus, golden hour |
+| energetic | Saturated colors, dynamic angles, motion blur |
+| mysterious | Low key lighting, partial reveals, fog/atmosphere |
+| intimate | Close framing, shallow DOF, warm palette |
+| epic | Wide angle, dramatic scale, strong verticals |
+| joyful | Bright colors, open composition, upward angles |
+| melancholic | Desaturated, cool tones, empty space, downward gaze |
+| dramatic | High contrast, rim lighting, strong shadows |
 
 ---
 
 ## Accessibility Patterns
 
-### Contrast Concerns
-
-| Pattern | Severity | Note |
-|---------|----------|------|
-| "low contrast" | Medium | Flag for review |
-| "subtle tones" | Low | May reduce readability |
-| "monochromatic" | Low | Check for sufficient variation |
-
-### Readability Concerns
-
-| Pattern | Severity | Note |
-|---------|----------|------|
+| Pattern | Severity | Concern |
+|---------|----------|---------|
 | "tiny text" | High | Likely illegible |
+| "low contrast" | Medium | Hard to see |
 | "intricate small details" | Medium | May not render clearly |
 | "complex typography" | Medium | Accessibility risk |
+| "subtle tones" | Low | May reduce readability |
+| "monochromatic" | Low | Check for sufficient variation |
 
 ---
 

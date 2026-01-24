@@ -4,7 +4,7 @@ description: Extract visual trends from URLs, articles, PDFs, or images and
   save as style presets. Use when user shares inspiration links, trend reports,
   reference images, or wants to capture a style from an external source.
   Populates style-library.md with extracted presets. Use --guide to also create/update style-guide.md.
-argument-hint: "<source> [--name=preset] [--guide] [--preview] [--dry-run]"
+argument-hint: "<source> [--name=preset] [--guide] [--preview] [--modular]"
 ---
 
 # Capture Trends
@@ -114,17 +114,16 @@ Combine extracted elements into a prompt-ready style definition:
 
 ## Options
 
-| Flag | Usage | Description |
-|------|-------|-------------|
-| `--name=<preset>` | `--name=moody-portrait` | Name for the extracted preset (otherwise auto-generated) |
-| `--category=<cat>` | `--category=lighting` | Target category in style library |
-| `--preview` | `--preview` | Show extraction without saving to file |
-| `--merge` | `--merge` | Combine with existing preset of same name |
-| `--modular` | `--modular` | Extract into separate style/palette/mood/lighting presets |
-| `--guide` | `--guide` | Also create/update style-guide.md with extracted constraints |
-| `--root` | `--root` | Force save to root style-library.md (ignore project context) |
-| `--project=<path>` | `--project=demo-campaign` | Save to specific project's style-library.md |
-| `--dry-run` | `--dry-run` | Analyze source and show extracted styles without saving (alias for --preview) |
+| Flag | Description |
+|------|-------------|
+| `--name=<preset>` | Name for the extracted preset (otherwise auto-generated) |
+| `--category=<cat>` | Target category in style library |
+| `--preview` | Show extraction without saving |
+| `--merge` | Combine with existing preset of same name |
+| `--modular` | Extract into separate style/palette/mood/lighting presets |
+| `--guide` | Also create/update style-guide.md with extracted constraints |
+| `--root` | Force save to root style-library.md (ignore project context) |
+| `--project=<path>` | Save to specific project's style-library.md |
 
 ## Style Guide Generation (--guide flag)
 
@@ -143,69 +142,18 @@ When `--guide` is used, also create or update `style-guide.md` with extracted pr
 
 ### Style Guide Template
 
-When `--guide` creates a new `style-guide.md`, it uses this structure:
+When `--guide` creates a new `style-guide.md`, use this structure:
 
-```markdown
-# [Source Name] Style Guide
+| Section | Content |
+|---------|---------|
+| **Overview** | Source, date, trend count |
+| **Visual Direction** | Style summary, mood keywords |
+| **Color Palette** | Primary colors (name, hex, usage), color mood |
+| **Visual Medium** | Primary medium, notes |
+| **Prompt Patterns** | Recommended presets, do's/don'ts |
+| **Asset Requirements** | Dimensions, formats, technical specs |
 
-> AI-ready style guide extracted from [source]
-
-## Overview
-
-**Source:** [URL/file path]
-**Extracted:** [date]
-**Trends covered:** [count if multi-trend]
-
-## Visual Direction
-
-### Style Summary
-[Synthesized from extracted trends]
-
-### Mood Keywords
-- [keyword 1]
-- [keyword 2]
-- [keyword 3]
-
-## Color Palette
-
-### Primary Colors
-| Name | Hex | Usage |
-|------|-----|-------|
-| [Color 1] | #XXXXXX | [extracted context] |
-| [Color 2] | #XXXXXX | [extracted context] |
-
-### Color Mood
-[Overall color direction from source]
-
-## Visual Medium
-
-**Primary:** [Most common medium from source]
-
-### Medium Notes
-- [Extracted medium guidance]
-
-## Prompt Patterns
-
-### Recommended Presets
-Reference these from the extracted style-library.md:
-- `--style=[preset1]`
-- `--style=[preset2]`
-
-### Do's
-- [Extracted positive guidance]
-
-### Don'ts
-- [Extracted things to avoid]
-
-## Asset Requirements
-
-[Any dimension, format, or technical requirements found]
-
----
-
-*Generated from [source] using `/capture-trends --guide`*
-*Presets saved to style-library.md*
-```
+Footer: `*Generated from [source] using /capture-trends --guide*`
 
 ### Behavior with Existing style-guide.md
 
@@ -215,124 +163,66 @@ Reference these from the extracted style-library.md:
 | style-guide.md exists | **Merge** new content, preserving existing sections |
 | Conflicting content | Show diff, ask user which to keep |
 
-### Example with --guide
-
-```bash
-/capture-trends ./Pinterest-Predicts-2026.pdf --modular --guide
-
-## Extraction Complete
-
-### style-library.md
-✓ Added 84 presets (21 trends × 4 categories)
-
-### style-guide.md
-✓ Created with:
-  - 21 mood keywords
-  - Color palettes from all trends
-  - Medium guidance (photography, illustration mix)
-  - Do's/Don'ts for trend-aligned imagery
-  - Recommended preset combinations
-
-**Files created:**
-- style-library.md (presets)
-- style-guide.md (constraints)
-
-Ready to use:
-/image-prompt a portrait --style=vamp-romantic
-```
-
 ### When to Use --guide
 
 | Scenario | Use --guide? |
 |----------|--------------|
-| Setting up a new project from a trend report | ✓ Yes |
-| Adding a single style from a reference image | ✗ No (just presets) |
-| Comprehensive brand/style document | ✓ Yes |
-| Quick inspiration capture | ✗ No (just presets) |
-| Multi-trend PDF/report | ✓ Yes (creates unified guide) |
+| New project from trend report | Yes |
+| Single style from reference image | No |
+| Comprehensive brand document | Yes |
+| Quick inspiration capture | No |
+| Multi-trend PDF/report | Yes |
 
 ## Critical: Multi-Trend Documents
 
 **IMPORTANT:** Some sources (trend reports, style guides, mood board collections) contain **multiple distinct trends**, not one unified style.
 
-### How to Detect Multi-Trend Sources
+### Detection Signals
 
-Look for:
-- Numbered or named sections (e.g., "Trend 1: Cool Blue", "Trend 2: Vamp Romantic")
+- Numbered/named sections ("Trend 1: Cool Blue", "Trend 2: Vamp Romantic")
 - Multiple distinct aesthetics described separately
 - Trend forecasts or "predicts" documents
-- Style guides with different "looks" or "moods"
 
-### What NOT to Do
+### Required Behavior
 
-❌ **Never create a meta-style named after the source document:**
-```
-# BAD - This just describes the PDF, not a usable style
-- **pinterest-2026**: "2026 trends mixing maximalist glamour with..."
-```
+| Do | Don't |
+|----|-------|
+| Extract each trend as separate preset | Create meta-style named after source document |
+| `cool-blue`, `vamp-romantic`, `gimme-gummy` | `pinterest-2026` combining everything |
+| Ask user how to proceed when multiple detected | Silently merge unrelated aesthetics |
 
-❌ **Never combine unrelated trends into one preset:**
+When multiple trends detected, prompt:
 ```
-# BAD - These are separate aesthetics, not one style
-- **trend-report**: "Icy blues AND gothic romance AND candy textures..."
-```
-
-### What TO Do
-
-✓ **Extract each trend as its own preset:**
-```
-# GOOD - Each trend is distinct and usable
-- **cool-blue**: "Icy subzero aesthetic, crystalline surfaces..."
-- **vamp-romantic**: "Gothic romance, Victorian silhouettes..."
-- **gimme-gummy**: "Tactile candy aesthetic, glossy surfaces..."
-```
-
-✓ **Ask the user if multiple trends are detected:**
-```
-I found 21 distinct trends in this document. Should I:
+I found 21 distinct trends. Should I:
 1. Extract all as separate presets
-2. Let you pick specific trends to extract
-3. Extract just the first few as examples
+2. Let you pick specific trends
+3. Extract first few as examples
 ```
 
 ## Modular Extraction (--modular flag)
 
-When `--modular` is used (or for multi-trend documents), extract into **separate categories** that can be mixed and matched:
+When `--modular` is used, extract into **separate categories** for mix-and-match:
 
-| Category | What to Extract | Keep Separate From |
-|----------|-----------------|-------------------|
-| **Art Styles** | Composition, textures, subject matter, visual treatment | Colors, mood, lighting |
+| Category | Extracts | Independent Of |
+|----------|----------|----------------|
+| **Art Styles** | Composition, textures, visual treatment | Colors, mood, lighting |
 | **Color Palettes** | Color schemes with hex codes | Style, mood |
-| **Moods** | Emotional atmosphere, energy, feeling | Style, colors |
-| **Lighting** | Light direction, quality, temperature | Style, colors, mood |
+| **Moods** | Emotional atmosphere, energy | Style, colors |
+| **Lighting** | Direction, quality, temperature | Style, colors, mood |
 
 ### Critical: 1:1:1:1 Extraction Rule
 
 **For multi-trend documents, extract ALL FOUR categories for EACH trend.**
 
-❌ **WRONG - Incomplete extraction:**
-```
-Art Styles: 21 presets (one per trend)
-Color Palettes: 10 presets  ← Missing 11!
-Moods: 8 presets            ← Missing 13!
-Lighting: 7 presets         ← Missing 14!
-```
+If document has 21 trends, output must be:
+- Art Styles: 21 presets
+- Color Palettes: 21 presets
+- Moods: 21 presets
+- Lighting: 21 presets
 
-✓ **CORRECT - Complete extraction:**
-```
-Art Styles: 21 presets (one per trend)
-Color Palettes: 21 presets (one per trend)
-Moods: 21 presets (one per trend)
-Lighting: 21 presets (one per trend)
-```
+**Total: N trends x 4 categories = 4N presets**
 
-Each trend has its own:
-- Visual aesthetic → Art Style preset
-- Color direction → Color Palette preset
-- Emotional atmosphere → Mood preset
-- Lighting quality → Lighting preset
-
-**Label each preset with its source trend** for easy matching:
+Label presets with source trend for matching:
 ```markdown
 ### From Vamp Romantic
 - **vamp-darks**: "Deep burgundy #722F37, black #0D0D0D..."
@@ -340,20 +230,10 @@ Each trend has its own:
 
 ### Why Modular?
 
-Non-modular (baked-in):
-```
-- **vamp-romantic**: "Gothic aesthetic, deep burgundy palette, haunting mood, candlelit lighting"
-# Can only use this exact combination
-```
-
-Modular (mix-and-match):
-```
-- **vamp-romantic**: "Gothic aesthetic, Victorian silhouettes, lace textures, velvet fabrics"
-- **vamp-darks**: "Deep burgundy #722F37, black #0D0D0D, gold accents"
-- **haunting-melancholy**: "Dramatic shadows, romantic longing, bittersweet atmosphere"
-- **candlelit-gothic**: "Warm flickering candlelight, deep dramatic shadows, intimate glow"
-# Can combine any style + palette + mood + lighting
-```
+| Approach | Example | Flexibility |
+|----------|---------|-------------|
+| Non-modular | `vamp-romantic` = style + palette + mood + lighting | One fixed combination |
+| Modular | Separate `vamp-romantic`, `vamp-darks`, `haunting-melancholy`, `candlelit-gothic` | Mix any style + palette + mood + lighting |
 
 ## Category Auto-Detection
 
@@ -413,166 +293,70 @@ Use with:
 
 ### From Images
 
-When analyzing an image, describe what you observe:
-
-**Colors:**
-- Identify 3-5 dominant colors
-- Note if warm or cool overall
-- Extract approximate hex codes
-- Describe color relationships (complementary, analogous, monochromatic)
-
-**Lighting:**
-- Direction: front, side, back, top, ambient
-- Quality: hard (sharp shadows) or soft (diffused)
-- Color temperature: warm, neutral, cool
-- Contrast level: high contrast or low contrast
-
-**Composition:**
-- Subject placement (centered, off-center, rule of thirds)
-- Depth (shallow DOF, deep focus, layered)
-- Framing (tight, medium, wide)
-- Angle (eye level, low, high, dutch)
-
-**Medium/Technique:**
-- Photography, illustration, painting, 3D, mixed
-- If photography: film vs digital feel, grain, processing
-- If illustration: style (flat, detailed, sketchy)
-- Texture quality: smooth, grainy, textured
-
-**Mood:**
-- Emotional impression (peaceful, tense, joyful, mysterious)
-- Atmosphere (intimate, expansive, claustrophobic)
-- Energy level (calm, dynamic, chaotic)
+| Aspect | Extract |
+|--------|---------|
+| **Colors** | 3-5 dominant colors with hex codes, warm/cool balance, relationships |
+| **Lighting** | Direction, quality (hard/soft), temperature, contrast |
+| **Composition** | Subject placement, depth, framing, angle |
+| **Medium** | Photo/illustration/3D, processing style, texture quality |
+| **Mood** | Emotional impression, atmosphere, energy level |
 
 ### From Text/URLs
 
-Scan for these patterns:
-
-**Direct style mentions:**
-- "in the style of [artist/movement]"
-- "[medium] aesthetic"
-- "inspired by [reference]"
-
-**Color language:**
-- Named colors: "terracotta", "sage", "midnight blue"
-- Hex codes: #XXXXXX
-- Color moods: "earthy", "neon", "muted"
-
-**Atmosphere words:**
-- Lighting: "golden hour", "harsh shadows", "soft glow"
-- Mood: "dreamy", "gritty", "ethereal", "cozy"
-- Era: "vintage", "futuristic", "retro 80s"
+| Pattern Type | Examples |
+|--------------|----------|
+| Style mentions | "in the style of...", "[medium] aesthetic", "inspired by..." |
+| Color language | Named colors, hex codes, color moods (earthy, neon, muted) |
+| Atmosphere | Lighting words, mood descriptors, era references |
 
 ## Examples
 
-### From Image
+### Single Source (Image/URL)
 
 ```
-/capture-trends ./inspiration/moody-portrait.jpg --name=dark-editorial
+/capture-trends ./moody-portrait.jpg --name=dark-editorial
 
 ## Trend Extraction: moody-portrait.jpg
-
-**Source:** ./inspiration/moody-portrait.jpg
-**Detected type:** Image (JPEG)
-
-### Extracted Elements
+**Source:** ./moody-portrait.jpg | **Type:** Image (JPEG)
 
 | Category | Found |
 |----------|-------|
 | Colors | #1A1A2E (deep navy), #E8D5B7 (warm skin), #4A4A6A (muted purple) |
-| Lighting | Single key light from camera left, strong shadows on right side |
-| Medium | Studio photography, possibly film |
-| Mood | Contemplative, intimate, slightly melancholic |
-| Composition | Tight crop, negative space on shadow side, eye-level |
+| Lighting | Single key light from left, strong shadows |
+| Medium | Studio photography, film grain |
+| Mood | Contemplative, intimate |
 
-### Generated Preset
+**Preset:** `dark-editorial` → "Low-key portrait lighting, dramatic side light,
+desaturated palette with warm skin against deep navy #1A1A2E..."
 
-**Name:** `dark-editorial`
-**Category:** `lighting`
-
-"Low-key portrait lighting, single dramatic side light from left, deep
-shadows obscuring half the face, desaturated color palette with warm
-skin tones against deep navy #1A1A2E background, shallow depth of field,
-editorial photography style with subtle film grain, contemplative mood"
-
-✓ Added `dark-editorial` to style-library.md under `lighting`
+✓ Added to style-library.md under `lighting`
 ```
 
-### From Multi-Trend Document (PDF/Report)
+### Multi-Trend Document (--modular)
 
 ```
-/capture-trends ./docs/Pinterest-Predicts-2026.pdf --modular
+/capture-trends ./Pinterest-Predicts-2026.pdf --modular
 
 ## Trend Extraction: Pinterest Predicts 2026
+**Source:** ./Pinterest-Predicts-2026.pdf | **Type:** PDF (24 pages)
+**Detected:** 21 distinct trends
 
-**Source:** ./docs/Pinterest-Predicts-2026.pdf
-**Detected type:** PDF (24 pages)
-**Document type:** Multi-trend report (21 distinct trends detected)
-
-### Detected Trends
-
-1. Cool Blue - Subzero sophistication
-2. Vamp Romantic - Gothic romance
-3. Neo Deco - Art deco revival
-... (18 more)
-
-**How should I proceed?**
-1. Extract all 21 trends as separate presets
-2. Pick specific trends to extract
-3. Extract first 5 as examples
+How should I proceed?
+1. Extract all as separate presets
+2. Pick specific trends
+3. Extract first few as examples
 
 > User: Extract all, make it modular
 
-### Extracted to style-library.md (1:1:1:1 complete)
+### Result (1:1:1:1 complete)
+- Art Styles (21): cool-blue, vamp-romantic, pen-pals...
+- Color Palettes (21): icy-subzero, vamp-darks, postal-vintage...
+- Moods (21): icy-sophistication, haunting-melancholy...
+- Lighting (21): icy-crisp, candlelit-gothic, window-warmth...
 
-**Art Styles (21 presets):** one per trend
-- cool-blue, vamp-romantic, pen-pals, glamoratti, wilderkind...
+✓ 84 mix-and-match presets (21 × 4 categories)
 
-**Color Palettes (21 presets):** one per trend
-- icy-subzero, vamp-darks, postal-vintage, gilded-luxe, moss-forest...
-
-**Moods (21 presets):** one per trend
-- icy-sophistication, haunting-melancholy, nostalgic-intimacy, bold-decadence...
-
-**Lighting (21 presets):** one per trend
-- icy-crisp, candlelit-gothic, window-warmth, studio-glamour, dappled-forest...
-
-✓ Created modular style library with 84 mix-and-match presets (21 × 4 categories)
-
-**Usage:**
-/image-prompt portrait --style=vamp-romantic --palette=icy-subzero --mood=bold-confidence
-```
-
-### From Single-Style URL
-
-```
-/capture-trends https://example.com/moody-portrait-tutorial --name=moody-portrait
-
-## Trend Extraction: moody-portrait-tutorial
-
-**Source:** https://example.com/moody-portrait-tutorial
-**Detected type:** Web article
-**Document type:** Single style (not multi-trend)
-
-### Extracted Elements
-
-| Category | Found |
-|----------|-------|
-| Colors | "Deep shadows", "warm skin tones", "dark background" |
-| Lighting | "Single key light", "dramatic side lighting" |
-| Medium | "Editorial photography" |
-| Mood | "Contemplative", "intimate" |
-
-### Generated Preset
-
-**Name:** `moody-portrait`
-**Category:** `art-styles`
-
-"Editorial portrait photography, single dramatic side light, deep shadows
-on opposite side, warm skin tones against dark background, shallow depth
-of field, contemplative intimate mood"
-
-✓ Added `moody-portrait` to style-library.md under `art-styles`
+Usage: /image-prompt portrait --style=vamp-romantic --palette=icy-subzero
 ```
 
 ### With --merge
@@ -580,43 +364,20 @@ of field, contemplative intimate mood"
 ```
 /capture-trends ./ref2.jpg --name=dark-editorial --merge
 
-Existing preset `dark-editorial`:
-"Low-key portrait lighting, single dramatic side light..."
-
-New extraction adds:
-- Color: #8B4513 (warm brown accent)
-- Detail: "catchlight in eyes"
-
-Merged preset `dark-editorial`:
-"Low-key portrait lighting, single dramatic side light from left, deep
-shadows, desaturated palette with teal #264653, burnt orange #E76F51,
-and warm brown #8B4513 accents, catchlight in eyes, shallow depth of
-field, editorial photography style, contemplative mood"
+Existing: "Low-key portrait lighting, single dramatic side light..."
+Adding: #8B4513 (warm brown accent), "catchlight in eyes"
+Merged: "...with teal #264653, burnt orange #E76F51, and warm brown #8B4513..."
 
 ✓ Updated `dark-editorial` in style-library.md
 ```
 
 ## Integration
 
-### With /style-library
-
-Extracted presets are saved in the same format `/style-library` manages:
-```markdown
-- **preset-name**: "Full style definition here"
-```
-
-### With /project-setup
-
-When in a project folder with `references/` directory:
-- Suggest running `/capture-trends` on reference images
-- Auto-populate `style-library.md` with project-relevant presets
-
-### With /image-prompt
-
-After capturing a trend:
-```
-Style captured! Try: /image-prompt [your concept] --style=[preset-name]
-```
+| Skill | Integration |
+|-------|-------------|
+| `/style-library` | Presets saved in same format: `- **name**: "definition"` |
+| `/project-setup` | Suggest capture-trends on `references/` images |
+| `/image-prompt` | After capture: `Try: /image-prompt [concept] --style=[preset]` |
 
 ## Error Handling
 

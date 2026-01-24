@@ -49,22 +49,22 @@ Save and log (if in project)
 
 ## Options
 
-| Flag | Usage | Description |
-|------|-------|-------------|
-| `--chat` | `--chat` | Use multi-turn session for iterative refinement |
-| `--refs=<path>` | `--refs=./references/` | Include reference images for composition |
-| `--style=<preset>` | `--style=cinematic` | Apply preset from style-library.md |
-| `--output=<path>` | `--output=./hero.png` | Save to specific location |
-| `--resolution=<res>` | `--resolution=4K` | Set output resolution (1K, 2K, 4K) |
-| `--aspect=<ratio>` | `--aspect=16:9` | Set aspect ratio |
-| `--grounded` | `--grounded` | Use search-grounded generation for real-world data |
-| `--project=<path>` | `--project=demo-campaign` | Use specific project's context (style-guide, style-library, outputs) |
-| `--taste=<level>` | `--taste=high` | Cliche detection sensitivity (low/medium/high, default: medium) |
-| `--learn` | `--learn` | Show reasoning for taste suggestions |
-| `--no-taste` | `--no-taste` | Skip taste checks entirely (speed mode) |
-| `--dry-run` | `--dry-run` | Preview enhanced prompt and settings without generating |
-| `--format=<fmt>` | `--format=json` | Output format: human (default), json |
-| `--seed=<n>` | `--seed=12345` | Seed for reproducible generation (0-2147483647) |
+| Flag | Description |
+|------|-------------|
+| `--chat` | Use multi-turn session for iterative refinement |
+| `--refs=<path>` | Include reference images for composition |
+| `--style=<preset>` | Apply preset from style-library.md |
+| `--output=<path>` | Save to specific location |
+| `--resolution=1K\|2K\|4K` | Set output resolution (default: 2K) |
+| `--aspect=<ratio>` | Set aspect ratio (e.g., 16:9, 3:4) |
+| `--grounded` | Use search-grounded generation for real-world data |
+| `--project=<path>` | Use specific project's context |
+| `--taste=low\|medium\|high` | Cliche detection sensitivity (default: medium) |
+| `--learn` | Show reasoning for taste suggestions |
+| `--no-taste` | Skip taste checks (speed mode) |
+| `--dry-run` | Preview prompt and settings without generating |
+| `--format=json` | Machine-readable JSON output |
+| `--seed=<n>` | Seed for reproducible generation (0-2147483647) |
 
 ## Dry Run Mode
 
@@ -156,103 +156,57 @@ Machine-readable JSON output for scripting and automation. Structure:
 
 ## Reproducibility
 
-Use `--seed` for deterministic generation:
+Use `--seed=<n>` for deterministic generation. Same seed + same prompt = same image (within model constraints).
 
-```bash
-/image-prompt a sunset --seed=42
-```
+**Use cases:** A/B testing, regenerating approved concepts, debugging, batch generation.
 
-**Same seed + same prompt = same image** (within model constraints).
-
-**Use cases:**
-- A/B testing prompt variations
-- Regenerating approved concepts
-- Debugging generation issues
-- Consistent batch generation
-
-**Seed is logged** in asset-log.md for approved images.
-
-**Note:** Seed support depends on the underlying Gemini API. The parameter is validated (0 to 2147483647) and passed through, but actual reproducibility may vary based on API behavior.
+Seed is logged in asset-log.md. Note: actual reproducibility depends on Gemini API behavior.
 
 ## MCP Tool Selection
 
 ### Decision Tree
 
 ```
-Is there an existing image to work with?
-├── NO → Fresh generation
-│   ├── Has --refs flag? → compose_images
-│   ├── Has --grounded flag? → search_grounded_image
-│   ├── Has --chat flag? → start_image_chat
-│   └── Default → generate_image
+Has existing image?
+├── NO (fresh generation)
+│   ├── --refs flag      → compose_images
+│   ├── --grounded flag  → search_grounded_image
+│   ├── --chat flag      → start_image_chat
+│   └── default          → generate_image
 │
-└── YES → Modifying existing image
-    ├── Already in active chat session? → continue_image_chat
-    ├── User expects multiple rounds of refinement? → start_image_chat (with image context)
-    └── Single specific edit? → edit_image
+└── YES (modifying)
+    ├── Active session?  → continue_image_chat
+    ├── Multiple rounds? → start_image_chat
+    └── Single edit?     → edit_image
 ```
 
-### When to Use Each Tool
+### Tool Selection Guide
 
-| Tool | Use When | Key Indicator |
-|------|----------|---------------|
-| `generate_image` | Fresh image, no iteration expected | One-shot request, user seems satisfied with single output |
-| `edit_image` | **Single specific change** to existing image | "make it bluer", "remove the background", "add a hat" — discrete modification |
-| `start_image_chat` | User wants to **explore and iterate** | `--chat` flag, OR phrases like "let's try", "I want to refine", "help me get this right" |
-| `continue_image_chat` | **Already in active session**, user requests changes | Session ID exists from previous `start_image_chat` |
-| `compose_images` | Combining/referencing multiple images | `--refs` flag, user provides reference images |
-| `search_grounded_image` | Needs real-world current data | `--grounded` flag, weather, stocks, current events |
+| Tool | When | Indicator |
+|------|------|-----------|
+| `generate_image` | One-shot generation | No special flags or context |
+| `edit_image` | Single discrete change | "make it bluer", "add a hat" |
+| `start_image_chat` | Iterative exploration | `--chat` flag, "let's try", "help me refine" |
+| `continue_image_chat` | Already in session | Active session ID exists |
+| `compose_images` | Multiple references | `--refs` flag |
+| `search_grounded_image` | Real-time data | `--grounded` flag, weather, stocks |
 
-### Chat Session vs Edit Image — The Key Distinction
-
-| Aspect | `edit_image` | Chat Session |
-|--------|--------------|--------------|
-| **Context** | Stateless — each edit is independent | Stateful — model remembers previous iterations |
-| **Use case** | "Change X to Y" (single modification) | "Let's explore variations" (creative iteration) |
-| **Rounds** | One | Multiple back-and-forth |
-| **When to choose** | User knows exactly what they want changed | User is experimenting/refining |
-
-**Rule of thumb:**
-- If user will likely ask for 2+ changes → start a chat session
-- If user has one specific edit → use edit_image
-
-### Auto-Suggest Chat Mode
-
-When the user requests changes after initial generation (without `--chat`), suggest upgrading:
-
-> "Want to continue refining? I can start a chat session for faster iteration, or make this single edit."
+**Key distinction:** `edit_image` is stateless (single change), chat sessions are stateful (model remembers history). Use chat when user will likely request 2+ changes.
 
 ### State Tracking
 
-Claude Code maintains conversation context. Use that context to remember:
-- Last generated image path (for `edit_image`)
-- Active session ID (for `continue_image_chat`)
-- Current version number (for file naming)
+Track in conversation context:
+- Last generated image path
+- Active session ID
+- Current version number
 
-**Required state for each tool:**
-
-| Tool | Required State |
-|------|----------------|
-| `edit_image` | Path to existing image |
-| `continue_image_chat` | Session ID from `start_image_chat` |
-| `end_image_chat` | Session ID |
-
-**Persistence:** Active session state is also saved to `.nanobananapro-session` for recovery. See [Session Persistence](#session-persistence).
-
-**When in an active chat session, always display:**
-```
-**Session:** Active (ID: [id]) — say "done" to end
-```
-
-This reminds the user (and future context) that a session is open.
+**When in active session, display:** `**Session:** Active (ID: [id]) — say "done" to end`
 
 ## Session Persistence
 
-Chat sessions can be lost if Claude Code disconnects. To prevent work loss:
+Persist chat sessions to `.nanobananapro-session` (project root or current directory) to recover from disconnects.
 
-### Session File
-
-When a chat session starts, create `.nanobananapro-session` in the project root (or current directory):
+### Session File Format
 
 ```json
 {
@@ -264,145 +218,45 @@ When a chat session starts, create `.nanobananapro-session` in the project root 
 }
 ```
 
-### Session Lifecycle
+### Lifecycle
 
-| Event | Action |
-|-------|--------|
-| `start_image_chat` called | Create/update `.nanobananapro-session` |
-| `continue_image_chat` called | Update `last_image`, increment `iteration`, update `last_prompt` |
-| `end_image_chat` called | Delete `.nanobananapro-session` |
-| User says "done" | Delete `.nanobananapro-session` |
+- **Create/update** on `start_image_chat` and `continue_image_chat`
+- **Delete** on `end_image_chat`, user says "done", or starts fresh
 
-### Session Recovery
+### Recovery
 
-On startup of `/image-prompt`, check for `.nanobananapro-session`:
+On skill startup, if session file exists, offer:
+1. **Continue** — Check if session active via `list_chat_sessions`, use `continue_image_chat` or fall back to option 2
+2. **Use last image** — Start new session with `last_image` as reference
+3. **Start fresh** — Delete session file, proceed normally
 
-**If session file exists:**
+### MCP Tool Reference
 
-```
-Found a previous session from [timestamp].
-Last image: [last_image]
-Iteration: [iteration]
+| Tool | Required | Optional |
+|------|----------|----------|
+| `generate_image` | `prompt` | `aspect_ratio`, `resolution`, `output_path`, `seed` |
+| `edit_image` | `prompt`, `image_path` | `aspect_ratio`, `resolution`, `output_path`, `seed` |
+| `compose_images` | `prompt`, `image_paths` (max 14) | `aspect_ratio`, `resolution`, `output_path`, `seed` |
+| `search_grounded_image` | `prompt` | `aspect_ratio`, `resolution`, `output_path` |
+| `start_image_chat` | `initial_prompt` | `seed` |
+| `continue_image_chat` | `session_id`, `prompt` | `aspect_ratio`, `resolution` |
+| `end_image_chat` | `session_id` | — |
 
-Options:
-1. Continue where you left off (describe your next change)
-2. Start fresh with the last image as reference
-3. Start completely fresh
-```
+**Defaults:** `model="pro"`, `aspect_ratio="1:1"`, `resolution="2K"`. Seed range: 0-2147483647.
 
-**Recovery logic:**
+## The 6-Element Formula
 
-| User Choice | Action |
-|-------------|--------|
-| Continue | Try `list_chat_sessions` to check if session still active. If yes, use `continue_image_chat`. If no, use option 2. |
-| Start with last image | Use `start_image_chat` with `last_image` as context, delete old session file |
-| Start fresh | Delete session file, proceed normally |
+Every prompt should address: **Subject**, **Composition**, **Action**, **Location**, **Style**, **Constraints**.
 
-### Session File Location
-
-| Context | Location |
-|---------|----------|
-| In project directory | `[project]/.nanobananapro-session` |
-| No project | `./.nanobananapro-session` (current directory) |
-
-### Cleanup
-
-The session file should be deleted:
-- When user explicitly ends session ("done")
-- When `end_image_chat` is called
-- When user chooses "start fresh" during recovery
-- When a new session starts (after prompting about existing)
-
-### MCP Tool Signatures
-
-```python
-# One-shot generation
-generate_image(
-    prompt: str,
-    model: str = "pro",           # Always use "pro"
-    aspect_ratio: str = "1:1",    # 1:1, 16:9, 9:16, 4:3, 3:4, 21:9
-    resolution: str = "2K",       # 1K, 2K, 4K
-    output_path: str = None,      # Optional save path
-    seed: int = None              # Optional seed for reproducibility (0-2147483647)
-)
-
-# Multi-turn chat session
-start_image_chat(
-    initial_prompt: str,
-    model: str = "pro",
-    seed: int = None              # Optional seed (API support may vary)
-)
-# Returns: session_id
-
-continue_image_chat(
-    session_id: str,
-    prompt: str,
-    aspect_ratio: str = None,
-    resolution: str = None
-)
-
-end_image_chat(session_id: str)
-
-# Composition from references
-compose_images(
-    prompt: str,
-    image_paths: list[str],       # Up to 14 reference images
-    model: str = "pro",
-    aspect_ratio: str = "1:1",
-    resolution: str = "2K",
-    output_path: str = None,
-    seed: int = None              # Optional seed for reproducibility (0-2147483647)
-)
-
-# Edit existing image
-edit_image(
-    prompt: str,                  # Editing instructions
-    image_path: str,              # Image to edit
-    model: str = "pro",
-    aspect_ratio: str = None,     # Optional, defaults to input
-    resolution: str = "2K",
-    output_path: str = None,
-    seed: int = None              # Optional seed for reproducibility (0-2147483647)
-)
-
-# Search-grounded (real-world data)
-search_grounded_image(
-    prompt: str,                  # Include real-time data needs
-    aspect_ratio: str = "16:9",
-    resolution: str = "2K",
-    output_path: str = None
-)
-```
-
-## The 6-Element Formula (Embedded)
-
-Every effective prompt addresses these elements:
-
-| Element | What it defines | Enhancement approach |
-|---------|-----------------|---------------------|
-| **Subject** | Who/what is the main focus | Add specifics: breed, age, material, condition, distinguishing features |
-| **Composition** | How the frame is arranged | Add shot type (close-up, wide) and angle (eye level, low, high) |
-| **Action** | What's happening | Add movement, interaction, or dynamic state |
-| **Location** | Where it takes place | Add environment, setting, atmosphere, time of day |
-| **Style** | Visual treatment | Add medium, art style, lighting quality, color treatment |
-| **Constraints** | Text, ratio, requirements | Add any specific requirements, aspect ratio implications |
+See `/enhance-prompt` skill for detailed element definitions and examples.
 
 ### Gap Analysis
 
-Before enhancing, quickly assess what's present:
-
-- ✓ Present and specific
-- △ Present but vague
-- ✗ Missing entirely
-
-Focus enhancement on ✗ and △ elements. Don't over-elaborate ✓ elements.
+Mark each element: ✓ (specific), △ (vague), ✗ (missing). Focus enhancement on ✗ and △.
 
 ### Enhancement Output
 
-Write as natural flowing prose, 2-4 sentences. Group related elements. Never use:
-- Keyword spam ("4k, masterpiece, trending")
-- Comma-separated lists
-- Generic quality words
+Write as natural prose (2-4 sentences). Avoid keyword spam, comma lists, and generic quality words ("4k, masterpiece, trending").
 
 ## Process Steps
 
@@ -457,55 +311,20 @@ Extract from the user's request:
 
 ### Step 2: Check Project Context
 
-This skill is project-aware and determines context based on detection priority:
+Detect project context (see `/enhance-prompt` for shared detection logic):
 
-#### Detection Priority
+**Priority:** `--project` flag > current directory > parent directory > no project
 
-1. **`--project=<path>` flag** → Use that project's files
-2. **Current directory has project markers** → Use current project
-3. **Parent directory has project markers** → Use parent project
-4. **No project context** → Use root `style-library.md` only, save to `./output/`
+**Project markers:** `style-guide.md`, `style-library.md`, `outputs/`, `references/`
 
-#### Project Markers
+**Files to load:**
+- `style-guide.md` — brand constraints, palette, requirements (if `locked: true`, show indicator and skip update suggestions)
+- `style-library.md` — presets for `--style` flag (project overrides root)
+- `references/` — suggest `--refs` if relevant
+- `outputs/` — save location for generated images
+- `asset-log.md` — log generation metadata
 
-A directory is considered a "project" if it contains ANY of:
-- `style-guide.md`
-- `style-library.md`
-- `outputs/` directory
-- `references/` directory
-
-#### Style Library Resolution
-
-When `--style=<preset>` is specified:
-1. First check **project** `style-library.md` (if in project)
-2. Then check **root** `style-library.md`
-3. Project presets override root presets of the same name
-
-#### Locked Style Guide
-
-When `style-guide.md` has `locked: true`:
-- Read constraints normally
-- Do NOT suggest style guide updates
-- Show indicator: `**Style:** Locked (v1.2.0)`
-
-#### Files to Check
-
-| File | If found | Action |
-|------|----------|--------|
-| `style-guide.md` | Read for brand constraints, color palette, style requirements |
-| `style-library.md` | Load available presets, check if `--style` preset exists |
-| `references/` | Note available reference images, suggest `--refs` if relevant |
-| `outputs/` | Plan to save there (exploration/ for WIP, finals/ for approved) |
-| `asset-log.md` | Plan to log generation metadata |
-
-#### Save Location Logic
-
-| Context | Save To |
-|---------|---------|
-| In project with `outputs/` | `[project]/outputs/exploration/` |
-| In project, no `outputs/` | Create `[project]/outputs/exploration/` |
-| No project, `--output` flag | Use specified path |
-| No project, no flag | `./output/` in current directory |
+**Save location:** project `outputs/exploration/` > `--output` path > `./output/`
 
 ### Step 3: Gap Analysis
 
@@ -543,55 +362,23 @@ Transform the concept using the 6-element formula:
 
 ### Step 5b: Taste Check (unless --no-taste)
 
-After enhancement, before showing the prompt, run taste analysis.
+After enhancement, run taste analysis. See `/taste-check` skill for detailed pattern definitions.
 
-**What Gets Checked:**
+**Checks:** Clichés (from `taste-check/taste-patterns.md`), specificity (>150 words warns), intent contradictions.
 
-| Check | Trigger | Response |
-|-------|---------|----------|
-| **Cliché detection** | Matches patterns in `taste-check/taste-patterns.md` | Suggest concrete replacement |
-| **Specificity score** | Prompt > 150 words OR > 3 modifiers per element | Warn about over-specification |
-| **Intent contradiction** | Enhancement conflicts with stated intent | Flag the mismatch |
+**Sensitivity (--taste flag):** low (egregious only), medium (default), high (strict).
 
-**Sensitivity Levels (via --taste flag):**
-
-| Level | What's Flagged |
-|-------|----------------|
-| **Low** | Only egregious patterns (ArtStation spam, 8K quality spam) |
-| **Medium** (default) | Common clichés + mild specificity warnings |
-| **High** | Any generic tendency + strict specificity limits |
-
-**If Issues Found:**
-
-Show a summary block before proceeding:
-
+**If issues found, show summary:**
 ```
 ## Taste Check
-
-Found 2 clichés, prompt is 165 words (approaching over-specified).
-
-**Clichés:**
+Found 2 clichés, prompt is 165 words.
 - "epic lighting" → "Low sun backlighting with long shadows"
-- "trending on ArtStation" → Remove (causes token collisions)
-
-**Specificity:** Consider leaving composition or atmosphere more ambiguous.
-
 Fix these? [yes / skip / show details]
 ```
 
-**User Responses:**
-- **yes** — Apply suggestions automatically, proceed to approval
-- **skip** — Proceed with original enhancement unchanged
-- **show details** — Explain why each pattern is problematic (auto-enabled with `--learn`)
+**Responses:** yes (apply fixes), skip (keep original), show details (explain issues, auto-enabled with `--learn`).
 
-**With --learn Flag:**
-
-After each cliché, show explanation:
-> **Why this matters:** "Epic lighting" is vague — the model defaults to its most common interpretation. Specifying angle, quality, and source gives intentional results.
-
-**If No Issues:**
-
-Proceed directly to Step 6 without interruption.
+If no issues, proceed directly to Step 6.
 
 ### Step 6: Show for Approval
 
@@ -708,87 +495,29 @@ When user says "approved" or "client approved", update both Status and Approval 
 
 ## Project Awareness Details
 
-### When style-guide.md Exists
+**style-guide.md:** Apply color palette, style requirements, brand voice, and "don't" rules to enhancement.
 
-Read and apply:
-- Color palette restrictions
-- Style requirements
-- Brand voice indicators
-- Any "don't" rules
+**style-library.md:** Load `--style` preset, suggest relevant presets, respond to "what styles do I have?"
 
-Example integration:
-```
-User: "a hero banner for the website"
-
-[Reads style-guide.md, finds: warm earth tones, photography style, cozy mood]
-
-Enhanced prompt includes: "...warm earth tone palette with terracotta and sage accents, photography style, inviting and cozy atmosphere..."
-```
-
-### When style-library.md Exists
-
-- If `--style=<preset>` specified, load and append that preset
-- If no style specified but relevant preset exists, suggest it
-- Show available presets if user asks "what styles do I have?"
-
-### When references/ Has Images
-
-- If user's concept could benefit from reference images, suggest:
-  > "I see reference images in `references/`. Would you like to use them for style consistency? (Use `--refs=references/`)"
-- If `--refs` specified, use `compose_images` instead of `generate_image`
+**references/:** Suggest `--refs` if concept could benefit; use `compose_images` when `--refs` specified.
 
 ## Reference Calibration
 
-When the project has a `references/` folder with images, automatically extract a taste profile.
+When `references/` folder exists, automatically extract a taste profile from images.
 
-### Automatic Extraction
+### Extraction Process
 
-1. Scan `references/` for image files
-2. Analyze each for taste signals (palette, lighting, composition, texture, mood)
-3. Extract commonalities into a taste profile
-4. Cache to `.nanobananapro-taste-cache.json`
+Analyze reference images for: palette, lighting, composition, texture, mood. Cache results to `.nanobananapro-taste-cache.json`.
 
-### What Gets Extracted
+### Application
 
-| Signal | Example Output |
-|--------|----------------|
-| **Dominant palette** | "Muted earth tones, desaturated greens" |
-| **Lighting tendency** | "Soft diffused light, minimal harsh shadows" |
-| **Composition patterns** | "Centered subjects, generous negative space" |
-| **Texture/finish** | "Film grain, organic imperfections" |
-| **Mood consistency** | "Contemplative, quiet, intimate" |
-
-### How It's Applied
-
-During enhancement, the extracted profile acts as soft constraints:
-
-- **Flag contradictions:** "Your references are muted — 'vibrant saturated colors' may clash with your established aesthetic."
+Use extracted profile as soft constraints during enhancement:
+- **Flag contradictions:** "Your references are muted — 'vibrant saturated colors' may clash."
 - **Suggest alignment:** "Consider 'desaturated earth tones' to match your reference palette."
 
-### Cache Storage
+### Cache Refresh
 
-Cache extracted profile to `.nanobananapro-taste-cache.json` in project root:
-
-```json
-{
-  "extracted_from": ["ref1.jpg", "ref2.jpg", "ref3.jpg"],
-  "last_updated": "2026-01-23T10:30:00Z",
-  "profile": {
-    "palette": "muted earth tones, desaturated",
-    "lighting": "soft diffused, minimal shadows",
-    "composition": "centered subjects, negative space",
-    "texture": "film grain, organic",
-    "mood": "contemplative, quiet"
-  }
-}
-```
-
-### Re-extraction Triggers
-
-Re-extract automatically if:
-- Files in `references/` change (add/remove/modify)
-- Cache is older than 7 days
-- User runs with `--recalibrate` flag
+Re-extract when: files in `references/` change, cache older than 7 days, or `--recalibrate` flag used.
 
 ## Examples
 
