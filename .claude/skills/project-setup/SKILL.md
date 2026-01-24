@@ -496,6 +496,54 @@ Next: Add references → customize style-guide.md → `/image-prompt`
 
 **Quick mode:** `/project-setup summer-campaign --type=campaign --quick` creates the structure with defaults (style: "clean and modern", colors: "neutral with accent", medium: photography).
 
+## Common Use Cases
+
+Quick-start templates for specific creator needs:
+
+### YouTube Thumbnail Project
+
+```bash
+/project-setup my-channel --type=campaign --quick=bold
+```
+
+Pre-configured for:
+- 16:9 aspect ratio defaults
+- High-contrast, attention-grabbing style
+- Face + text composition patterns
+
+### Social Media Brand Kit
+
+```bash
+/project-setup brand-name --type=brand
+```
+
+Interview asks about:
+- Platform focus (IG, TikTok, LinkedIn)
+- Post types (feed, stories, reels)
+- Adds platform-specific dimension presets
+
+### Character/Mascot Design
+
+```bash
+/project-setup mascot-name --type=character
+```
+
+Includes:
+- Expression sheet template
+- Pose library checklist
+- Consistency prompts for maintaining character across images
+
+### Product Photography
+
+```bash
+/project-setup product-line --type=product
+```
+
+Adds:
+- Lighting setup presets
+- Background options
+- Angle guide (hero, detail, lifestyle)
+
 ## Error Handling
 
 | Situation | Response |
