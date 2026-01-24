@@ -95,16 +95,8 @@ When `--type` is also provided, only that parameter is set—others use defaults
 
 **Quick Vibe Presets:**
 
-For even faster setup, use `--quick=<vibe>`:
+Use `--quick=<vibe>` for instant styling: `cozy`, `minimal`, `bold`, `dreamy`, `editorial`. These map directly to the Vibes section in `style-library.md`.
 
-| Preset | Style | Colors | Feeling |
-|--------|-------|--------|---------|
-| `--quick=cozy` | Warm, inviting | Earth tones, warm neutrals | Like a favorite cafe |
-| `--quick=minimal` | Clean, modern | White, black, one accent | Calm confidence |
-| `--quick=bold` | High contrast | Saturated, vibrant | Attention-grabbing |
-| `--quick=dreamy` | Soft, ethereal | Pastels, soft focus | Nostalgic, romantic |
-
-**Usage:**
 ```bash
 /project-setup my-brand --quick=cozy
 /project-setup portfolio --quick=minimal --type=brand
@@ -114,14 +106,14 @@ For even faster setup, use `--quick=<vibe>`:
 
 Ask these questions to gather project requirements:
 
-| # | Question | Why We Ask | Example Answers |
-|---|----------|-----------|-----------------|
-| 1 | What's your project called? | Creates your folder | `coastal-retreat`, `my-brand` |
-| 2 | What are you making? | Customizes templates | brand / campaign / character / product |
-| 3 | What vibe are you going for? | Sets the mood | "cozy coffee shop", "clean tech startup" |
-| 4 | What colors feel right? | Defines your palette | "earthy and warm", "bold neons" |
-| 5 | Real photos or artistic? | Guides the AI | photography / illustration / 3D / mixed |
-| 6 | What should this NOT look like? | Prevents mistakes | "not corporate", "avoid stock photo vibes" |
+| # | Question | Example Answers |
+|---|----------|-----------------|
+| 1 | What's your project called? | `coastal-retreat`, `my-brand` |
+| 2 | What are you making? | brand / campaign / character / product |
+| 3 | What vibe are you going for? | "cozy coffee shop", "clean tech startup" |
+| 4 | What colors feel right? | "earthy and warm", "bold neons" |
+| 5 | Real photos or artistic? | photography / illustration / 3D / mixed |
+| 6 | What should this NOT look like? | "not corporate", "avoid stock photo vibes" |
 
 ### Step 3: Generate Structure
 
@@ -234,54 +226,37 @@ Example: `mybrand-hero-v2-20260121.png`
 
 Presets for [Project Name]. Use with `--style=preset-name`.
 
-## Ready-to-Use Presets
+## Vibes
 
-These work immediately. Copy and customize for your project.
+- **cozy**: "Warm intimate atmosphere. Soft textures, golden lighting, inviting spaces."
+- **minimal**: "Clean, uncluttered. White space, simple forms, calm confidence."
+- **bold**: "High contrast, saturated colors, strong shapes. Attention-grabbing."
+- **dreamy**: "Soft focus, pastels, ethereal. Nostalgic, like a memory."
+- **editorial**: "Magazine polish. Intentional composition, sophisticated grading."
 
-### Vibes
+## Color Moods
 
-- **cozy**: "Warm intimate atmosphere. Soft textures, natural materials, golden lighting. Feels like a favorite coffee shop or well-loved home. Rich shadows, inviting spaces."
+- **earthy**: "Terracotta, sage, warm browns, cream. Natural, grounded."
+- **monochrome**: "Single color in multiple shades. One accent sparingly."
+- **sunset**: "Warm oranges, pinks, deep purples. Golden hour warmth."
+- **ocean**: "Deep blues, seafoam, sandy beige, coral. Fresh, not tacky."
 
-- **minimal**: "Clean and uncluttered. Lots of white space, simple forms, precise geometry. Calm and confident. No decoration for decoration's sake."
+## Lighting
 
-- **bold**: "High contrast, saturated colors, strong shapes. Confident and attention-grabbing. Makes a statement. Not subtle."
+- **golden-hour**: "Warm side lighting, long shadows. Soft and flattering."
+- **studio-soft**: "Even, diffused. Minimal shadows, professional."
+- **dramatic**: "Single strong source. Deep shadows, cinematic."
 
-- **dreamy**: "Soft focus, pastel colors, ethereal quality. Slightly hazy atmosphere. Romantic and nostalgic. Like a memory or daydream."
+## Compositions
 
-- **editorial**: "Magazine-quality polish. Intentional composition, sophisticated color grading. Looks professionally art-directed."
-
-### Color Moods
-
-- **earthy**: "Terracotta, sage green, warm browns, cream. Natural and grounded. Avoid pure black or neon."
-
-- **monochrome**: "Single color in multiple shades. Sophisticated and cohesive. Add one accent color sparingly."
-
-- **sunset**: "Warm oranges, pinks, deep purples. Golden hour warmth. Rich and atmospheric."
-
-- **ocean**: "Deep blues, seafoam, sandy beige, coral accents. Fresh but not tropical-tacky."
-
-### Lighting
-
-- **golden-hour**: "Warm side lighting, long shadows. Magic hour feeling. Soft and flattering."
-
-- **studio-soft**: "Even, diffused lighting. Minimal shadows. Clean and professional."
-
-- **dramatic**: "Single strong light source. Deep shadows, high contrast. Moody and cinematic."
-
-### Compositions
-
-- **centered**: "Subject dead center. Bold and direct. Works for portraits and product hero shots."
-
-- **rule-of-thirds**: "Subject offset. Creates visual flow. More dynamic than centered."
-
-- **negative-space**: "Generous empty areas. Subject small in frame. Elegant and airy."
+- **centered**: "Subject dead center. Bold, direct."
+- **rule-of-thirds**: "Subject offset. Creates visual flow."
+- **negative-space**: "Generous empty areas. Elegant and airy."
 
 ## Your Project Presets
 
-Customize these for [Project Name]:
-
-- **project-main**: "[Describe your core visual style here]"
-- **project-colors**: "[Your color palette description]"
+- **project-main**: "[Your core visual style]"
+- **project-colors**: "[Your color palette]"
 - **project-mood**: "[The feeling your brand evokes]"
 ```
 
@@ -459,29 +434,29 @@ This skill creates files that other skills detect and use:
 
 ```
 User: /project-setup
-Claude: What's the project name?
+Claude: What's the project called?
 User: coastal-retreat-brand
-Claude: What type of project? (brand/campaign/character/product)
+Claude: What are you making? (brand/campaign/character/product)
 User: brand
-Claude: Visual style direction?
+Claude: What vibe are you going for?
 User: serene, natural, upscale coastal living
-Claude: Color preferences?
+Claude: What colors feel right?
 User: ocean blues, sandy beiges, weathered white, touches of coral
-Claude: Visual medium? (photography/illustration/3D/mixed)
+Claude: Real photos or artistic? (photography/illustration/3D/mixed)
 User: photography
-Claude: Anything to avoid?
+Claude: What should this NOT look like?
 User: no tropical/tacky beach vibes, avoid neon colors
 
 Claude:
 ## Project Created: coastal-retreat-brand
-✓ style-guide.md, style-library.md (5 presets), asset-log.md
+✓ style-guide.md, style-library.md, asset-log.md
 ✓ references/{moodboards,characters,inspiration}/
 ✓ outputs/{exploration,finals}/
 
 Next: Add references → customize style-guide.md → `/image-prompt`
 ```
 
-**Quick mode:** `/project-setup summer-campaign --type=campaign --quick` creates the same structure with defaults applied (style: "clean and modern", colors: "neutral with accent", medium: photography).
+**Quick mode:** `/project-setup summer-campaign --type=campaign --quick` creates the structure with defaults (style: "clean and modern", colors: "neutral with accent", medium: photography).
 
 ## Error Handling
 
