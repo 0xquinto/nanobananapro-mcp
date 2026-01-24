@@ -279,7 +279,7 @@ the alpenglow fades completely, that held-breath stillness.
 
 ## Integration
 
-Pattern definitions are maintained in `.claude/taste-patterns.md`. The taste-check skill references this file for:
+Pattern definitions are maintained in `./taste-patterns.md`. The taste-check skill references this file for:
 
 - Cliché dictionary and severity levels
 - Cultural and temporal context for patterns

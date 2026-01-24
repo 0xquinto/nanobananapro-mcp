@@ -228,7 +228,7 @@ Analyze prompts for aesthetic quality, accessibility, and content considerations
 - `--fix` — Output only the improved prompt, skip analysis
 - `--accessibility` — Include accessibility-focused checks (contrast, readability)
 
-**Patterns are defined in:** `.claude/taste-patterns.md`
+**Patterns are defined in:** `taste-check/taste-patterns.md`
 
 ---
 
@@ -384,7 +384,7 @@ See [project-setup](#project-setup) for details.
 
 For understanding which prompt patterns are Gemini-specific vs. universal:
 - **[gemini-patterns.md](../gemini-patterns.md)** — Model-specific behaviors
-- **[taste-patterns.md](../taste-patterns.md)** — Cliché detection patterns (tagged by universality)
+- **[taste-patterns.md](./taste-check/taste-patterns.md)** — Cliché detection patterns (tagged by universality)
 
 ## MCP Tools Used
 

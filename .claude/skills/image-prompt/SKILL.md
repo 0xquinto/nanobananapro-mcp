@@ -549,7 +549,7 @@ After enhancement, before showing the prompt, run taste analysis.
 
 | Check | Trigger | Response |
 |-------|---------|----------|
-| **Cliché detection** | Matches patterns in `.claude/taste-patterns.md` | Suggest concrete replacement |
+| **Cliché detection** | Matches patterns in `taste-check/taste-patterns.md` | Suggest concrete replacement |
 | **Specificity score** | Prompt > 150 words OR > 3 modifiers per element | Warn about over-specification |
 | **Intent contradiction** | Enhancement conflicts with stated intent | Flag the mismatch |
 
