@@ -97,14 +97,14 @@ When `--type` is also provided, only that parameter is set—others use defaults
 
 Ask these questions to gather project requirements:
 
-| # | Question | Example Answers |
-|---|----------|-----------------|
-| 1 | Project name? | `coastal-retreat-brand` |
-| 2 | Project type? (brand / campaign / character / product) | `brand` |
-| 3 | Visual style direction? | "minimal and modern", "warm and nostalgic" |
-| 4 | Color preferences? | "earth tones", "neon accents on dark" |
-| 5 | Visual medium? (photography / illustration / 3D / mixed) | `photography` |
-| 6 | What to avoid? | "no corporate blue", "don't look like Apple" |
+| # | Question | Why We Ask | Example Answers |
+|---|----------|-----------|-----------------|
+| 1 | What's your project called? | Creates your folder | `coastal-retreat`, `my-brand` |
+| 2 | What are you making? | Customizes templates | brand / campaign / character / product |
+| 3 | What vibe are you going for? | Sets the mood | "cozy coffee shop", "clean tech startup" |
+| 4 | What colors feel right? | Defines your palette | "earthy and warm", "bold neons" |
+| 5 | Real photos or artistic? | Guides the AI | photography / illustration / 3D / mixed |
+| 6 | What should this NOT look like? | Prevents mistakes | "not corporate", "avoid stock photo vibes" |
 
 ### Step 3: Generate Structure
 
