@@ -82,6 +82,30 @@ Parse project name and type from command (e.g., `/project-setup my-brand --type=
 | `--lock` | Lock style-guide.md (see [Locking](#locking)) |
 | `--unlock` | Unlock style-guide.md for editing |
 
+**--dry-run Example:**
+
+```
+User: /project-setup coastal-brand --type=brand --dry-run
+
+Claude:
+## Preview: coastal-brand (not created yet)
+
+Would create:
+├── coastal-brand/
+│   ├── style-guide.md (brand template)
+│   ├── style-library.md (15 starter presets)
+│   ├── asset-log.md
+│   ├── references/
+│   │   ├── moodboards/
+│   │   ├── characters/
+│   │   └── inspiration/
+│   └── outputs/
+│       ├── exploration/
+│       └── finals/
+
+Run without --dry-run to create this structure.
+```
+
 **Quick Mode Defaults:**
 
 | Parameter | Default |
