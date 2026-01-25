@@ -10,7 +10,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 
-from .retry import DEFAULT_ASYNC_RETRY, DEFAULT_RETRY
+from .retry import DEFAULT_ASYNC_RETRY
 from .utils import (
     encode_image_to_base64,
     validate_aspect_ratio,
@@ -222,7 +222,7 @@ class GeminiImageClient:
         response = await _call_api()
         return ImageGenerationResult.from_response(response)
 
-    def search_grounded_image(
+    async def search_grounded_image(
         self,
         prompt: str,
         aspect_ratio: str | None = None,
@@ -242,13 +242,13 @@ class GeminiImageClient:
             tools=[{"google_search": {}}],
         )
 
-        @DEFAULT_RETRY
-        def _call_api():
-            return self._client.models.generate_content(
+        @DEFAULT_ASYNC_RETRY
+        async def _call_api():
+            return await self._client.aio.models.generate_content(
                 model=model,
                 contents=prompt,
                 config=config,
             )
 
-        response = _call_api()
+        response = await _call_api()
         return ImageGenerationResult.from_response(response)

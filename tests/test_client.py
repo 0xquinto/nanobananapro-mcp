@@ -140,7 +140,8 @@ class TestComposeImagesRetry:
 
 
 class TestSearchGroundedImageRetry:
-    def test_retries_on_service_unavailable(self):
+    @pytest.mark.asyncio
+    async def test_retries_on_service_unavailable(self):
         with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
             with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
                 mock_client_instance = Mock()
@@ -152,16 +153,17 @@ class TestSearchGroundedImageRetry:
                 mock_response = Mock()
                 mock_response.parts = [mock_part]
 
-                mock_client_instance.models.generate_content.side_effect = [
-                    ServiceUnavailable("Model overloaded"),
-                    mock_response,
-                ]
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(
+                    side_effect=[ServiceUnavailable("Model overloaded"), mock_response]
+                )
+                mock_client_instance.aio = mock_aio
 
                 client = GeminiImageClient()
-                result = client.search_grounded_image("search prompt")
+                result = await client.search_grounded_image("search prompt")
 
                 assert result.text == "Grounded"
-                assert mock_client_instance.models.generate_content.call_count == 2
+                assert mock_aio.models.generate_content.call_count == 2
 
 
 class TestAsyncGenerateImage:
@@ -248,4 +250,29 @@ class TestAsyncComposeImages:
                 result = await client.compose_images("compose prompt", test_images)
 
                 assert result.text == "Composed"
+                mock_aio.models.generate_content.assert_called_once()
+
+
+class TestAsyncSearchGroundedImage:
+    @pytest.mark.asyncio
+    async def test_search_grounded_image_is_async(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Grounded"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+                mock_client_instance.aio = mock_aio
+
+                client = GeminiImageClient()
+                result = await client.search_grounded_image("search prompt")
+
+                assert result.text == "Grounded"
                 mock_aio.models.generate_content.assert_called_once()
