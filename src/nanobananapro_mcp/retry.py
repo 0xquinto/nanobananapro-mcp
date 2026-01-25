@@ -19,7 +19,7 @@ class RetryConfig:
     timeout: float = 180.0
 
 
-from google.api_core import retry
+from google.api_core import retry, retry_async
 from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted
 
 RETRYABLE_EXCEPTIONS = (ServiceUnavailable, ResourceExhausted)
@@ -52,3 +52,21 @@ def create_retry_decorator(config: RetryConfig):
 
 
 DEFAULT_RETRY = create_retry_decorator(RetryConfig())
+
+
+def create_async_retry_decorator(config: RetryConfig):
+    """Create an async retry decorator from configuration."""
+    if not config.enabled:
+        return lambda f: f
+
+    return retry_async.AsyncRetry(
+        predicate=retry_async.if_exception_type(*RETRYABLE_EXCEPTIONS),
+        initial=config.initial_delay,
+        maximum=config.max_delay,
+        multiplier=config.multiplier,
+        timeout=config.timeout,
+        on_error=on_retry_error,
+    )
+
+
+DEFAULT_ASYNC_RETRY = create_async_retry_decorator(RetryConfig())

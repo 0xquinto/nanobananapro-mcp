@@ -102,3 +102,30 @@ class TestRetryDecoratorWithCallback:
 class TestDefaultRetry:
     def test_default_retry_is_callable(self):
         assert callable(DEFAULT_RETRY)
+
+
+class TestAsyncRetryDecorator:
+    def test_creates_async_retry_with_default_config(self):
+        from nanobananapro_mcp.retry import create_async_retry_decorator, RetryConfig
+        config = RetryConfig()
+        retry_decorator = create_async_retry_decorator(config)
+        assert callable(retry_decorator)
+
+    def test_async_disabled_config_returns_passthrough(self):
+        from nanobananapro_mcp.retry import create_async_retry_decorator, RetryConfig
+        import asyncio
+
+        config = RetryConfig(enabled=False)
+        retry_decorator = create_async_retry_decorator(config)
+
+        @retry_decorator
+        async def my_func():
+            return "result"
+
+        assert asyncio.run(my_func()) == "result"
+
+
+class TestDefaultAsyncRetry:
+    def test_default_async_retry_is_callable(self):
+        from nanobananapro_mcp.retry import DEFAULT_ASYNC_RETRY
+        assert callable(DEFAULT_ASYNC_RETRY)
