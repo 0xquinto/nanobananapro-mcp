@@ -119,7 +119,7 @@ class GeminiImageClient:
         response = await _call_api()
         return ImageGenerationResult.from_response(response)
 
-    def edit_image(
+    async def edit_image(
         self,
         prompt: str,
         image_path: str | Path,
@@ -161,15 +161,15 @@ class GeminiImageClient:
             # When Gemini API supports seed, add: seed=validated_seed
         )
 
-        @DEFAULT_RETRY
-        def _call_api():
-            return self._client.models.generate_content(
+        @DEFAULT_ASYNC_RETRY
+        async def _call_api():
+            return await self._client.aio.models.generate_content(
                 model=model,
                 contents=[prompt, image],
                 config=config,
             )
 
-        response = _call_api()
+        response = await _call_api()
         return ImageGenerationResult.from_response(response)
 
     def compose_images(
