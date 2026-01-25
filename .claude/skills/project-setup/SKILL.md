@@ -138,6 +138,7 @@ From their answer, extract:
 | **Vibe** | Adjectives and mood words | "serene, upscale, natural" |
 | **Colors** | Color words if mentioned | "ocean blues, sandy tones" |
 | **Medium** | "photos/photography", "illustrated", "3D renders" | "realistic photography" |
+| **Output mode** | "POD", "print on demand", "merchandise", "products" → design; "mockups", "lifestyle shots" → mockup | "designs for t-shirts" → design |
 | **Constraints** | "not X", "avoid Y", "no Z" | "not tacky or generic" |
 
 **Then ask only what's missing.** If their pitch covered vibe and colors but not medium, only ask about medium. Keep it conversational:
@@ -146,6 +147,7 @@ From their answer, extract:
 |---------|-----------|
 | Medium | "Real photos or more artistic (illustration, 3D)?" |
 | Colors | "Any colors that feel right for this?" |
+| Output mode | "Do you need the raw designs (to apply to products yourself) or mockups showing designs on products?" |
 | Constraints | "Anything this should NOT look like?" |
 
 **Never ask what they already told you.**
@@ -180,8 +182,16 @@ Structure created! Test your style with a sample image?
 
 | Choice | Action |
 |--------|--------|
-| Yes | Generate "[project-type subject] in [user's style]" → save to `outputs/exploration/first-test.png` |
-| Show prompt | Display a ready-to-copy prompt with explanation |
+| Yes | **Invoke `/image-prompt` skill** with `[project-type subject] --style=project-main` — this chains through enhance-prompt and saves to `outputs/exploration/` |
+| Show prompt | Display a ready-to-copy `/image-prompt` command with explanation |
+
+**IMPORTANT:** Never call MCP image tools directly. Always chain through `/image-prompt` which:
+1. Reads `style-guide.md` for constraints
+2. Loads presets from `style-library.md`
+3. Invokes `/enhance-prompt` to improve the prompt
+4. Generates the image with proper settings
+5. Saves to `outputs/exploration/` with correct naming
+6. Logs to `asset-log.md`
 
 ## File Templates
 
@@ -197,6 +207,16 @@ Structure created! Test your style with a sample image?
 **Project:** [name]
 **Type:** [brand|campaign|character|product]
 **Created:** [date]
+
+## Output Settings
+
+**Output Mode:** [design|mockup]
+<!--
+  design = isolated artwork only, clean backgrounds, ready to apply to products
+  mockup = show designs on products, lifestyle photography with designs applied
+-->
+
+When `design`: `/image-prompt` will automatically add constraints for isolated artwork, clean edges, no product photography.
 
 ## Visual Direction
 
@@ -528,8 +548,21 @@ Claude:
 
 ### Try it now
 
-Generate your first test image:
-`/image-prompt a hero image for coastal retreat website --style=project-main`
+Generate your first test image?
+1. Yes - Generate a test image
+2. No - I'll add references first
+3. Show me a prompt for later
+
+User: 1
+
+Claude: [Invokes /image-prompt skill with "coastal retreat hero image --style=project-main"]
+
+[/image-prompt chains through /enhance-prompt, generates, saves to outputs/exploration/]
+
+✓ Generated: outputs/exploration/coastal-retreat-hero-v1.png
+✓ Logged to asset-log.md
+
+Want to iterate on this, or generate something else?
 ```
 
 **With inspiration source:**

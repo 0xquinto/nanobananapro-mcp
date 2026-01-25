@@ -28,6 +28,9 @@ Moodboards aren't just pretty collages - they're **design thinking made visible*
 # Quick mode (skip explanations)
 /moodboard "summer campaign" --quick
 
+# Research-driven moodboard (for trend mashups, unfamiliar aesthetics)
+/moodboard research "gimme gummy + extra celestial"
+
 # Analyze an existing image to learn from it
 /moodboard analyze ./reference.png
 
@@ -174,6 +177,172 @@ Color palette: [character's colors].
 Costume elements: [clothing/accessories].
 Environment hints: [where they exist].
 Reference sheet layout.
+```
+
+### Research-Driven Moodboard
+
+**Purpose:** Explore unfamiliar aesthetics, trend mashups, or styles you can't fully articulate yet.
+
+**When to Use:**
+- Combining multiple trends (e.g., "Gimme Gummy + Extra Celestial")
+- Exploring an aesthetic you've heard of but haven't internalized
+- When you don't know exactly what you want but have keywords
+
+**You'll Learn:**
+- How to research visual trends systematically
+- Translating text descriptions into visual understanding
+- Building references before generating final designs
+
+**Workflow:**
+
+#### Step 1: Research
+
+Use web search to find real-world examples of the aesthetic:
+
+```
+Search for:
+- "[trend name] aesthetic examples"
+- "[trend name] jewelry/fashion/decor" (specific applications)
+- "Pinterest Predicts [year] [trend name]" (official definitions)
+- "[trend name] + [trend name] mashup" (combinations)
+```
+
+**What to extract from research:**
+| Element | Look For |
+|---------|----------|
+| Colors | Specific hex codes, color names, palettes |
+| Materials | Textures, surfaces, finishes (glossy, matte, translucent) |
+| Objects | Real products that embody the aesthetic |
+| Mood | Emotional keywords, ASMR triggers, feelings |
+| Search terms | What people actually search for (+50%, +130% etc.) |
+
+#### Step 2: Synthesize into Moodboard Prompt
+
+Build a moodboard prompt that includes **specific objects** from your research, not generic descriptions:
+
+```
+Moodboard collage for "[Aesthetic Name]" combining [Trend 1] and [Trend 2].
+
+Include specific objects from research:
+- [Real product type 1 with material details]
+- [Real product type 2 with finish/texture]
+- [Real product type 3 with color specifics]
+
+Material qualities: [textures found in research]
+Color palette: [specific colors with hex codes if found]
+Mood: [emotional keywords from trend descriptions]
+
+Magazine-quality layout, cohesive aesthetic board, editorial arrangement.
+```
+
+**Example (Alien Candy = Gimme Gummy + Extra Celestial):**
+```
+Moodboard collage for "Alien Candy" aesthetic combining Gimme Gummy and Extra Celestial trends.
+
+Include:
+- Translucent resin gummy bear jewelry with holographic shimmer
+- Jelly-textured phone case with opalescent finish
+- Rubberized 3D nail art in candy colors
+- Iridescent glass objects glowing with inner light
+- Bendy silicone sculptures with cosmic bioluminescence
+
+Material qualities: squishy, spring-back, ASMR-tactile
+Color palette: watermelon pink (#FF6B9D), lime green (#7FFF00), lemon yellow (#FFD700), holographic iridescence
+Mood: satisfying, tactile, weirdly edible, otherworldly
+
+Magazine-quality layout, cohesive aesthetic board.
+```
+
+#### Step 3: Generate Moodboard
+
+Generate the moodboard using `/image-prompt`:
+
+```bash
+/image-prompt [moodboard prompt] --aspect=4:3
+```
+
+Save to: `references/moodboards/[aesthetic-name]-moodboard.png`
+
+#### Step 4: Use Moodboard for Final Design
+
+Use `compose_images` with the moodboard as reference. **Be specific about which elements to pull:**
+
+```
+Using the attached moodboard as style reference, create [final design subject].
+
+Match these specific elements from moodboard:
+- [Material quality from specific object in moodboard]
+- [Color treatment from specific object]
+- [Texture/finish from specific object]
+
+Do NOT create: [what to avoid]
+```
+
+**Key insight:** Reference specific objects IN the moodboard, not generic aesthetic descriptions. "Like the silicone octopus sculpture" not "squishy and alien."
+
+#### Step 5: Iterate on Final Design
+
+If the composed design still feels generic:
+1. Identify which moodboard element is missing
+2. Call out that specific element in the next compose prompt
+3. Or try a different subject entirely — the aesthetic might not suit "creatures"
+
+---
+
+## Research-Driven Moodboard: Example Session
+
+```
+User: /moodboard research "gimme gummy + extra celestial"
+
+Claude: Starting research-driven moodboard for Gimme Gummy + Extra Celestial mashup.
+
+        **Step 1: Research**
+
+        [Searches for trend definitions and real examples]
+
+        **Gimme Gummy** (from Pinterest Predicts):
+        - "ASMR overload" — bendy phone cases, jelly blush, rubberized nail art
+        - Materials: resin, translucent colored shapes, spring-back textures
+        - Searches: gummy bears aesthetic +50%, jelly candy aesthetic +100%
+
+        **Extra Celestial**:
+        - "Going intergalactic" — holographic home accents, opalescent eyeshadow
+        - Searches: alien core aesthetic +80%, opalescent +115%
+
+        **Step 2: Building moodboard prompt**
+
+        [Shows synthesized prompt with specific objects]
+
+        Generate this moodboard?
+
+User: yes
+
+Claude: [Generates moodboard, saves to references/moodboards/]
+
+        Moodboard created. Key elements captured:
+        - Gummy bear earrings with holographic shimmer
+        - Opalescent alien phone case
+        - Bendy bioluminescent sculpture
+        - Translucent candy-colored furniture
+
+        **Step 3: Ready for final design**
+
+        What do you want to create using this aesthetic?
+        - A creature/character
+        - A product design
+        - An abstract pattern
+        - Something else
+
+User: A creature for POD t-shirts
+
+Claude: Using moodboard as reference...
+
+        [Composes with specific element callouts]
+
+        "Create a creature design matching the tactile quality of the
+        bioluminescent octopus sculpture in the moodboard — that squishy,
+        silicone-like texture. Holographic shimmer like the glass orbs.
+        Candy colors from the gummy bear earrings..."
 ```
 
 ---
@@ -442,14 +611,18 @@ As you use this skill, you're building:
 
 ---
 
-## MCP Tools Used
+## Image Generation
 
-| Task | Tool | Notes |
-|------|------|-------|
-| Create moodboard | `generate_image` | Use `aspect_ratio="4:3"` for layouts |
-| Refine elements | `edit_image` | Target specific areas |
-| Iterate design | `start_image_chat` | Multi-turn refinement |
-| Apply style | `compose_images` | Pass moodboard as reference |
+**IMPORTANT:** Never call MCP tools directly. Always chain through `/image-prompt` skill.
+
+| Task | Invoke | Notes |
+|------|--------|-------|
+| Create moodboard | `/image-prompt [concept] --aspect=4:3` | Moodboard layouts |
+| Refine elements | `/image-prompt` iteration flow | Use "adjust" options |
+| Iterate design | `/image-prompt [concept] --chat` | Multi-turn refinement |
+| Apply style | `/image-prompt [subject] --refs=[moodboard]` | Pass moodboard as reference |
+
+The `/image-prompt` skill handles enhancement, taste checks, and proper tool selection internally.
 
 ---
 

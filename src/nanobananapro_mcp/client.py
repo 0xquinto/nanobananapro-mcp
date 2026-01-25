@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,7 +10,7 @@ from typing import Any
 from google import genai
 from google.genai import types
 
-from .retry import DEFAULT_ASYNC_RETRY
+from .retry import DEFAULT_ASYNC_RETRY, DEFAULT_RETRY
 from .utils import (
     encode_image_to_base64,
     validate_aspect_ratio,
@@ -95,7 +94,7 @@ class GeminiImageClient:
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
-        validated_seed = validate_seed(seed)
+        validate_seed(seed)  # Validate for future API support
         modalities = response_modalities or ["TEXT", "IMAGE"]
 
         config = types.GenerateContentConfig(
@@ -104,8 +103,6 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
-            # Note: seed parameter is validated and stored for future API support
-            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_ASYNC_RETRY
@@ -147,7 +144,7 @@ class GeminiImageClient:
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
-        validated_seed = validate_seed(seed)
+        validate_seed(seed)  # Validate for future API support
 
         image = Image.open(image_path)
 
@@ -157,8 +154,6 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
-            # Note: seed parameter is validated and stored for future API support
-            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_ASYNC_RETRY
@@ -200,13 +195,10 @@ class GeminiImageClient:
         model = validate_model(model)
         aspect_ratio = validate_aspect_ratio(aspect_ratio)
         resolution = validate_resolution(resolution, model)
-        validated_seed = validate_seed(seed)
+        validate_seed(seed)  # Validate for future API support
 
-        # Validate image count (Pro supports up to 14)
         if len(image_paths) > 14:
-            raise ValueError(
-                f"Maximum 14 images supported, got {len(image_paths)}"
-            )
+            raise ValueError(f"Maximum 14 images supported, got {len(image_paths)}")
 
         images = [Image.open(p) for p in image_paths]
         contents = [prompt] + images
@@ -217,8 +209,6 @@ class GeminiImageClient:
                 aspect_ratio=aspect_ratio,
                 image_size=resolution if model == "gemini-3-pro-image-preview" else None,
             ),
-            # Note: seed parameter is validated and stored for future API support
-            # When Gemini API supports seed, add: seed=validated_seed
         )
 
         @DEFAULT_RETRY

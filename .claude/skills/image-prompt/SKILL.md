@@ -55,7 +55,7 @@ Save and log (if in project)
 | `--refs=<path>` | Include reference images for composition |
 | `--style=<preset>` | Apply preset from style-library.md |
 | `--output=<path>` | Save to specific location |
-| `--resolution=1K\|2K\|4K` | Set output resolution (default: 2K) |
+| `--resolution=1K\|2K\|4K` | Set output resolution (default: 1K for exploration, 2K for finals) |
 | `--aspect=<ratio>` | Set aspect ratio (e.g., 16:9, 3:4) |
 | `--grounded` | Use search-grounded generation for real-world data |
 | `--project=<path>` | Use specific project's context |
@@ -242,7 +242,7 @@ On skill startup, if session file exists, offer:
 | `continue_image_chat` | `session_id`, `prompt` | `aspect_ratio`, `resolution` |
 | `end_image_chat` | `session_id` | — |
 
-**Defaults:** `model="pro"`, `aspect_ratio="1:1"`, `resolution="2K"`. Seed range: 0-2147483647.
+**Defaults:** `model="pro"`, `aspect_ratio="1:1"`, `resolution="1K"` (exploration) or `"2K"` (finals). Seed range: 0-2147483647.
 
 ## The 6-Element Formula
 
@@ -318,11 +318,18 @@ Detect project context (see `/enhance-prompt` for shared detection logic):
 **Project markers:** `style-guide.md`, `style-library.md`, `outputs/`, `references/`
 
 **Files to load:**
-- `style-guide.md` — brand constraints, palette, requirements (if `locked: true`, show indicator and skip update suggestions)
+- `style-guide.md` — brand constraints, palette, requirements, **output mode** (if `locked: true`, show indicator and skip update suggestions)
 - `style-library.md` — presets for `--style` flag (project overrides root)
 - `references/` — suggest `--refs` if relevant
 - `outputs/` — save location for generated images
 - `asset-log.md` — log generation metadata
+
+**Output Mode Detection:**
+
+Read `Output Mode` from style-guide.md:
+- `design` → Append to prompt: "Isolated artwork design, clean edges, solid or transparent background. No product mockups or photography. Ready for print application."
+- `mockup` → Allow product photography, lifestyle shots with designs applied
+- Not specified → Ask user or default to `design` for product-type projects
 
 **Save location:** project `outputs/exploration/` > `--output` path > `./output/`
 
@@ -402,7 +409,7 @@ Generate this image? (yes / adjust / change style)
 Call the appropriate MCP tool with:
 - The enhanced prompt
 - Selected aspect ratio (infer from content or use flag)
-- Resolution (from flag or default 2K)
+- Resolution: use `--resolution` flag if provided, otherwise **1K for exploration** (`outputs/exploration/`), **2K for finals** (`outputs/finals/`)
 - Output path (from flag or project structure)
 
 ### Step 8: Offer Iteration
@@ -534,7 +541,7 @@ User: /image-prompt a coffee shop
 
 **Settings:**
 - Aspect ratio: 16:9 (scene composition)
-- Resolution: 2K
+- Resolution: 1K
 
 Generate this image?
 ```
@@ -552,7 +559,7 @@ User: /image-prompt a portrait of a musician --style=cinematic
 
 **Settings:**
 - Aspect ratio: 2.39:1 (cinematic)
-- Resolution: 2K
+- Resolution: 1K
 - Style: cinematic
 
 Generate this image?
@@ -571,7 +578,7 @@ User: /image-prompt a fantasy landscape --chat
 
 **Settings:**
 - Aspect ratio: 21:9 (panoramic)
-- Resolution: 2K
+- Resolution: 1K
 - Mode: Chat session (iterative)
 
 Generate this image?
@@ -605,7 +612,7 @@ Found 3 reference images in ./references/characters/
 
 **Settings:**
 - Aspect ratio: 3:4 (portrait)
-- Resolution: 2K
+- Resolution: 1K
 - References: 3 images
 - Tool: compose_images
 
@@ -625,7 +632,7 @@ User: /image-prompt today's weather in Tokyo visualized --grounded
 
 **Settings:**
 - Aspect ratio: 16:9
-- Resolution: 2K
+- Resolution: 1K
 - Tool: search_grounded_image (real-time data)
 
 Generate this image?
@@ -662,7 +669,7 @@ style with muted colors except for the magical glow."
 
 **Settings:**
 - Aspect ratio: 3:4 (portrait)
-- Resolution: 2K
+- Resolution: 1K
 
 Generate this image? (yes / adjust / change style)
 

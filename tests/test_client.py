@@ -1,7 +1,9 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, Mock, patch
 
 from google.api_core.exceptions import ServiceUnavailable
+from PIL import Image
+
 from nanobananapro_mcp.client import GeminiImageClient, ImageGenerationResult
 
 
@@ -46,36 +48,36 @@ class TestImageGenerationResult:
 
 
 class TestGenerateImageRetry:
-    def test_retries_on_service_unavailable(self):
+    @pytest.mark.asyncio
+    async def test_retries_on_service_unavailable(self):
         with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
             with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
                 mock_client_instance = Mock()
                 mock_genai.return_value = mock_client_instance
 
-                # First call fails, second succeeds
                 mock_part = Mock()
                 mock_part.text = "Success"
                 mock_part.inline_data = None
                 mock_response = Mock()
                 mock_response.parts = [mock_part]
 
-                mock_client_instance.models.generate_content.side_effect = [
-                    ServiceUnavailable("Model overloaded"),
-                    mock_response,
-                ]
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(
+                    side_effect=[ServiceUnavailable("Model overloaded"), mock_response]
+                )
+                mock_client_instance.aio = mock_aio
 
                 client = GeminiImageClient()
-                result = client.generate_image("test prompt")
+                result = await client.generate_image("test prompt")
 
                 assert result.text == "Success"
-                assert mock_client_instance.models.generate_content.call_count == 2
+                assert mock_aio.models.generate_content.call_count == 2
 
 
 class TestEditImageRetry:
-    def test_retries_on_service_unavailable(self, tmp_path):
-        # Create test image
+    @pytest.mark.asyncio
+    async def test_retries_on_service_unavailable(self, tmp_path):
         test_image = tmp_path / "test.png"
-        from PIL import Image
         img = Image.new("RGB", (100, 100), color="red")
         img.save(test_image)
 
@@ -90,25 +92,24 @@ class TestEditImageRetry:
                 mock_response = Mock()
                 mock_response.parts = [mock_part]
 
-                mock_client_instance.models.generate_content.side_effect = [
-                    ServiceUnavailable("Model overloaded"),
-                    mock_response,
-                ]
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(
+                    side_effect=[ServiceUnavailable("Model overloaded"), mock_response]
+                )
+                mock_client_instance.aio = mock_aio
 
                 client = GeminiImageClient()
-                result = client.edit_image("edit prompt", test_image)
+                result = await client.edit_image("edit prompt", test_image)
 
                 assert result.text == "Edited"
-                assert mock_client_instance.models.generate_content.call_count == 2
+                assert mock_aio.models.generate_content.call_count == 2
 
 
 class TestComposeImagesRetry:
     def test_retries_on_service_unavailable(self, tmp_path):
-        # Create test images
         test_images = []
         for i in range(2):
             img_path = tmp_path / f"test{i}.png"
-            from PIL import Image
             img = Image.new("RGB", (100, 100), color="blue")
             img.save(img_path)
             test_images.append(img_path)
@@ -190,7 +191,6 @@ class TestAsyncGenerateImage:
 class TestAsyncEditImage:
     @pytest.mark.asyncio
     async def test_edit_image_is_async(self, tmp_path):
-        from PIL import Image
         test_image = tmp_path / "test.png"
         img = Image.new("RGB", (100, 100), color="red")
         img.save(test_image)

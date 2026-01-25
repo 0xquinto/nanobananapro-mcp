@@ -35,14 +35,13 @@ def on_retry_error(error: Exception) -> None:
     logger.warning(f"Retrying after {type(error).__name__}: {error}")
 
 
-def create_retry_decorator(config: RetryConfig):
-    """Create a retry decorator from configuration."""
+def _create_retry(config: RetryConfig, retry_class, predicate_func):
+    """Create a retry decorator from configuration using the specified retry class."""
     if not config.enabled:
-        # Return passthrough decorator
         return lambda f: f
 
-    return retry.Retry(
-        predicate=retry.if_exception_type(*RETRYABLE_EXCEPTIONS),
+    return retry_class(
+        predicate=predicate_func(*RETRYABLE_EXCEPTIONS),
         initial=config.initial_delay,
         maximum=config.max_delay,
         multiplier=config.multiplier,
@@ -51,22 +50,15 @@ def create_retry_decorator(config: RetryConfig):
     )
 
 
-DEFAULT_RETRY = create_retry_decorator(RetryConfig())
+def create_retry_decorator(config: RetryConfig):
+    """Create a sync retry decorator from configuration."""
+    return _create_retry(config, retry.Retry, retry.if_exception_type)
 
 
 def create_async_retry_decorator(config: RetryConfig):
     """Create an async retry decorator from configuration."""
-    if not config.enabled:
-        return lambda f: f
-
-    return retry_async.AsyncRetry(
-        predicate=retry_async.if_exception_type(*RETRYABLE_EXCEPTIONS),
-        initial=config.initial_delay,
-        maximum=config.max_delay,
-        multiplier=config.multiplier,
-        timeout=config.timeout,
-        on_error=on_retry_error,
-    )
+    return _create_retry(config, retry_async.AsyncRetry, retry_async.if_exception_type)
 
 
+DEFAULT_RETRY = create_retry_decorator(RetryConfig())
 DEFAULT_ASYNC_RETRY = create_async_retry_decorator(RetryConfig())
