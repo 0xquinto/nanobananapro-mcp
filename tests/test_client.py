@@ -106,7 +106,8 @@ class TestEditImageRetry:
 
 
 class TestComposeImagesRetry:
-    def test_retries_on_service_unavailable(self, tmp_path):
+    @pytest.mark.asyncio
+    async def test_retries_on_service_unavailable(self, tmp_path):
         test_images = []
         for i in range(2):
             img_path = tmp_path / f"test{i}.png"
@@ -125,16 +126,17 @@ class TestComposeImagesRetry:
                 mock_response = Mock()
                 mock_response.parts = [mock_part]
 
-                mock_client_instance.models.generate_content.side_effect = [
-                    ServiceUnavailable("Model overloaded"),
-                    mock_response,
-                ]
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(
+                    side_effect=[ServiceUnavailable("Model overloaded"), mock_response]
+                )
+                mock_client_instance.aio = mock_aio
 
                 client = GeminiImageClient()
-                result = client.compose_images("compose prompt", test_images)
+                result = await client.compose_images("compose prompt", test_images)
 
                 assert result.text == "Composed"
-                assert mock_client_instance.models.generate_content.call_count == 2
+                assert mock_aio.models.generate_content.call_count == 2
 
 
 class TestSearchGroundedImageRetry:
@@ -214,4 +216,36 @@ class TestAsyncEditImage:
                 result = await client.edit_image("edit prompt", test_image)
 
                 assert result.text == "Edited"
+                mock_aio.models.generate_content.assert_called_once()
+
+
+class TestAsyncComposeImages:
+    @pytest.mark.asyncio
+    async def test_compose_images_is_async(self, tmp_path):
+        test_images = []
+        for i in range(2):
+            img_path = tmp_path / f"test{i}.png"
+            img = Image.new("RGB", (100, 100), color="blue")
+            img.save(img_path)
+            test_images.append(img_path)
+
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Composed"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+                mock_client_instance.aio = mock_aio
+
+                client = GeminiImageClient()
+                result = await client.compose_images("compose prompt", test_images)
+
+                assert result.text == "Composed"
                 mock_aio.models.generate_content.assert_called_once()
