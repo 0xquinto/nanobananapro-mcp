@@ -1,7 +1,7 @@
 """Tests for seed parameter functionality."""
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 
 class TestSeedParameter:
@@ -18,7 +18,7 @@ class TestSeedParameter:
             mock_result.image_data = b"fake_data"
             mock_result.mime_type = "image/png"
             mock_result.grounding_metadata = None
-            mock_client.generate_image.return_value = mock_result
+            mock_client.generate_image = AsyncMock(return_value=mock_result)
 
             from nanobananapro_mcp.server import generate_image
 
@@ -42,7 +42,7 @@ class TestSeedParameter:
             mock_result.image_data = b"fake_data"
             mock_result.mime_type = "image/png"
             mock_result.grounding_metadata = None
-            mock_client.generate_image.return_value = mock_result
+            mock_client.generate_image = AsyncMock(return_value=mock_result)
 
             from nanobananapro_mcp.server import generate_image
 
@@ -63,7 +63,7 @@ class TestSeedParameter:
             mock_result.image_data = b"fake_data"
             mock_result.mime_type = "image/png"
             mock_result.grounding_metadata = None
-            mock_client.edit_image.return_value = mock_result
+            mock_client.edit_image = AsyncMock(return_value=mock_result)
 
             from nanobananapro_mcp.server import edit_image
 
@@ -88,7 +88,7 @@ class TestSeedParameter:
             mock_result.image_data = b"fake_data"
             mock_result.mime_type = "image/png"
             mock_result.grounding_metadata = None
-            mock_client.compose_images.return_value = mock_result
+            mock_client.compose_images = AsyncMock(return_value=mock_result)
 
             from nanobananapro_mcp.server import compose_images
 
@@ -141,24 +141,28 @@ class TestSeedValidation:
 class TestClientSeedParameter:
     """Tests for seed parameter in client methods."""
 
-    def test_client_generate_image_accepts_seed(self):
+    @pytest.mark.asyncio
+    async def test_client_generate_image_accepts_seed(self):
         """GeminiImageClient.generate_image should accept seed parameter."""
         with patch("nanobananapro_mcp.client.genai") as mock_genai:
             mock_client = Mock()
             mock_genai.Client.return_value = mock_client
             mock_response = Mock()
             mock_response.parts = [Mock(text="test", inline_data=None)]
-            mock_client.models.generate_content.return_value = mock_response
+            mock_aio = Mock()
+            mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+            mock_client.aio = mock_aio
 
             from nanobananapro_mcp.client import GeminiImageClient
 
             client = GeminiImageClient(api_key="test-key")
-            client.generate_image(prompt="A sunset", seed=12345)
+            await client.generate_image(prompt="A sunset", seed=12345)
 
             # Verify the method was called (seed handling is internal)
-            mock_client.models.generate_content.assert_called_once()
+            mock_aio.models.generate_content.assert_called_once()
 
-    def test_client_edit_image_accepts_seed(self):
+    @pytest.mark.asyncio
+    async def test_client_edit_image_accepts_seed(self):
         """GeminiImageClient.edit_image should accept seed parameter."""
         import tempfile
         from PIL import Image
@@ -174,20 +178,23 @@ class TestClientSeedParameter:
             mock_genai.Client.return_value = mock_client
             mock_response = Mock()
             mock_response.parts = [Mock(text="test", inline_data=None)]
-            mock_client.models.generate_content.return_value = mock_response
+            mock_aio = Mock()
+            mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+            mock_client.aio = mock_aio
 
             from nanobananapro_mcp.client import GeminiImageClient
 
             client = GeminiImageClient(api_key="test-key")
-            client.edit_image(prompt="Make it brighter", image_path=temp_path, seed=54321)
+            await client.edit_image(prompt="Make it brighter", image_path=temp_path, seed=54321)
 
-            mock_client.models.generate_content.assert_called_once()
+            mock_aio.models.generate_content.assert_called_once()
 
         # Cleanup
         import os
         os.unlink(temp_path)
 
-    def test_client_compose_images_accepts_seed(self):
+    @pytest.mark.asyncio
+    async def test_client_compose_images_accepts_seed(self):
         """GeminiImageClient.compose_images should accept seed parameter."""
         import tempfile
         from PIL import Image
@@ -205,14 +212,16 @@ class TestClientSeedParameter:
             mock_genai.Client.return_value = mock_client
             mock_response = Mock()
             mock_response.parts = [Mock(text="test", inline_data=None)]
-            mock_client.models.generate_content.return_value = mock_response
+            mock_aio = Mock()
+            mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+            mock_client.aio = mock_aio
 
             from nanobananapro_mcp.client import GeminiImageClient
 
             client = GeminiImageClient(api_key="test-key")
-            client.compose_images(prompt="Combine", image_paths=temp_paths, seed=99999)
+            await client.compose_images(prompt="Combine", image_paths=temp_paths, seed=99999)
 
-            mock_client.models.generate_content.assert_called_once()
+            mock_aio.models.generate_content.assert_called_once()
 
         # Cleanup
         import os
