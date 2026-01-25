@@ -25,7 +25,7 @@ class ChatSession:
     def __post_init__(self):
         self.model = validate_model(self.model)
         self._client = GeminiImageClient()
-        self._chat = self._client._client.chats.create(
+        self._chat = self._client._client.aio.chats.create(
             model=self.model,
             config=types.GenerateContentConfig(
                 response_modalities=["TEXT", "IMAGE"],
@@ -33,7 +33,7 @@ class ChatSession:
             ),
         )
 
-    def send_message(
+    async def send_message(
         self,
         prompt: str,
         aspect_ratio: str | None = None,
@@ -52,7 +52,7 @@ class ChatSession:
 
         self.history.append({"role": "user", "content": prompt})
 
-        response = self._chat.send_message(prompt, config=config)
+        response = await self._chat.send_message(prompt, config=config)
         result = ImageGenerationResult.from_response(response)
 
         self.history.append({

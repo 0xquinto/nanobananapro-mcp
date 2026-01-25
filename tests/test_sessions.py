@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from nanobananapro_mcp.sessions import ChatSessionManager, ChatSession
 
@@ -44,21 +44,41 @@ class TestChatSessionManager:
 
 
 class TestChatSession:
-    def test_send_message_stores_history(self):
+    @pytest.mark.asyncio
+    async def test_send_message_stores_history(self):
         with patch("nanobananapro_mcp.sessions.GeminiImageClient") as mock_client_class:
             mock_client = Mock()
             mock_client_class.return_value = mock_client
             mock_chat = Mock()
-            mock_client._client.chats.create.return_value = mock_chat
+            mock_client._client.aio.chats.create.return_value = mock_chat
             mock_response = Mock()
             mock_response.parts = [Mock(text="response", inline_data=None)]
-            mock_chat.send_message.return_value = mock_response
+            mock_chat.send_message = AsyncMock(return_value=mock_response)
 
             session = ChatSession(model="gemini-3-pro-image-preview")
-            session.send_message("test prompt")
+            await session.send_message("test prompt")
 
             assert len(session.history) == 2
             assert session.history[0]["role"] == "user"
             assert session.history[0]["content"] == "test prompt"
             assert session.history[1]["role"] == "assistant"
             assert session.history[1]["content"] == "response"
+
+
+class TestAsyncChatSession:
+    @pytest.mark.asyncio
+    async def test_send_message_is_async(self):
+        with patch("nanobananapro_mcp.sessions.GeminiImageClient") as mock_client_class:
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_chat = Mock()
+            mock_client._client.aio.chats.create.return_value = mock_chat
+            mock_response = Mock()
+            mock_response.parts = [Mock(text="async response", inline_data=None)]
+            mock_chat.send_message = AsyncMock(return_value=mock_response)
+
+            session = ChatSession(model="gemini-3-pro-image-preview")
+            result = await session.send_message("test prompt")
+
+            assert result.text == "async response"
+            mock_chat.send_message.assert_called_once()
