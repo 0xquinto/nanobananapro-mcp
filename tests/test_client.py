@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, AsyncMock
 
 from google.api_core.exceptions import ServiceUnavailable
 from nanobananapro_mcp.client import GeminiImageClient, ImageGenerationResult
@@ -159,3 +159,29 @@ class TestSearchGroundedImageRetry:
 
                 assert result.text == "Grounded"
                 assert mock_client_instance.models.generate_content.call_count == 2
+
+
+class TestAsyncGenerateImage:
+    @pytest.mark.asyncio
+    async def test_generate_image_is_async(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("nanobananapro_mcp.client.genai.Client") as mock_genai:
+                mock_client_instance = Mock()
+                mock_genai.return_value = mock_client_instance
+
+                mock_part = Mock()
+                mock_part.text = "Generated"
+                mock_part.inline_data = None
+                mock_response = Mock()
+                mock_response.parts = [mock_part]
+
+                # Mock the async aio interface
+                mock_aio = Mock()
+                mock_aio.models.generate_content = AsyncMock(return_value=mock_response)
+                mock_client_instance.aio = mock_aio
+
+                client = GeminiImageClient()
+                result = await client.generate_image("test prompt")
+
+                assert result.text == "Generated"
+                mock_aio.models.generate_content.assert_called_once()
