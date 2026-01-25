@@ -13,7 +13,8 @@ class TestGenerateImageTool:
             mock_result.text = "A beautiful sunset"
             mock_result.image_data = b"fake_png_data"
             mock_result.mime_type = "image/png"
-            mock_client.generate_image.return_value = mock_result
+            mock_result.grounding_metadata = None
+            mock_client.generate_image = AsyncMock(return_value=mock_result)
 
             from nanobananapro_mcp.server import generate_image
 
@@ -47,7 +48,8 @@ class TestChatSessionTools:
             mock_result.text = "Created infographic"
             mock_result.image_data = b"fake_image"
             mock_result.mime_type = "image/png"
-            mock_session.send_message.return_value = mock_result
+            mock_result.grounding_metadata = None
+            mock_session.send_message = AsyncMock(return_value=mock_result)
             mock_manager.get_session.return_value = mock_session
 
             from nanobananapro_mcp.server import start_image_chat

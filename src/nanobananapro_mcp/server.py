@@ -81,7 +81,7 @@ async def generate_image(
     """
     validated_seed = validate_seed(seed)
     client = get_client()
-    result = client.generate_image(
+    result = await client.generate_image(
         prompt=prompt,
         model=model,
         aspect_ratio=aspect_ratio,
@@ -118,7 +118,7 @@ async def edit_image(
     """
     validated_seed = validate_seed(seed)
     client = get_client()
-    result = client.edit_image(
+    result = await client.edit_image(
         prompt=prompt,
         image_path=image_path,
         model=model,
@@ -156,7 +156,7 @@ async def compose_images(
     """
     validated_seed = validate_seed(seed)
     client = get_client()
-    result = client.compose_images(
+    result = await client.compose_images(
         prompt=prompt,
         image_paths=image_paths,
         model=model,
@@ -190,7 +190,7 @@ async def search_grounded_image(
         Dict with text, image, grounding metadata, and saved path
     """
     client = get_client()
-    result = client.search_grounded_image(
+    result = await client.search_grounded_image(
         prompt=prompt,
         aspect_ratio=aspect_ratio,
         resolution=resolution,
@@ -222,7 +222,7 @@ async def start_image_chat(
     validated_seed = validate_seed(seed)
     session_id = session_manager.create_session(model=model)
     session = session_manager.get_session(session_id)
-    result = session.send_message(initial_prompt)
+    result = await session.send_message(initial_prompt)
 
     result_dict = _result_to_dict(result, output_path)
     result_dict["session_id"] = session_id
@@ -251,7 +251,7 @@ async def continue_image_chat(
         Dict with updated image and text response
     """
     session = session_manager.get_session(session_id)
-    result = session.send_message(
+    result = await session.send_message(
         prompt=prompt,
         aspect_ratio=aspect_ratio,
         resolution=resolution,
