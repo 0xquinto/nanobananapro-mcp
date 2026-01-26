@@ -32,6 +32,35 @@ claude mcp list
 claude mcp test nanobananapro generate_image --prompt "A sunset" --aspect_ratio "16:9"
 ```
 
+### Using in Multiple Projects
+
+By default, `claude mcp add` creates a **local** configuration that only works in the current project directory. To use nanobananapro across all your Claude Code projects:
+
+```bash
+# Add with user scope and specify the project directory
+claude mcp add nanobananapro -s user \
+  -e GEMINI_API_KEY=YOUR_API_KEY \
+  -- uv --directory /path/to/nanobananapro-mcp run python -m nanobananapro_mcp
+```
+
+The `--directory` flag tells `uv` where to find the module, allowing it to work from any project.
+
+**Troubleshooting: Server not connecting in other projects**
+
+If you previously added the server with local scope, those configs shadow the user config. Remove them first:
+
+```bash
+# Check current scope
+claude mcp get nanobananapro
+
+# If it shows "Local config", remove it
+claude mcp remove nanobananapro -s local
+
+# Then add with user scope (see command above)
+```
+
+MCP config is stored in `~/.claude.json`. Local configs are nested under project paths; user configs are at the top level.
+
 ## Available Tools
 
 ### generate_image
