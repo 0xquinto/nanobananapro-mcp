@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -41,7 +40,7 @@ def _generate_output_path(prefix: str = "image") -> Path:
     output_dir = Path(DEFAULT_OUTPUT_DIR)
     output_dir.mkdir(exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     filename = f"{prefix}_{timestamp}.png"
     return output_dir / filename
 
@@ -234,13 +233,13 @@ async def start_image_chat(
         model: Model to use for the session
         output_path: Path to save the image (default: outputs/image_TIMESTAMP.png)
         seed: Optional seed for reproducible generation (0 to 2147483647).
-              Note: Seed support in chat sessions depends on the underlying API.
+              Note: Currently ignored - seed support in chat sessions depends on the underlying API.
 
     Returns:
         Dict with session_id, text response, and saved_path where image was written
     """
-    # Validate seed (reserved for future API support in chat sessions)
-    validated_seed = validate_seed(seed)
+    # Validate seed but don't use it yet - reserved for future API support in chat sessions
+    _ = validate_seed(seed)
     session_id = session_manager.create_session(model=model)
     session = session_manager.get_session(session_id)
     result = await session.send_message(initial_prompt)
@@ -314,9 +313,10 @@ async def list_chat_sessions() -> dict:
     Returns:
         Dict with list of session IDs
     """
+    sessions = session_manager.list_sessions()
     return {
-        "sessions": session_manager.list_sessions(),
-        "count": len(session_manager.list_sessions()),
+        "sessions": sessions,
+        "count": len(sessions),
     }
 
 
