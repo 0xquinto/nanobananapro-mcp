@@ -9,8 +9,7 @@ dist/
 build/
 docs/
 CLAUDE.md
-.claude/mcp.json
-.claude/local/
+.claude
 uv.lock
 assets/
 scripts/
