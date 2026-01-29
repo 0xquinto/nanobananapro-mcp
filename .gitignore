@@ -9,7 +9,7 @@ dist/
 build/
 docs/
 CLAUDE.md
-.claude
+.claude/
 uv.lock
 assets/
 scripts/
