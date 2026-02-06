@@ -12,7 +12,7 @@ Local MCP server for Gemini 3 Pro image generation (Nano Banana Pro) for use wit
 # Clone and install
 git clone https://github.com/0xquinto/nanobananapro-mcp.git
 cd nanobananapro-mcp
-uv sync
+bun install
 ```
 
 ## Configuration
@@ -23,7 +23,7 @@ Get a Gemini API key from: https://aistudio.google.com/apikey
 
 ```bash
 # Add the server (replace YOUR_API_KEY with your actual key)
-claude mcp add nanobananapro -e GEMINI_API_KEY=YOUR_API_KEY -- uv run python -m nanobananapro_mcp
+claude mcp add nanobananapro -e GEMINI_API_KEY=YOUR_API_KEY -- bun run /path/to/nanobananapro-mcp/src/index.ts
 
 # List servers
 claude mcp list
@@ -40,10 +40,8 @@ By default, `claude mcp add` creates a **local** configuration that only works i
 # Add with user scope and specify the project directory
 claude mcp add nanobananapro -s user \
   -e GEMINI_API_KEY=YOUR_API_KEY \
-  -- uv --directory /path/to/nanobananapro-mcp run python -m nanobananapro_mcp
+  -- bun run /path/to/nanobananapro-mcp/src/index.ts
 ```
-
-The `--directory` flag tells `uv` where to find the module, allowing it to work from any project.
 
 **Troubleshooting: Server not connecting in other projects**
 
@@ -74,6 +72,7 @@ Generate images from text prompts.
 | `aspect_ratio` | string | No | `1:1` | Output aspect ratio |
 | `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the generated image |
+| `seed` | integer | No | None | Seed for reproducible generation (0 to 2147483647) |
 
 ### edit_image
 
@@ -87,6 +86,7 @@ Edit existing images with text instructions.
 | `aspect_ratio` | string | No | None | Output aspect ratio (defaults to input) |
 | `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the edited image |
+| `seed` | integer | No | None | Seed for reproducible generation |
 
 ### compose_images
 
@@ -95,11 +95,12 @@ Combine multiple reference images into a new composition.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `prompt` | string | Yes | - | Instructions for composing the images |
-| `image_paths` | list[string] | Yes | - | Paths to input images (max 14) |
+| `image_paths` | string[] | Yes | - | Paths to input images (max 14) |
 | `model` | string | No | `gemini-3-pro-image-preview` | Model to use |
 | `aspect_ratio` | string | No | `1:1` | Output aspect ratio |
 | `resolution` | string | No | `2K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the composed image |
+| `seed` | integer | No | None | Seed for reproducible generation |
 
 ### search_grounded_image
 
@@ -120,6 +121,8 @@ Start a new multi-turn image editing session.
 |-----------|------|----------|---------|-------------|
 | `initial_prompt` | string | Yes | - | First prompt to generate the initial image |
 | `model` | string | No | `gemini-3-pro-image-preview` | Model to use for the session |
+| `output_path` | string | No | None | Path to save the image |
+| `seed` | integer | No | None | Optional seed (currently ignored in chat sessions) |
 
 Returns a `session_id` for use with `continue_image_chat`.
 
@@ -133,6 +136,7 @@ Continue an existing image chat session.
 | `prompt` | string | Yes | - | Next instruction for image modification |
 | `aspect_ratio` | string | No | None | Optional new aspect ratio |
 | `resolution` | string | No | None | Optional new resolution |
+| `output_path` | string | No | None | Path to save the image |
 
 ### end_image_chat
 
@@ -158,6 +162,7 @@ Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `
 - Google Search grounding for real-time data
 - Multi-turn chat sessions for iterative refinement
 - Resolutions: 1K, 2K, 4K
+- Reproducible generation with seed parameter
 
 ### Valid Values
 
@@ -168,15 +173,26 @@ Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `
 ## Development
 
 ```bash
-# Install dev dependencies
-uv sync --all-extras
+# Install dependencies
+bun install
 
 # Run tests
-uv run pytest
+bun test
 
-# Run with verbose logging
-GEMINI_API_KEY=your-key uv run python -m nanobananapro_mcp
+# Run server
+GEMINI_API_KEY=your-key bun run src/index.ts
+
+# Run with watch mode
+GEMINI_API_KEY=your-key bun --watch run src/index.ts
 ```
+
+## Stack
+
+- **Runtime**: [Bun](https://bun.sh/)
+- **Language**: TypeScript
+- **MCP SDK**: `@modelcontextprotocol/sdk`
+- **Gemini SDK**: `@google/genai`
+- **Validation**: `zod`
 
 ## CLAUDE.md Configuration
 
