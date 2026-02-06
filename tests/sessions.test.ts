@@ -1,38 +1,35 @@
 // tests/sessions.test.ts
 import { describe, test, expect, mock, beforeEach } from "bun:test";
 
-// Mock the client module
-mock.module("../src/client", () => ({
-  GeminiImageClient: mock(() => ({
-    genai: {
-      chats: {
-        create: () => ({
-          sendMessage: mock(async () => ({
-            candidates: [
-              {
-                content: {
-                  parts: [{ text: "response" }],
-                },
-              },
-            ],
-          })),
-        }),
+// Mock @google/genai (not ../src/client) to avoid contaminating other test files
+const mockSendMessage = mock(async () => ({
+  candidates: [
+    {
+      content: {
+        parts: [{ text: "response" }],
       },
     },
+  ],
+}));
+
+mock.module("@google/genai", () => ({
+  GoogleGenAI: mock(() => ({
+    models: { generateContent: mock() },
+    chats: {
+      create: () => ({
+        sendMessage: mockSendMessage,
+      }),
+    },
   })),
-  ImageGenerationResult: {
-    fromResponse: (r: any) => ({
-      text: r.candidates[0].content.parts[0].text,
-      imageData: null,
-      mimeType: null,
-      groundingMetadata: null,
-    }),
-  },
 }));
 
 import { ChatSessionManager, ChatSession } from "../src/sessions";
 
 describe("ChatSessionManager", () => {
+  beforeEach(() => {
+    process.env.GEMINI_API_KEY = "test-key";
+  });
+
   test("create session returns id", () => {
     const manager = new ChatSessionManager();
     const id = manager.createSession("gemini-3-pro-image-preview");
@@ -76,6 +73,11 @@ describe("ChatSessionManager", () => {
 });
 
 describe("ChatSession", () => {
+  beforeEach(() => {
+    process.env.GEMINI_API_KEY = "test-key";
+    mockSendMessage.mockClear();
+  });
+
   test("send message stores history", async () => {
     const manager = new ChatSessionManager();
     const id = manager.createSession("gemini-3-pro-image-preview");
