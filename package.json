@@ -1,0 +1,17 @@
+{
+  "name": "nanobananapro-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP server for Google Gemini image generation (Nano Banana Pro)",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "dev": "bun --watch run src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@google/genai": "^1.40.0",
+    "zod": "^3.23.0"
+  }
+}

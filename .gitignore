@@ -11,6 +11,8 @@ docs/
 CLAUDE.md
 .claude/
 uv.lock
+node_modules/
+bun.lock
 assets/
 scripts/
 output/
