@@ -8,6 +8,7 @@ import * as path from "node:path";
 import { GeminiImageClient, ImageGenerationResult } from "./client";
 import { ChatSessionManager } from "./sessions";
 import { validateSeed } from "./utils";
+import { validateDigest } from "./digest-schema";
 
 export const DEFAULT_OUTPUT_DIR = "outputs";
 
@@ -225,6 +226,36 @@ server.tool(
     const sessions = sessionManager.listSessions();
     const dict = { sessions, count: sessions.length };
     return { content: [{ type: "text" as const, text: JSON.stringify(dict) }] };
+  }
+);
+
+// Tool: validate_intake_digest
+server.tool(
+  "validate_intake_digest",
+  "Validate a Stage 0 source digest against the intake schema. Returns structured pass/fail with field-level errors and warnings.",
+  {
+    yaml_content: z.string().describe("JSON string of the digest to validate"),
+  },
+  async ({ yaml_content }) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(yaml_content);
+    } catch {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({
+              valid: false,
+              errors: [{ path: "root", message: "Failed to parse input as JSON. Send the digest as a JSON string." }],
+              warnings: [],
+            }),
+          },
+        ],
+      };
+    }
+    const result = validateDigest(parsed);
+    return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
   }
 );
 

@@ -110,6 +110,24 @@ describe("MCP server", () => {
   });
 });
 
+describe("validate_intake_digest", () => {
+  test("validateDigest works for valid minimal digest", () => {
+    const { validateDigest } = require("../src/digest-schema");
+    const result = validateDigest({
+      meta: {
+        confidence: "low",
+        source_type: "minimal",
+        source_reference: null,
+        extraction_notes: "test",
+      },
+      extracted: {},
+      needs_interview: [],
+      ambiguities: [],
+    });
+    expect(result.valid).toBe(true);
+  });
+});
+
 describe("session manager integration", () => {
   test("list_chat_sessions returns empty initially", () => {
     const { ChatSessionManager } = require("../src/sessions");
