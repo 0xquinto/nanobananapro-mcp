@@ -1,6 +1,6 @@
 // tests/digest-schema.test.ts
 import { describe, test, expect } from "bun:test";
-import { DigestSchema } from "../src/digest-schema";
+import { DigestSchema, validateDigest } from "../src/digest-schema";
 
 describe("DigestSchema", () => {
   function makeValidDigest(overrides: Record<string, any> = {}) {
@@ -163,5 +163,119 @@ describe("DigestSchema", () => {
     });
     const result = DigestSchema.safeParse(invalid);
     expect(result.success).toBe(false);
+  });
+});
+
+describe("validateDigest", () => {
+  function makeFullDigest(overrides: Record<string, any> = {}) {
+    const base = {
+      meta: {
+        confidence: "high",
+        source_type: "known_ip",
+        source_reference: "The Witcher 3",
+        extraction_notes: "Synthesized from training data",
+      },
+      extracted: {
+        emotional_core: "grim determination",
+        emotional_arc: {
+          start_emotion: "uneasy calm",
+          end_emotion: "desperate resolve",
+          arc_type: "building",
+        },
+        genre: ["dark fantasy", "action"],
+        tone: "gritty and visceral",
+        source_material: "The Witcher 3: Wild Hunt",
+        source_priorities: "Battle of Kaer Morhen sequence",
+        narrative_framework: "heros_journey",
+        locations: [
+          { name: "Kaer Morhen", description: "ancient fortress in mountains" },
+          { name: "Courtyard", description: "snow-covered stone courtyard" },
+        ],
+        characters: [
+          {
+            name: "Geralt",
+            role: "protagonist",
+            archetype_function: "hero",
+            narrative_qualifier: "lone",
+            is_non_human: false,
+          },
+          {
+            name: "Yennefer",
+            role: "ally",
+            archetype_function: "mentor",
+            narrative_qualifier: null,
+            is_non_human: false,
+          },
+        ],
+        total_duration_seconds: 30,
+        output_format: "cinematic trailer",
+        pacing_style: "building tempo",
+        dynamic_range: "extreme",
+        sonic_direction: "orchestral epic",
+        medium: "film",
+        aspect_ratio: "16:9",
+      },
+      needs_interview: [],
+      ambiguities: [],
+    };
+    return {
+      ...base,
+      ...overrides,
+      meta: { ...base.meta, ...(overrides.meta || {}) },
+      extracted: overrides.extracted !== undefined ? overrides.extracted : base.extracted,
+    };
+  }
+
+  test("returns valid for correct digest", () => {
+    const result = validateDigest(makeFullDigest());
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  test("warns when high confidence but few extracted fields", () => {
+    const digest = makeFullDigest({
+      meta: { confidence: "high" },
+      extracted: { emotional_core: "fear", genre: "horror" },
+    });
+    const result = validateDigest(digest);
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some((w: any) => w.path === "meta.confidence")).toBe(true);
+  });
+
+  test("warns when known_ip but no characters", () => {
+    const digest = makeFullDigest({
+      meta: { source_type: "known_ip" },
+      extracted: { emotional_core: "fear", characters: undefined },
+    });
+    const result = validateDigest(digest);
+    expect(result.valid).toBe(true);
+    expect(result.warnings.some((w: any) => w.path === "extracted.characters")).toBe(true);
+  });
+
+  test("warns on duplicate character names", () => {
+    const digest = makeFullDigest({
+      extracted: {
+        characters: [
+          { name: "Geralt", role: "protagonist", archetype_function: null, narrative_qualifier: null, is_non_human: false },
+          { name: "Geralt", role: "antagonist", archetype_function: null, narrative_qualifier: null, is_non_human: false },
+        ],
+      },
+    });
+    const result = validateDigest(digest);
+    expect(result.warnings.some((w: any) => w.message.includes("duplicate"))).toBe(true);
+  });
+
+  test("warns on duration/sequence_count mismatch", () => {
+    const digest = makeFullDigest({
+      extracted: { total_duration_seconds: 0 },
+    });
+    const result = validateDigest(digest);
+    expect(result.valid).toBe(false);
+  });
+
+  test("returns errors for invalid schema shape", () => {
+    const result = validateDigest({ garbage: true } as any);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 });
