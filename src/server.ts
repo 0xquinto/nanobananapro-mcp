@@ -304,6 +304,18 @@ server.tool(
   }
 );
 
+// Tool: get_best_practices
+server.tool(
+  "get_best_practices",
+  "Get Nano Banana Pro prompting best practices and guidelines. Call this at the start of an image generation session to load prompt engineering rules into context.",
+  {},
+  async () => {
+    const guidePath = path.join(__dirname, "PROMPT_GUIDE.md");
+    const content = fs.readFileSync(guidePath, "utf-8");
+    return { content: [{ type: "text" as const, text: content }] };
+  }
+);
+
 export async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
