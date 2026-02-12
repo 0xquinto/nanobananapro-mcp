@@ -17,6 +17,20 @@ export const MODEL_ALIASES: Record<string, string> = {
 
 export const VALID_MODELS = ["gemini-3-pro-image-preview"];
 
+export const SAFETY_THRESHOLDS: Record<string, string> = {
+  block_none: "BLOCK_NONE",
+  block_low: "BLOCK_LOW_AND_ABOVE",
+  block_medium: "BLOCK_MEDIUM_AND_ABOVE",
+  block_high: "BLOCK_ONLY_HIGH",
+};
+
+export const HARM_CATEGORIES = [
+  "HARM_CATEGORY_HARASSMENT",
+  "HARM_CATEGORY_HATE_SPEECH",
+  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+  "HARM_CATEGORY_DANGEROUS_CONTENT",
+] as const;
+
 export function encodeImageToBase64(image: Buffer | string): string {
   if (typeof image === "string") {
     const imageBytes = fs.readFileSync(image);
@@ -66,6 +80,23 @@ export function validateSeed(seed: number | null): number | null {
   if (seed < 0) throw new Error("Seed must be non-negative");
   if (seed > MAX_SEED_VALUE) throw new Error(`Seed must not exceed ${MAX_SEED_VALUE}`);
   return seed;
+}
+
+export function validateSafetyThreshold(threshold: string | null): string | null {
+  if (threshold === null) return null;
+  if (!(threshold in SAFETY_THRESHOLDS)) {
+    throw new Error(
+      `Invalid safety threshold: ${threshold}. Must be one of: ${Object.keys(SAFETY_THRESHOLDS).join(", ")}`
+    );
+  }
+  return SAFETY_THRESHOLDS[threshold];
+}
+
+export function buildSafetySettings(apiThreshold: string): Array<{ category: string; threshold: string }> {
+  return HARM_CATEGORIES.map((category) => ({
+    category,
+    threshold: apiThreshold,
+  }));
 }
 
 export function getMimeType(filePath: string): string {

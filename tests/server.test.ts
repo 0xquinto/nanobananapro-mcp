@@ -128,6 +128,51 @@ describe("validate_intake_digest", () => {
   });
 });
 
+describe("ImageGenerationResult.allPartsFromResponse", () => {
+  test("returns text and image parts in order", () => {
+    const response = {
+      candidates: [{
+        content: {
+          parts: [
+            { text: "Step 1: Preheat oven" },
+            { inlineData: { data: Buffer.from("img1").toString("base64"), mimeType: "image/png" } },
+            { text: "Step 2: Mix ingredients" },
+            { inlineData: { data: Buffer.from("img2").toString("base64"), mimeType: "image/png" } },
+          ],
+        },
+      }],
+    };
+
+    const parts = ImageGenerationResult.allPartsFromResponse(response);
+    expect(parts).toHaveLength(4);
+    expect(parts[0]).toEqual({ type: "text", text: "Step 1: Preheat oven" });
+    expect(parts[1].type).toBe("image");
+    expect((parts[1] as any).data).toEqual(Buffer.from("img1"));
+    expect(parts[2]).toEqual({ type: "text", text: "Step 2: Mix ingredients" });
+    expect(parts[3].type).toBe("image");
+    expect((parts[3] as any).data).toEqual(Buffer.from("img2"));
+  });
+
+  test("returns empty array for empty response", () => {
+    const response = { candidates: [{ content: { parts: [] } }] };
+    expect(ImageGenerationResult.allPartsFromResponse(response)).toEqual([]);
+  });
+
+  test("handles missing candidates gracefully", () => {
+    expect(ImageGenerationResult.allPartsFromResponse({})).toEqual([]);
+    expect(ImageGenerationResult.allPartsFromResponse({ candidates: [] })).toEqual([]);
+  });
+});
+
+describe("safety param validation in server context", () => {
+  test("validateSafetyThreshold is re-exported from utils", () => {
+    const { validateSafetyThreshold } = require("../src/utils");
+    expect(validateSafetyThreshold("block_none")).toBe("BLOCK_NONE");
+    expect(validateSafetyThreshold(null)).toBeNull();
+    expect(() => validateSafetyThreshold("invalid")).toThrow();
+  });
+});
+
 describe("session manager integration", () => {
   test("list_chat_sessions returns empty initially", () => {
     const { ChatSessionManager } = require("../src/sessions");

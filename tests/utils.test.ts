@@ -7,12 +7,16 @@ import {
   validateResolution,
   validateModel,
   validateSeed,
+  validateSafetyThreshold,
+  buildSafetySettings,
   getMimeType,
   VALID_ASPECT_RATIOS,
   VALID_RESOLUTIONS,
   VALID_MODELS,
   MODEL_ALIASES,
   MAX_SEED_VALUE,
+  SAFETY_THRESHOLDS,
+  HARM_CATEGORIES,
 } from "../src/utils";
 
 describe("encodeImageToBase64", () => {
@@ -139,5 +143,47 @@ describe("getMimeType", () => {
 
   test("defaults to image/png for unknown", () => {
     expect(getMimeType("photo.bmp")).toBe("image/png");
+  });
+});
+
+describe("validateSafetyThreshold", () => {
+  test("returns null for null input", () => {
+    expect(validateSafetyThreshold(null)).toBeNull();
+  });
+
+  test.each([
+    ["block_none", "BLOCK_NONE"],
+    ["block_low", "BLOCK_LOW_AND_ABOVE"],
+    ["block_medium", "BLOCK_MEDIUM_AND_ABOVE"],
+    ["block_high", "BLOCK_ONLY_HIGH"],
+  ] as const)("maps %s to %s", (input, expected) => {
+    expect(validateSafetyThreshold(input)).toBe(expected);
+  });
+
+  test("rejects invalid threshold", () => {
+    expect(() => validateSafetyThreshold("block_all")).toThrow("Invalid safety threshold");
+  });
+
+  test("SAFETY_THRESHOLDS has exactly 4 entries", () => {
+    expect(Object.keys(SAFETY_THRESHOLDS)).toHaveLength(4);
+  });
+});
+
+describe("buildSafetySettings", () => {
+  test("applies threshold to all 4 harm categories", () => {
+    const settings = buildSafetySettings("BLOCK_NONE");
+    expect(settings).toHaveLength(4);
+    for (const s of settings) {
+      expect(s.threshold).toBe("BLOCK_NONE");
+    }
+    const categories = settings.map((s) => s.category);
+    expect(categories).toContain("HARM_CATEGORY_HARASSMENT");
+    expect(categories).toContain("HARM_CATEGORY_HATE_SPEECH");
+    expect(categories).toContain("HARM_CATEGORY_SEXUALLY_EXPLICIT");
+    expect(categories).toContain("HARM_CATEGORY_DANGEROUS_CONTENT");
+  });
+
+  test("HARM_CATEGORIES has exactly 4 entries", () => {
+    expect(HARM_CATEGORIES).toHaveLength(4);
   });
 });

@@ -54,4 +54,31 @@ describe.skipIf(!hasApiKey)("integration", () => {
     expect(() => manager.getSession(sessionId)).toThrow("Session not found");
     expect(manager.listSessions()).not.toContain(sessionId);
   }, 120000);
+
+  test("multi-turn chat: thought signatures handled correctly", async () => {
+    // Verifies that the SDK handles thought signatures automatically across
+    // multiple turns. If signatures are mishandled, the API returns 400 errors.
+    const { ChatSessionManager } = await import("../src/sessions");
+    const manager = new ChatSessionManager();
+
+    const sessionId = manager.createSession("pro");
+    const session = manager.getSession(sessionId);
+
+    // Turn 1: generate a car
+    const r1 = await session.sendMessage("Generate an image of a red sports car");
+    expect(r1.imageData).not.toBeNull();
+
+    // Turn 2: change color
+    const r2 = await session.sendMessage("Change the car color to blue");
+    expect(r2.imageData).not.toBeNull();
+
+    // Turn 3: add environment
+    const r3 = await session.sendMessage("Add snow falling around the car");
+    expect(r3.imageData).not.toBeNull();
+
+    // If we got here without 400 errors, thought signatures are working
+    expect(session.history.length).toBeGreaterThanOrEqual(6); // 3 turns * 2
+
+    manager.deleteSession(sessionId);
+  }, 180000);
 });

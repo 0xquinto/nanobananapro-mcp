@@ -7,7 +7,7 @@ import * as path from "node:path";
 
 import { GeminiImageClient, ImageGenerationResult } from "./client";
 import { ChatSessionManager } from "./sessions";
-import { validateSeed } from "./utils";
+import { validateSeed, SAFETY_THRESHOLDS } from "./utils";
 import { validateDigest } from "./digest-schema";
 
 export const DEFAULT_OUTPUT_DIR = "outputs";
@@ -70,6 +70,9 @@ export function resultToDict(
   return response;
 }
 
+const safetySchema = z.enum(["block_none", "block_low", "block_medium", "block_high"]).optional()
+  .describe("Safety filter threshold (block_none, block_low, block_medium, block_high). Omit for API defaults.");
+
 // Create MCP server
 export const server = new McpServer({
   name: "nanobananapro",
@@ -87,11 +90,12 @@ server.tool(
     resolution: z.string().default("1K").describe("Output resolution (1K, 2K, 4K)"),
     output_path: z.string().optional().describe("Path to save the image (default: outputs/image_TIMESTAMP.png)"),
     seed: z.number().int().optional().describe("Optional seed for reproducible generation (0 to 2147483647)"),
+    safety: safetySchema,
   },
-  async ({ prompt, model, aspect_ratio, resolution, output_path, seed }) => {
+  async ({ prompt, model, aspect_ratio, resolution, output_path, seed, safety }) => {
     const validatedSeed = validateSeed(seed ?? null);
     const client = getClient();
-    const result = await client.generateImage(prompt, model, aspect_ratio, resolution, validatedSeed);
+    const result = await client.generateImage(prompt, model, aspect_ratio, resolution, validatedSeed, safety ?? null);
     const dict = resultToDict(result, output_path ?? null);
     return { content: [{ type: "text" as const, text: JSON.stringify(dict) }] };
   }
@@ -109,11 +113,12 @@ server.tool(
     resolution: z.string().default("1K").describe("Output resolution (1K, 2K, 4K)"),
     output_path: z.string().optional().describe("Path to save the image"),
     seed: z.number().int().optional().describe("Optional seed for reproducible generation"),
+    safety: safetySchema,
   },
-  async ({ prompt, image_path, model, aspect_ratio, resolution, output_path, seed }) => {
+  async ({ prompt, image_path, model, aspect_ratio, resolution, output_path, seed, safety }) => {
     const validatedSeed = validateSeed(seed ?? null);
     const client = getClient();
-    const result = await client.editImage(prompt, image_path, model, aspect_ratio ?? null, resolution, validatedSeed);
+    const result = await client.editImage(prompt, image_path, model, aspect_ratio ?? null, resolution, validatedSeed, safety ?? null);
     const dict = resultToDict(result, output_path ?? null);
     return { content: [{ type: "text" as const, text: JSON.stringify(dict) }] };
   }
@@ -131,11 +136,12 @@ server.tool(
     resolution: z.string().default("2K").describe("Output resolution"),
     output_path: z.string().optional().describe("Path to save the image"),
     seed: z.number().int().optional().describe("Optional seed for reproducible generation"),
+    safety: safetySchema,
   },
-  async ({ prompt, image_paths, model, aspect_ratio, resolution, output_path, seed }) => {
+  async ({ prompt, image_paths, model, aspect_ratio, resolution, output_path, seed, safety }) => {
     const validatedSeed = validateSeed(seed ?? null);
     const client = getClient();
-    const result = await client.composeImages(prompt, image_paths, model, aspect_ratio, resolution, validatedSeed);
+    const result = await client.composeImages(prompt, image_paths, model, aspect_ratio, resolution, validatedSeed, safety ?? null);
     const dict = resultToDict(result, output_path ?? null);
     return { content: [{ type: "text" as const, text: JSON.stringify(dict) }] };
   }
@@ -150,12 +156,51 @@ server.tool(
     aspect_ratio: z.string().default("16:9").describe("Output aspect ratio"),
     resolution: z.string().default("2K").describe("Output resolution (1K, 2K, 4K)"),
     output_path: z.string().optional().describe("Path to save the image"),
+    safety: safetySchema,
   },
-  async ({ prompt, aspect_ratio, resolution, output_path }) => {
+  async ({ prompt, aspect_ratio, resolution, output_path, safety }) => {
     const client = getClient();
-    const result = await client.searchGroundedImage(prompt, aspect_ratio, resolution);
+    const result = await client.searchGroundedImage(prompt, aspect_ratio, resolution, safety ?? null);
     const dict = resultToDict(result, output_path ?? null);
     return { content: [{ type: "text" as const, text: JSON.stringify(dict) }] };
+  }
+);
+
+// Tool: generate_interleaved
+server.tool(
+  "generate_interleaved",
+  "Generate interleaved text and image output from a prompt. Ideal for illustrated recipes, stories, tutorials, and other mixed-media content.",
+  {
+    prompt: z.string().describe("Text description that may produce mixed text+image output"),
+    model: z.string().default("gemini-3-pro-image-preview").describe('Model to use'),
+    aspect_ratio: z.string().default("1:1").describe("Output aspect ratio (1:1, 16:9, 9:16, etc.)"),
+    resolution: z.string().default("1K").describe("Output resolution (1K, 2K, 4K)"),
+    output_dir: z.string().default("outputs").describe("Directory to save generated images"),
+    safety: safetySchema,
+  },
+  async ({ prompt, model, aspect_ratio, resolution, output_dir, safety }) => {
+    const client = getClient();
+    const response = await client.generateInterleaved(prompt, model, aspect_ratio, resolution, safety ?? null);
+    const parts = ImageGenerationResult.allPartsFromResponse(response);
+
+    const content: Array<{ type: "text"; text: string }> = [];
+    let imageIndex = 0;
+    for (const part of parts) {
+      if (part.type === "text") {
+        content.push({ type: "text" as const, text: part.text });
+      } else if (part.type === "image") {
+        const savePath = generateOutputPath(`interleaved_${imageIndex}`, output_dir);
+        fs.writeFileSync(savePath, part.data);
+        content.push({ type: "text" as const, text: `Image saved: ${path.resolve(savePath)}` });
+        imageIndex++;
+      }
+    }
+
+    if (content.length === 0) {
+      content.push({ type: "text" as const, text: "No content returned from model." });
+    }
+
+    return { content };
   }
 );
 
