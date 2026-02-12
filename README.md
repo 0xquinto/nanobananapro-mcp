@@ -73,6 +73,7 @@ Generate images from text prompts.
 | `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the generated image |
 | `seed` | integer | No | None | Seed for reproducible generation (0 to 2147483647) |
+| `safety` | string | No | None | Safety filter threshold (see Safety Settings) |
 
 ### edit_image
 
@@ -87,6 +88,7 @@ Edit existing images with text instructions.
 | `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the edited image |
 | `seed` | integer | No | None | Seed for reproducible generation |
+| `safety` | string | No | None | Safety filter threshold (see Safety Settings) |
 
 ### compose_images
 
@@ -101,6 +103,7 @@ Combine multiple reference images into a new composition.
 | `resolution` | string | No | `2K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the composed image |
 | `seed` | integer | No | None | Seed for reproducible generation |
+| `safety` | string | No | None | Safety filter threshold (see Safety Settings) |
 
 ### search_grounded_image
 
@@ -112,6 +115,20 @@ Generate images using real-time Google Search data.
 | `aspect_ratio` | string | No | `16:9` | Output aspect ratio |
 | `resolution` | string | No | `2K` | Output resolution (1K, 2K, 4K) |
 | `output_path` | string | No | None | Path to save the image |
+| `safety` | string | No | None | Safety filter threshold (see Safety Settings) |
+
+### generate_interleaved
+
+Generate interleaved text and image output from a single prompt. Ideal for illustrated recipes, stories, tutorials, and other mixed-media content. Returns multiple content blocks preserving the order of text and images from the model response.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `prompt` | string | Yes | - | Text description that may produce mixed text+image output |
+| `model` | string | No | `gemini-3-pro-image-preview` | Model to use |
+| `aspect_ratio` | string | No | `1:1` | Output aspect ratio |
+| `resolution` | string | No | `1K` | Output resolution (1K, 2K, 4K) |
+| `output_dir` | string | No | `outputs` | Directory to save generated images |
+| `safety` | string | No | None | Safety filter threshold (see Safety Settings) |
 
 ### start_image_chat
 
@@ -150,6 +167,10 @@ End and clean up an image chat session.
 
 List all active chat sessions. No parameters.
 
+### get_best_practices
+
+Load Nano Banana Pro prompting best practices and guidelines into context. Call this at the start of an image generation session to get prompt engineering rules. No parameters.
+
 ## Model
 
 Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `pro` or `nano-banana-pro`.
@@ -159,8 +180,10 @@ Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `
 - Text-to-image generation
 - Image editing with text prompts
 - Multi-image composition (up to 14 images)
+- Interleaved text+image generation for mixed-media content
 - Google Search grounding for real-time data
 - Multi-turn chat sessions for iterative refinement
+- Configurable safety filter thresholds
 - Resolutions: 1K, 2K, 4K
 - Reproducible generation with seed parameter
 
@@ -169,6 +192,19 @@ Uses `gemini-3-pro-image-preview` (Gemini 3 Pro). You can also use the aliases `
 **Aspect Ratios**: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
 
 **Resolutions**: `1K`, `2K`, `4K`
+
+### Safety Settings
+
+The `safety` parameter controls content filtering on generation tools. When omitted, the API uses its defaults.
+
+| Value | Behavior |
+|-------|----------|
+| `block_none` | No content blocked |
+| `block_low` | Block low-threshold and above |
+| `block_medium` | Block medium-threshold and above |
+| `block_high` | Block only high-threshold content |
+
+Applied uniformly across all harm categories (harassment, hate speech, sexually explicit, dangerous content). Not available on chat session tools (`start_image_chat`, `continue_image_chat`).
 
 ## Development
 
