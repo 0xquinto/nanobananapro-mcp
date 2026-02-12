@@ -7,7 +7,7 @@ docs/
 CLAUDE.md
 .claude/
 assets/
-scripts/
+scripts/*.py
 output/
 outputs/
 .worktrees/
