@@ -10,6 +10,7 @@ assets/
 scripts/
 output/
 outputs/
+.worktrees/
 
 # Python artifacts (removed after TS port)
 __pycache__/
