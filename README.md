@@ -167,9 +167,40 @@ End and clean up an image chat session.
 
 List all active chat sessions. No parameters.
 
-### get_best_practices
+### validate_intake_digest
 
-Load Nano Banana Pro prompting best practices and guidelines into context. Call this at the start of an image generation session to get prompt engineering rules. No parameters.
+Validate a Stage 0 source digest against the intake schema.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `yaml_content` | string | Yes | - | JSON string of the digest to validate |
+
+## Best Practices Hook
+
+Prompting best practices and tool routing guidance are delivered automatically via a `UserPromptSubmit` hook. When your prompt mentions image generation, the hook injects a compact cheatsheet into context — no manual tool call needed.
+
+### Install
+
+```bash
+scripts/install-hook.sh
+```
+
+This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settings.json`, so it works across all projects.
+
+### Uninstall
+
+```bash
+scripts/install-hook.sh --uninstall
+```
+
+### What it does
+
+When your prompt contains image-related keywords (e.g., "generate an image", "edit the photo", "poster", "infographic"), the hook automatically injects:
+
+- **Tool routing** — which tool to use for which task
+- **Prompt engineering rules** — the 6-component formula, text rendering limits
+- **Parameter guidance** — resolution, safety, model selection
+- **Workflow tips** — iterative editing, character consistency, composition
 
 ## Model
 
