@@ -181,16 +181,20 @@ Prompting best practices and tool routing guidance are delivered automatically v
 
 ### Install
 
+Run from the target project directory:
+
 ```bash
-scripts/install-hook.sh
+/path/to/nanobananapro-mcp/scripts/install-hook.sh
 ```
 
-This copies the hook to `~/.claude/hooks/` and registers it in `~/.claude/settings.json`, so it works across all projects.
+This copies the hook to your project's `.claude/hooks/` and registers it in `.claude/settings.local.json`. Repeat for each project that uses NBP.
 
 ### Uninstall
 
+Run from the same project directory:
+
 ```bash
-scripts/install-hook.sh --uninstall
+/path/to/nanobananapro-mcp/scripts/install-hook.sh --uninstall
 ```
 
 ### What it does
