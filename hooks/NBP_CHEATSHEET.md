@@ -1,19 +1,21 @@
 # Nano Banana Pro — Cheatsheet
 
+**IMPORTANT: When the user asks to generate, edit, compose, or work with images, you MUST use the `mcp__nanobananapro__*` tools listed below. Do NOT use any other image tools.**
+
 ## Tool Routing
 
-| Task | Tool |
+| Task | Tool to call |
 |------|------|
-| Single image from text | `generate_image` |
-| Modify an existing image | `edit_image` |
-| Combine multiple reference images | `compose_images` |
-| Real-time data or factual imagery | `search_grounded_image` |
-| Mixed text + image content (recipes, tutorials, stories) | `generate_interleaved` |
-| Iterative refinement (multiple rounds) | `start_image_chat` → `continue_image_chat` |
-| Done iterating | `end_image_chat` |
-| List active sessions | `list_chat_sessions` |
+| Single image from text | `mcp__nanobananapro__generate_image` |
+| Modify an existing image | `mcp__nanobananapro__edit_image` |
+| Combine multiple reference images | `mcp__nanobananapro__compose_images` |
+| Real-time data or factual imagery | `mcp__nanobananapro__search_grounded_image` |
+| Mixed text + image content (recipes, tutorials, stories) | `mcp__nanobananapro__generate_interleaved` |
+| Iterative refinement (multiple rounds) | `mcp__nanobananapro__start_image_chat` → `mcp__nanobananapro__continue_image_chat` |
+| Done iterating | `mcp__nanobananapro__end_image_chat` |
+| List active sessions | `mcp__nanobananapro__list_chat_sessions` |
 
-**Decision flow:** New image from scratch → `generate_image`. Need to tweak an existing file → `edit_image`. Merging style/pose/background from separate references → `compose_images`. Need current facts or data → `search_grounded_image`. Want paragraphs interspersed with visuals → `generate_interleaved`. Expect 2+ rounds of revision → use a chat session.
+**Decision flow:** New image from scratch → `mcp__nanobananapro__generate_image`. Need to tweak an existing file → `mcp__nanobananapro__edit_image`. Merging style/pose/background from separate references → `mcp__nanobananapro__compose_images`. Need current facts or data → `mcp__nanobananapro__search_grounded_image`. Want paragraphs interspersed with visuals → `mcp__nanobananapro__generate_interleaved`. Expect 2+ rounds of revision → use a chat session.
 
 ## Prompt Engineering
 
