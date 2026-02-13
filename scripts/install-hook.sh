@@ -5,19 +5,22 @@
 #
 # Usage:
 #   Run from the TARGET project directory (not the nanobananapro-mcp repo):
-#   /path/to/nanobananapro-mcp/scripts/install-hook.sh            # install
-#   /path/to/nanobananapro-mcp/scripts/install-hook.sh --uninstall # remove
+#   /path/to/nanobananapro-mcp/scripts/install-hook.sh                    # install
+#   /path/to/nanobananapro-mcp/scripts/install-hook.sh --uninstall       # remove from project
+#   /path/to/nanobananapro-mcp/scripts/install-hook.sh --uninstall-global # remove from ~/.claude/
 
 set -euo pipefail
 
 PROJECT_DIR="$(pwd)"
-HOOK_DIR="$PROJECT_DIR/.claude/hooks"
-SETTINGS_FILE="$PROJECT_DIR/.claude/settings.local.json"
 HOOK_SCRIPT="inject-best-practices.sh"
 CHEATSHEET="NBP_CHEATSHEET.md"
-HOOK_COMMAND="\"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/$HOOK_SCRIPT"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/../hooks"
+
+GLOBAL_HOOK_DIR="$HOME/.claude/hooks"
+GLOBAL_SETTINGS="$HOME/.claude/settings.json"
+PROJECT_HOOK_DIR="$PROJECT_DIR/.claude/hooks"
+PROJECT_SETTINGS="$PROJECT_DIR/.claude/settings.local.json"
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,20 +33,19 @@ ensure_jq() {
 }
 
 add_hook_to_settings() {
-  local hook_command_escaped
-  hook_command_escaped='"\\"\\$CLAUDE_PROJECT_DIR\\"/.claude/hooks/inject-best-practices.sh"'
+  local settings_file="$1"
 
-  if [ ! -f "$SETTINGS_FILE" ]; then
-    mkdir -p "$(dirname "$SETTINGS_FILE")"
-    echo '{}' > "$SETTINGS_FILE"
+  if [ ! -f "$settings_file" ]; then
+    mkdir -p "$(dirname "$settings_file")"
+    echo '{}' > "$settings_file"
   fi
 
   local current
-  current=$(cat "$SETTINGS_FILE")
+  current=$(cat "$settings_file")
 
   # Check if the hook is already registered
   if echo "$current" | jq -e '.hooks.UserPromptSubmit[]? | select(.hooks[]?.command | contains("inject-best-practices"))' &>/dev/null; then
-    echo "Hook already registered in $SETTINGS_FILE"
+    echo "Hook already registered in $settings_file"
     return
   fi
 
@@ -60,18 +62,26 @@ add_hook_to_settings() {
     }]
   ')
 
-  echo "$updated" > "$SETTINGS_FILE"
-  echo "Registered hook in $SETTINGS_FILE"
+  echo "$updated" > "$settings_file"
+  echo "Registered hook in $settings_file"
 }
 
 remove_hook_from_settings() {
-  if [ ! -f "$SETTINGS_FILE" ]; then
-    echo "No settings file found at $SETTINGS_FILE"
+  local settings_file="$1"
+
+  if [ ! -f "$settings_file" ]; then
+    echo "No settings file found at $settings_file"
     return
   fi
 
   local current
-  current=$(cat "$SETTINGS_FILE")
+  current=$(cat "$settings_file")
+
+  # Check if there's anything to remove
+  if ! echo "$current" | jq -e '.hooks.UserPromptSubmit[]? | select(.hooks[]?.command | contains("inject-best-practices"))' &>/dev/null; then
+    echo "No NBP hook found in $settings_file"
+    return
+  fi
 
   # Remove entries whose hooks contain our script
   local updated
@@ -85,8 +95,8 @@ remove_hook_from_settings() {
     else . end
   ')
 
-  echo "$updated" > "$SETTINGS_FILE"
-  echo "Removed hook from $SETTINGS_FILE"
+  echo "$updated" > "$settings_file"
+  echo "Removed hook from $settings_file"
 }
 
 # ── install ──────────────────────────────────────────────────────────────────
@@ -100,14 +110,17 @@ install() {
     exit 1
   fi
 
-  mkdir -p "$HOOK_DIR"
-  cp "$SOURCE_DIR/$HOOK_SCRIPT" "$HOOK_DIR/$HOOK_SCRIPT"
-  cp "$SOURCE_DIR/$CHEATSHEET" "$HOOK_DIR/$CHEATSHEET"
-  chmod +x "$HOOK_DIR/$HOOK_SCRIPT"
+  mkdir -p "$PROJECT_HOOK_DIR"
+  cp "$SOURCE_DIR/$HOOK_SCRIPT" "$PROJECT_HOOK_DIR/$HOOK_SCRIPT"
+  cp "$SOURCE_DIR/$CHEATSHEET" "$PROJECT_HOOK_DIR/$CHEATSHEET"
+  chmod +x "$PROJECT_HOOK_DIR/$HOOK_SCRIPT"
 
-  echo "Copied $HOOK_SCRIPT and $CHEATSHEET to $HOOK_DIR/"
+  echo "Copied $HOOK_SCRIPT and $CHEATSHEET to $PROJECT_HOOK_DIR/"
 
-  add_hook_to_settings
+  add_hook_to_settings "$PROJECT_SETTINGS"
+
+  # Clean up stale global install if present
+  cleanup_global silent
 
   echo ""
   echo "Done! The NBP best-practices hook is now active for $PROJECT_DIR"
@@ -119,13 +132,33 @@ install() {
 uninstall() {
   ensure_jq
 
-  rm -f "$HOOK_DIR/$HOOK_SCRIPT" "$HOOK_DIR/$CHEATSHEET"
-  echo "Removed $HOOK_SCRIPT and $CHEATSHEET from $HOOK_DIR/"
+  rm -f "$PROJECT_HOOK_DIR/$HOOK_SCRIPT" "$PROJECT_HOOK_DIR/$CHEATSHEET"
+  echo "Removed $HOOK_SCRIPT and $CHEATSHEET from $PROJECT_HOOK_DIR/"
 
-  remove_hook_from_settings
+  remove_hook_from_settings "$PROJECT_SETTINGS"
 
   echo ""
   echo "Done! The NBP best-practices hook has been removed from $PROJECT_DIR"
+}
+
+# ── uninstall-global ─────────────────────────────────────────────────────────
+
+cleanup_global() {
+  local quiet="${1:-}"
+
+  # Remove hook files from ~/.claude/hooks/
+  if [ -f "$GLOBAL_HOOK_DIR/$HOOK_SCRIPT" ] || [ -f "$GLOBAL_HOOK_DIR/$CHEATSHEET" ]; then
+    rm -f "$GLOBAL_HOOK_DIR/$HOOK_SCRIPT" "$GLOBAL_HOOK_DIR/$CHEATSHEET"
+    echo "Removed $HOOK_SCRIPT and $CHEATSHEET from $GLOBAL_HOOK_DIR/"
+  fi
+
+  # Remove hook entry from ~/.claude/settings.json
+  remove_hook_from_settings "$GLOBAL_SETTINGS"
+
+  if [ "$quiet" != "silent" ]; then
+    echo ""
+    echo "Done! The NBP best-practices hook has been removed from global settings."
+  fi
 }
 
 # ── main ─────────────────────────────────────────────────────────────────────
@@ -133,6 +166,10 @@ uninstall() {
 case "${1:-}" in
   --uninstall)
     uninstall
+    ;;
+  --uninstall-global)
+    ensure_jq
+    cleanup_global
     ;;
   *)
     install
